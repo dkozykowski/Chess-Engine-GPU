@@ -47,9 +47,17 @@ Position::~Position() {
 std::ostream& operator<<(std::ostream& os, const Position& pos) {
     for (int row = 0; row < 8; row++) {
         for (int column = 0; column < 8; column++) {
-          os << pos.board[column][row];  
+            os << " ———";  
         }
         os << std::endl;
+        os << '|';
+        for (int column = 0; column < 8; column++) {
+            os << ' ' << pos.board[column][row] << " |";  
+        }
+        os << std::endl;
+    }
+    for (int column = 0; column < 8; column++) {
+        os << " ———";;  
     }
     return os;
 }
