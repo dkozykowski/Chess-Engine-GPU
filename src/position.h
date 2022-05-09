@@ -12,11 +12,16 @@ private:
     char** board = nullptr;
 public: 
     Position();
+    Position(const Position& pos);
     ~Position();
 
     void set_FEN(std::string FEN);
 
     friend std::ostream& operator<<(std::ostream& os, const Position& pos);
+
+    // 
+    // todo MovePiece()
+    // 
 };
 
 #endif

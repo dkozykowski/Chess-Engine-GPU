@@ -9,6 +9,17 @@ Position::Position() {
     set_FEN(DEFAULT_FEN);
 }
 
+Position::Position(const Position& pos) {
+    set_FEN(pos.FEN);
+}
+
+Position::~Position() {
+    for (int i = 0; i < 8; i++) {
+        delete board[i];
+    }
+    delete[] board;
+}
+
 void Position::set_FEN(std::string FEN) {
     this->FEN = FEN;
 
@@ -37,27 +48,14 @@ void Position::set_FEN(std::string FEN) {
     }
 }
 
-Position::~Position() {
-    for (int i = 0; i < 8; i++) {
-        delete board[i];
-    }
-    delete[] board;
-}
-
 std::ostream& operator<<(std::ostream& os, const Position& pos) {
+    os << "+---+---+---+---+---+---+---+---+\n";
     for (int row = 0; row < 8; row++) {
         for (int column = 0; column < 8; column++) {
-            os << " ———";  
+            os << "| " << pos.board[column][row] << ' ';  
         }
-        os << std::endl;
-        os << '|';
-        for (int column = 0; column < 8; column++) {
-            os << ' ' << pos.board[column][row] << " |";  
-        }
-        os << std::endl;
+        os << "|\n+---+---+---+---+---+---+---+---+\n";
     }
-    for (int column = 0; column < 8; column++) {
-        os << " ———";;  
-    }
+    
     return os;
 }
