@@ -1,8 +1,6 @@
 #ifndef POSITION_H_INCLUDED
 #define POSITION_H_INCLUDED
 
-#define DEFAULT_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-
 #include <string>
 #include <iostream>
 
@@ -16,12 +14,11 @@ public:
     ~Position();
 
     void set_FEN(std::string FEN);
+    void do_move(/* params */);
 
+    // for debugging
+    void flip();
     friend std::ostream& operator<<(std::ostream& os, const Position& pos);
-
-    // 
-    // todo MovePiece()
-    // 
 };
 
 #endif

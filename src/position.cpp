@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include "position.h"
-#include "error.h"
+#include "macros.h"
 
 Position::Position() {
     set_FEN(DEFAULT_FEN);
@@ -48,6 +48,16 @@ void Position::set_FEN(std::string FEN) {
     }
 }
 
+void Position::flip() {
+    std::string newFen = FEN;
+    for (int i = 0; i <(int)newFen.size(); i++) {
+        if ('a' <= newFen[i] && newFen[i] <= 'z') newFen[i] += 'A' - 'a';
+        else if ('A' <= newFen[i] && newFen[i] <= 'Z') newFen[i] += 'a' - 'A';
+        else if (newFen[i] == ' ') break;
+    }
+    set_FEN(newFen);
+}
+
 std::ostream& operator<<(std::ostream& os, const Position& pos) {
     os << "+---+---+---+---+---+---+---+---+\n";
     for (int row = 0; row < 8; row++) {
@@ -55,7 +65,6 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
             os << "| " << pos.board[column][row] << ' ';  
         }
         os << "|\n+---+---+---+---+---+---+---+---+\n";
-    }
-    
+    }   
     return os;
 }
