@@ -2,13 +2,14 @@
 #define MARCOS_H_INCLUDED
 
 #include <stdlib.h>
+#include <stdio.h>
 
 // Error handling
 #define ERR(source) (perror(source),\
             fprintf(stderr,"%s:%d\n",__FILE__,__LINE__),\
             exit(EXIT_FAILURE))
 
-#define DEFAULT_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-#define MAX_FEN_LEN 90
+#define TOTAL_THREAD_NUM (int)1e6
+#define START_POS "rnbqkbnrpppppppp................................PPPPPPPPRNBQKBNR"
 
 #endif

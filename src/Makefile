@@ -1,15 +1,14 @@
 engine: main.o uci.o position.o
-	g++ -Wall -o engine main.o uci.o position.o
+	nvcc -o engine main.o uci.o position.o
 
-main.o: main.cpp
-	g++ -Wall -o main.o -c main.cpp
+main.o: main.cu
+	nvcc -o main.o -c main.cu
 
-uci.o: uci.cpp
-	g++ -Wall -o uci.o -c uci.cpp
+uci.o: uci.cu
+	nvcc -o uci.o -c uci.cu
 
-position.o: position.cpp
-	g++ -Wall -o position.o -c position.cpp
-
+position.o: position.cu
+	nvcc -o position.o -c position.cu
 
 .PHONY: clean
 
