@@ -6,6 +6,7 @@
 #include "macros.cuh"
 #include "uci.cuh"
 #include "position.cuh"
+#include "evaluate.cuh"
 
 namespace UCI {
 
@@ -13,8 +14,10 @@ void loop() {
     char* board = (char*)malloc(sizeof(char) * 64);
     if (!board) ERR("Malloc");
 
+    init_tables();
+
     memcpy(board, START_POS, 64 * sizeof(char));
-    int current_player = 0;
+    int current_player = WHITE;
     int move_num = 0;
 
     std::string token, cmd;
@@ -40,7 +43,7 @@ void loop() {
         else if (token == "flip")       flip_position(board);
         // else if (token == "go")         go(pos, is, states);
         // else if (token == "bench")      bench(pos, is, states);
-        // else if (token == "eval")       sync_cout << Eval::trace(pos) << sync_endl;
+        else if (token == "eval")       printf("Current evaluation: %d\n", evaluate_position(board, current_player));
         else
             std::cout << "Unknown command: " << cmd << std::endl;
   } while (true);

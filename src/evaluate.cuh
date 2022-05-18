@@ -1,6 +1,10 @@
 #ifndef EVALUATE_H_INCLUDED
 #define EVALUATE_H_INCLUDED
 
-float  evaluate_position(char* position);
+// implementation of PeSTO's evaluation function 
+// source: https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
+
+int  evaluate_position(char* position, int side2move);
+void init_tables();
 
 #endif
