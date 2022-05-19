@@ -161,7 +161,7 @@ int gamephaseInc[12] = {0,0,1,1,1,1,2,2,4,4,0,0};
 int mg_table[12][64];
 int eg_table[12][64];
 
-int evaluate_position(char* position, int side2move) {
+int evaluate_position(char* position) {
     int mg[2];
     int eg[2];
     int gamePhase = 0;
@@ -182,8 +182,8 @@ int evaluate_position(char* position, int side2move) {
     }
 
     /* tapered eval */
-    int mgScore = mg[side2move] - mg[OTHER(side2move)];
-    int egScore = eg[side2move] - eg[OTHER(side2move)];
+    int mgScore = mg[WHITE] - mg[BLACK];
+    int egScore = eg[WHITE] - eg[BLACK];
     int mgPhase = gamePhase;
     if (mgPhase > 24) mgPhase = 24; /* in case of early promotion */
     int egPhase = 24 - mgPhase;

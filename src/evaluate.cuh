@@ -4,7 +4,7 @@
 // implementation of PeSTO's evaluation function 
 // source: https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
 
-int  evaluate_position(char* position, int side2move);
+int  evaluate_position(char* position);
 void init_tables();
 
 #endif

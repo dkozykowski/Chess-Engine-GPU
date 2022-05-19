@@ -36,14 +36,14 @@ void loop() {
             token == "q")               break;
         else if (token == "ucinewgame") {
             memcpy(board, START_POS, 64 * sizeof(char));
-            current_player = 0;
+            current_player = WHITE;
             move_num = 0;
         }
         else if (token == "d")          print_position(board);
         else if (token == "flip")       flip_position(board);
         // else if (token == "go")         go(pos, is, states);
         // else if (token == "bench")      bench(pos, is, states);
-        else if (token == "eval")       printf("Current evaluation: %d\n", evaluate_position(board, current_player));
+        else if (token == "eval")       printf("Current evaluation: %d\n", evaluate_position(board));
         else
             std::cout << "Unknown command: " << cmd << std::endl;
   } while (true);
