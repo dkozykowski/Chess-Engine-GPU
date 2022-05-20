@@ -1,17 +1,20 @@
-engine: main.o uci.o position.o evaluate.o
-	nvcc -o engine main.o uci.o position.o evaluate.o
+engine: main.o uci.o position.o evaluate.o moves.o
+	nvcc -o engine main.o uci.o position.o evaluate.o moves.o
 
 main.o: main.cu
 	nvcc -o main.o -c main.cu
 
-uci.o: uci.cu
+uci.o: uci.cu uci.cuh
 	nvcc -o uci.o -c uci.cu
 
-position.o: position.cu
+position.o: position.cu position.cuh
 	nvcc -o position.o -c position.cu
 
-evaluate.o: evaluate.cu
+evaluate.o: evaluate.cu evaluate.cuh
 	nvcc -o evaluate.o -c evaluate.cu
+
+moves.o: moves.cu moves.cuh
+	nvcc -o moves.o -c moves.cu
 
 .PHONY: clean
 
