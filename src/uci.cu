@@ -12,7 +12,7 @@
 namespace UCI {
 
 void newgame(char * board, int & current_player, int & move_num);
-void move(char * board, std::istringstream & is, int current_player);
+void move(char * board, std::istringstream & is, int & current_player);
 void print_game(char * board, int current_player, int move_num);
 void print_eval(char * board);
 
@@ -58,18 +58,28 @@ void newgame(char * board, int & current_player, int & move_num) {
     move_num = 0;
 }
 
-void move(char * board, std::istringstream & is, int current_player) {
+void move(char * board, std::istringstream & is, int & current_player) {
     std::string move_token;
     is >> std::skipws >> move_token;
-    if (move_token[0] < 'A') move_token[0] += 'A' - 'a';
-    if (move_token[2] < 'A') move_token[2] += 'A' - 'a';
 
-    make_move(board, 
-              current_player, 
-              move_token[0] - 'A',
-              8 - (move_token[1] - '0'),
-              move_token[2] - 'A',
-              8 - (move_token[3] - '0'));
+    // validate
+    if (move_token.length() != 4) {
+        printf("Invalid move\n");
+        return;
+    }
+
+    int from_col = move_token[0] >= 'a' ? move_token[0] - 'a' : move_token[0] - 'A';
+    int from_row = 8 - (move_token[1] - '0');
+    int to_col = move_token[2] >= 'a' ? move_token[2] - 'a' : move_token[2] - 'A';
+    int to_row = 8 - (move_token[3] - '0');
+    
+    if (from_col < 0 || from_row < 0 || to_col < 0 || to_row < 0 ||
+        8 <= from_col || 8 <= from_row || 8 <= to_col || 8 <= to_row) {
+        printf("Invalid move\n");
+        return;
+    }
+
+    make_move(board, current_player, from_col, from_row, to_col, to_row);
 }
 
 void print_game(char * board, int current_player, int move_num) {
