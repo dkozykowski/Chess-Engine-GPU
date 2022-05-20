@@ -67,9 +67,9 @@ void move(char * board, std::istringstream & is, int current_player) {
     make_move(board, 
               current_player, 
               move_token[0] - 'A',
-              move_token[1] - '0',
+              8 - (move_token[1] - '0'),
               move_token[2] - 'A',
-              move_token[3] - '0');
+              8 - (move_token[3] - '0'));
 }
 
 void print_game(char * board, int current_player, int move_num) {
