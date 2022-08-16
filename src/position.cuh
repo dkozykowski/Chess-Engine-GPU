@@ -6,21 +6,48 @@
 
 #include "macros.cuh"
 
-const char START_POS[] = 
-{
-    BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK,
-    BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, 
-    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, 
-    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-    WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN,
-    WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK
-};
+void print_position(const pos64& white_pawns,
+                    const pos64& white_bishops,
+                    const pos64& white_knights,
+                    const pos64& white_rooks,
+                    const pos64& white_queens,
+                    const pos64& white_kings,
+                    const pos64& black_pawns,
+                    const pos64& black_bishops,
+                    const pos64& black_knights,
+                    const pos64& black_rooks,
+                    const pos64& black_queens,
+                    const pos64& black_kings);
 
-const char PRINTABLE_POS[] = {'P', 'p', 'N', 'n', 'B', 'b', 'R', 'r', 'Q', 'q', 'K', 'k', ' '};
+void flip_position(pos64& white_pawns,
+                   pos64& white_bishops,
+                   pos64& white_knights,
+                   pos64& white_rooks,
+                   pos64& white_queens,
+                   pos64& white_kings,
+                   pos64& black_pawns,
+                   pos64& black_bishops,
+                   pos64& black_knights,
+                   pos64& black_rooks,
+                   pos64& black_queens,
+                   pos64& black_kings);
 
-void print_position(char* board);
-void flip_position(char* board);
+void move_chess(const int& from_col, 
+                const int& from_row, 
+                const int& to_col, 
+                const int& to_row, 
+                int& current_player,
+                pos64& white_pawns,
+                pos64& white_bishops,
+                pos64& white_knights,
+                pos64& white_rooks,
+                pos64& white_queens,
+                pos64& white_kings,
+                pos64& black_pawns,
+                pos64& black_bishops,
+                pos64& black_knights,
+                pos64& black_rooks,
+                pos64& black_queens,
+                pos64& black_kings);
 
 #endif

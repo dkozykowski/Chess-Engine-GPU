@@ -11,18 +11,27 @@
 
 namespace UCI {
 
-void newgame(char * board, int & current_player, int & move_num);
-void move(char * board, std::istringstream & is, int & current_player);
-void print_game(char * board, int current_player, int move_num);
-void print_eval(char * board);
+pos64 white_pawns;
+pos64 white_bishops;
+pos64 white_knights;
+pos64 white_rooks;
+pos64 white_queens;
+pos64 white_kings;
+pos64 black_pawns;
+pos64 black_bishops;
+pos64 black_knights;
+pos64 black_rooks;
+pos64 black_queens;
+pos64 black_kings;
+
+void newgame(int & current_player, int & move_num);
+void move(std::istringstream & is, int & current_player, int & move_num);
+void print_game(int current_player, int move_num);
+void print_eval();
 
 void loop() {
     int current_player, move_num;
-    char* board = (char*)malloc(sizeof(char) * 64);
-    if (!board) ERR("Malloc");
-
-    init_tables();
-    newgame(board, current_player, move_num);
+    newgame(current_player, move_num);
 
     std::string token, cmd;
 
@@ -38,27 +47,40 @@ void loop() {
             token == "quit" ||  
             token == "stop" || 
             token == "q")               break;
-        else if (token == "ucinewgame") newgame(board, current_player, move_num);
-        else if (token == "d")          print_game(board, current_player, move_num);
-        else if (token == "flip")       flip_position(board);
-        else if (token == "move")       move(board, is, current_player);
+        else if (token == "ucinewgame") newgame(current_player, move_num);
+        else if (token == "d")          print_game(current_player, move_num);
+        else if (token == "flip")       
+            flip_position(white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
+                          black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings);
+        else if (token == "move")       move(is, current_player, move_num);
         // else if (token == "go")         go(pos, is, states);
         // else if (token == "bench")      bench(pos, is, states);
-        else if (token == "eval")       print_eval(board);
+        else if (token == "eval")       print_eval();
         else
             std::cout << "Unknown command: " << cmd << std::endl;
-  } while (true);
-
-  free(board);
+    } while (true);
 }
 
-void newgame(char * board, int & current_player, int & move_num) {
-    memcpy(board, START_POS, 64 * sizeof(char));
+void newgame(int & current_player, int & move_num) {
+    white_pawns = WHITE_PAWN_STARTING_POS;
+    white_bishops = WHITE_BISHOP_STARTING_POS;
+    white_knights = WHITE_KNIGHT_STARTING_POS;
+    white_rooks = WHITE_ROOK_STARTING_POS;
+    white_queens = WHITE_QUEEN_STARTING_POS;
+    white_kings = WHITE_KING_STARTING_POS;
+
+    black_pawns = BLACk_PAWN_STARTING_POS;
+    black_bishops = BLACK_BISHOP_STARTING_POS;
+    black_knights = BLACK_KNIGHT_STARTING_POS;
+    black_rooks = BLACK_ROOK_STARTING_POS;
+    black_queens = BLACK_QUEEN_STARTING_POS;
+    black_kings = BLACK_KING_STARTING_POS;
+
     current_player = WHITE;
     move_num = 0;
 }
 
-void move(char * board, std::istringstream & is, int & current_player) {
+void move(std::istringstream & is, int & current_player, int & move_num) {
     std::string move_token;
     is >> std::skipws >> move_token;
 
@@ -69,9 +91,9 @@ void move(char * board, std::istringstream & is, int & current_player) {
     }
 
     int from_col = move_token[0] >= 'a' ? move_token[0] - 'a' : move_token[0] - 'A';
-    int from_row = 8 - (move_token[1] - '0');
+    int from_row = '8' - move_token[1];
     int to_col = move_token[2] >= 'a' ? move_token[2] - 'a' : move_token[2] - 'A';
-    int to_row = 8 - (move_token[3] - '0');
+    int to_row = '8' - move_token[3];
     
     if (from_col < 0 || from_row < 0 || to_col < 0 || to_row < 0 ||
         8 <= from_col || 8 <= from_row || 8 <= to_col || 8 <= to_row) {
@@ -79,17 +101,24 @@ void move(char * board, std::istringstream & is, int & current_player) {
         return;
     }
 
-    make_move(board, current_player, from_col, from_row, to_col, to_row);
+    move_chess(from_col, from_row, to_col, to_row, current_player,
+               white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
+               black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings);
+    move_num++;
+    current_player ^= 1;
 }
 
-void print_game(char * board, int current_player, int move_num) {
+void print_game(int current_player, int move_num) {
     printf("Move number %d\n", move_num);
     printf("Current player - %s\n", current_player == WHITE ? "White" : "Black");
-    print_position(board);
+    print_position(white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
+                   black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings);
 }
 
-void print_eval(char * board) {
-    printf("Current evaluation from white side: %d\n", evaluate_position(board));
+void print_eval() {
+    printf("Current evaluation from white side: %d\n", 
+        evaluate_position(white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
+                          black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings));
 }
 
 } // namespace UCI
