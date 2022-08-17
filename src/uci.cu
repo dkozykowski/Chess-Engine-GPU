@@ -7,7 +7,7 @@
 #include "uci.cuh"
 #include "position.cuh"
 #include "evaluate.cuh"
-#include "moves.cuh"
+#include "search.cuh"
 
 namespace UCI {
 
@@ -28,6 +28,7 @@ void newgame(int & current_player, int & move_num);
 void move(std::istringstream & is, int & current_player, int & move_num);
 void print_game(int current_player, int move_num);
 void print_eval();
+void go(int & current_player, int & move_num);
 
 void loop() {
     int current_player, move_num;
@@ -53,7 +54,7 @@ void loop() {
             flip_position(white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
                           black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings);
         else if (token == "move")       move(is, current_player, move_num);
-        // else if (token == "go")         go(pos, is, states);
+        else if (token == "go")         go(current_player, move_num);
         // else if (token == "bench")      bench(pos, is, states);
         else if (token == "eval")       print_eval();
         else
@@ -120,5 +121,10 @@ void print_eval() {
         evaluate_position(white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
                           black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings));
 }
+
+void go(int & current_player, int & move_num) {
+
+}
+
 
 } // namespace UCI

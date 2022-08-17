@@ -13,6 +13,9 @@ position.o: position.cu position.cuh
 evaluate.o: evaluate.cu evaluate.cuh
 	nvcc -o evaluate.o -c evaluate.cu
 
+search.o: search.cu search.cuh moves.o
+	nvcc -o search.o moves.o -c search.cu 
+
 moves.o: moves.cu moves.cuh
 	nvcc -o moves.o -c moves.cu
 
