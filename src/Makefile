@@ -1,5 +1,5 @@
-engine: main.o uci.o position.o evaluate.o moves.o
-	nvcc -o engine main.o uci.o position.o evaluate.o moves.o
+engine: main.o uci.o position.o evaluate.o search.o
+	nvcc -o engine main.o uci.o position.o evaluate.o search.o
 
 main.o: main.cu
 	nvcc -o main.o -c main.cu
@@ -13,11 +13,8 @@ position.o: position.cu position.cuh
 evaluate.o: evaluate.cu evaluate.cuh
 	nvcc -o evaluate.o -c evaluate.cu
 
-search.o: search.cu search.cuh moves.o
-	nvcc -o search.o moves.o -c search.cu 
-
-moves.o: moves.cu moves.cuh
-	nvcc -o moves.o -c moves.cu
+search.o: search.cu search.cuh
+	nvcc -o search.o -c search.cu
 
 .PHONY: clean
 

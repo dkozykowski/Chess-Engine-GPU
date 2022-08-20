@@ -33,6 +33,7 @@ void go(int & current_player, int & move_num);
 void loop() {
     int current_player, move_num;
     newgame(current_player, move_num);
+    init();
 
     std::string token, cmd;
 
@@ -60,6 +61,8 @@ void loop() {
         else
             std::cout << "Unknown command: " << cmd << std::endl;
     } while (true);
+
+    terminate();
 }
 
 void newgame(int & current_player, int & move_num) {
@@ -123,7 +126,9 @@ void print_eval() {
 }
 
 void go(int & current_player, int & move_num) {
-
+    search(current_player, move_num,
+           white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
+           black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings);
 }
 
 
