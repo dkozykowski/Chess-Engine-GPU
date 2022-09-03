@@ -11,7 +11,7 @@ typedef unsigned long long int pos64;
             fprintf(stderr,"%s:%d\n",__FILE__,__LINE__),\
             exit(EXIT_FAILURE))
 
-#define THREADS 20 // TODO CHANGE TO 1024
+#define THREADS 30 // TODO CHANGE TO 1024
 #define BLOCKS 1 // TODO CHANGE TO 1024
 
 #define MAX_BOARDS_SIMULTANEOUSLY THREADS * BLOCKS

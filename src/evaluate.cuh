@@ -4,7 +4,7 @@
 // implementation of PeSTO's evaluation function 
 // source: https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
 
-int  evaluate_position(const pos64& white_pawns,
+__device__ int  evaluate_position(const pos64& white_pawns,
                        const pos64& white_bishops,
                        const pos64& white_knights,
                        const pos64& white_rooks,

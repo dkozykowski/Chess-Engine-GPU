@@ -119,10 +119,23 @@ void print_game(int current_player, int move_num) {
                    black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings);
 }
 
+__global__ void eval(int * result,
+                pos64 white_pawns, pos64 white_bishops, pos64 white_knights, pos64 white_rooks, pos64 white_queens, pos64 white_kings,
+                pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings) {
+    *result = evaluate_position(white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
+                          black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings);
+}
+
 void print_eval() {
-    printf("Current evaluation from white side: %d\n", 
-        evaluate_position(white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
-                          black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings));
+    int * d_result, * h_result;
+    h_result = new int;
+    cudaMalloc(&d_result, sizeof(int));
+    eval<<<1, 1>>>(d_result, white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
+                          black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings);
+    cudaMemcpy(h_result, d_result, sizeof(int), cudaMemcpyDeviceToHost);
+    printf("Current evaluation from white side: %d\n", *h_result);
+    delete h_result;
+    cudaFree(d_result);
 }
 
 void go(int & current_player, int & move_num) {
