@@ -58,8 +58,8 @@ __global__ void init_searching(pos64 * white_pawns_boards,
     *stack_wsk = 0;
     *current_depth = 0;
     white_pawns_boards[0]   = white_pawns;
-    white_bishops_boards[0]  = white_bishops;
-    white_knights_boards[0]  = white_knights;
+    white_bishops_boards[0] = white_bishops;
+    white_knights_boards[0] = white_knights;
     white_rooks_boards[0]   = white_rooks;
     white_queens_boards[0]  = white_queens;
     white_kings_boards[0]   = white_kings;
@@ -272,8 +272,8 @@ __global__ void do_searching(pos64 * white_pawns_boards,
         else if (*current_depth < MAX_DEPTH) {
             int sons_offset = subtree_sizes[MAX_DEPTH - depth_difference];
             int sons_index = sons_offset + index * BOARDS_GENERATED;
-            if (stack_states[global_index] == LEFT) {
-                printf("Zbieram wyniki z %d {2}\n", global_index + *stack_wsk);
+            if (stack_states[0] == LEFT) {
+                printf("Zbieram wyniki z %d {2} od pozycji %d\n", global_index + *stack_wsk, sons_index + *stack_wsk);
                 gather_results(&results[global_index], &results[sons_index], depths[global_index]);
             }
             else {
@@ -339,28 +339,27 @@ __global__ void search_main(pos64 * white_pawns_boards,
         *current_depth = depths[*stack_wsk];
     }
     else {
-        if (*current_depth == depths[*stack_wsk]) {
-            if (stack_states[*stack_wsk] == LEFT) {
+        if (stack_states[*stack_wsk] == RIGHT) {
+            if (*current_depth == MAX_DEPTH) {
+                stack_states[*stack_wsk] = LEFT;
+                printf("Cofam sie z poziomami z %d do %d\n", *current_depth, *current_depth - 1);
+                *current_depth -= 1;
+            }
+            else {
+                printf("Rozszerzam w prawo z %d. ", *stack_wsk);
+                printf("Ide dalej z poziomami z %d do %d\n", *current_depth, *current_depth + 1);
+                *current_depth += 1;
+            }
+        }
+        else if (stack_states[*stack_wsk] == LEFT) {
+            if (*current_depth == depths[*stack_wsk]) {
                 printf("Zbieram wyniki z %d\n", *stack_wsk);
                 gather_results(&results[*stack_wsk], &results[*stack_wsk + 1], depths[*stack_wsk]);
                 *stack_wsk -= 1;
             }
-            else if (stack_states[*stack_wsk] == RIGHT) {
-                printf("Rozszerzam w prawo z %d\n", *stack_wsk);
-                stack_states[*stack_wsk] = LEFT;
-                *current_depth += 1;
-            }
-        }
-        else {
-            int depth_difference = *current_depth - depths[*stack_wsk];
-            int offset = subtree_sizes[MAX_DEPTH - depth_difference + 1];
-            if (*current_depth == MAX_DEPTH || stack_states[*stack_wsk + offset] == LEFT) {
+            else {
                 printf("Cofam sie z poziomami z %d do %d\n", *current_depth, *current_depth - 1);
                 *current_depth -= 1;
-            }
-            else if (stack_states[*stack_wsk + offset] == RIGHT) {
-                printf("Ide dalej z poziomami z %d do %d\n", *current_depth, *current_depth + 1);
-                *current_depth += 1;
             }
         }
     }
