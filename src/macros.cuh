@@ -7,6 +7,10 @@
 typedef unsigned long long int pos64;
 
 // Error handling
+
+#define DEBUG 1
+#define DBG(cmd) (if(DEBUG) cmd)
+
 #define ERR(source) (perror(source),\
             fprintf(stderr,"%s:%d\n",__FILE__,__LINE__),\
             exit(EXIT_FAILURE))

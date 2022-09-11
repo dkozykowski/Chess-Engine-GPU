@@ -225,7 +225,7 @@ __global__ void do_searching(pos64 * white_pawns_boards,
     int index = blockIdx.x * 1024 + threadIdx.x;
     if (*current_depth < * max_depth_to_store) { // non full search
         if (index != 0) return;
-        //printf("Generating moves!\n");
+        DBG(printf("Generating moves!\n"));
         generate_moves(&white_pawns_boards[1],
                        &white_bishops_boards[1],
                        &white_knights_boards[1],
@@ -245,17 +245,17 @@ __global__ void do_searching(pos64 * white_pawns_boards,
     }
     else { // fullsearch
         int depth_difference = *current_depth - depths[0];
-        //printf("Ww %d akceptuje %d\n", *stack_wsk, level_sizes[MAX_DEPTH - depth_difference]);
+        DBG(printf("Ww %d akceptuje %d\n", *stack_wsk, level_sizes[MAX_DEPTH - depth_difference]));
         if (index >= level_sizes[MAX_DEPTH - depth_difference]) {
             return;
         }
 
         int offset = subtree_sizes[MAX_DEPTH - depth_difference + 1];
         int global_index = offset + index;
-        //printf("%d %d %d\n", depth_difference, offset, global_index + *stack_wsk);
+        DBG(printf("%d %d %d\n", depth_difference, offset, global_index + *stack_wsk));
 
         if (*current_depth == MAX_DEPTH) { // evaluating layer    
-            //printf("Ewaluuje %d\n", global_index + *stack_wsk); 
+            DBG(printf("Ewaluuje %d\n", global_index + *stack_wsk)); 
             results[global_index] = evaluate_position(white_pawns_boards[global_index],
                                                         white_bishops_boards[global_index],
                                                         white_knights_boards[global_index],
@@ -273,11 +273,11 @@ __global__ void do_searching(pos64 * white_pawns_boards,
             int sons_offset = subtree_sizes[MAX_DEPTH - depth_difference];
             int sons_index = sons_offset + index * BOARDS_GENERATED;
             if (stack_states[0] == LEFT) {
-                //printf("Zbieram wyniki z %d {2} od pozycji %d\n", global_index + *stack_wsk, sons_index + *stack_wsk);
+                DBG(printf("Zbieram wyniki z %d {2} od pozycji %d\n", global_index + *stack_wsk, sons_index + *stack_wsk));
                 gather_results(&results[global_index], &results[sons_index], depths[global_index]);
             }
             else {
-                //printf("Synowie %d od %d i im generuje\n", global_index + *stack_wsk, sons_index + *stack_wsk);
+                DBG(printf("Synowie %d od %d i im generuje\n", global_index + *stack_wsk, sons_index + *stack_wsk));
                 generate_moves(&white_pawns_boards[sons_index],
                                 &white_bishops_boards[sons_index],
                                 &white_knights_boards[sons_index],
@@ -323,12 +323,12 @@ __global__ void search_main(pos64 * white_pawns_boards,
 
     if (depths[*stack_wsk] < * max_depth_to_store) { // non full search
         if (stack_states[*stack_wsk] == LEFT) {
-            //printf("Zbieram wyniki z %d\n", *stack_wsk);
+            DBG(printf("Zbieram wyniki z %d\n", *stack_wsk));
             gather_results(&results[*stack_wsk], &results[*stack_wsk + 1], depths[*stack_wsk]);
             *stack_wsk -= 1;
         }
         else if (stack_states[*stack_wsk] == RIGHT) {
-            //printf("Ide dalej z %d do %d\n", *stack_wsk, *stack_wsk + BOARDS_GENERATED);
+            DBG(printf("Ide dalej z %d do %d\n", *stack_wsk, *stack_wsk + BOARDS_GENERATED));
             stack_states[*stack_wsk] = LEFT;
             *stack_wsk += BOARDS_GENERATED;
         }
@@ -342,23 +342,23 @@ __global__ void search_main(pos64 * white_pawns_boards,
         if (stack_states[*stack_wsk] == RIGHT) {
             if (*current_depth == MAX_DEPTH) {
                 stack_states[*stack_wsk] = LEFT;
-                //printf("Cofam sie z poziomami z %d do %d\n", *current_depth, *current_depth - 1);
+                DBG(printf("Cofam sie z poziomami z %d do %d\n", *current_depth, *current_depth - 1));
                 *current_depth -= 1;
             }
             else {
-                //printf("Rozszerzam w prawo z %d. ", *stack_wsk);
-                //printf("Ide dalej z poziomami z %d do %d\n", *current_depth, *current_depth + 1);
+                DBG(printf("Rozszerzam w prawo z %d. ", *stack_wsk));
+                DBG(printf("Ide dalej z poziomami z %d do %d\n", *current_depth, *current_depth + 1));
                 *current_depth += 1;
             }
         }
         else if (stack_states[*stack_wsk] == LEFT) {
             if (*current_depth == depths[*stack_wsk]) {
-                //printf("Zbieram wyniki z %d\n", *stack_wsk);
-                gather_results(&results[*stack_wsk], &results[*stack_wsk + 1], depths[*stack_wsk]);
+                DBG(printf("Zbieram wyniki z %d\n", *stack_wsk);
+                gather_results(&results[*stack_wsk], &results[*stack_wsk + 1], depths[*stack_wsk]));
                 *stack_wsk -= 1;
             }
             else {
-                //printf("Cofam sie z poziomami z %d do %d\n", *current_depth, *current_depth - 1);
+                DBG(printf("Cofam sie z poziomami z %d do %d\n", *current_depth, *current_depth - 1));
                 *current_depth -= 1;
             }
         }
