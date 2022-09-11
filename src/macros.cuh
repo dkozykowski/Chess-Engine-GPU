@@ -6,11 +6,12 @@
 
 typedef unsigned long long int pos64;
 
-// Error handling
-
 #define DEBUG 1
-#define DBG(cmd) (if(DEBUG) cmd)
-
+#define DEBUG2 0
+#define DBG(cmd) if(DEBUG) cmd
+#define DBG2(cmd) if(DEBUG2) cmd
+#define CHECK_ALLOC(alloc) {cudaError_t cu_err;\
+    if((cu_err = alloc) != cudaSuccess) ERR(cudaGetErrorString( cu_err ));}
 #define ERR(source) (perror(source),\
             fprintf(stderr,"%s:%d\n",__FILE__,__LINE__),\
             exit(EXIT_FAILURE))
@@ -19,7 +20,7 @@ typedef unsigned long long int pos64;
 #define BLOCKS 1024
 
 #define MAX_BOARDS_SIMULTANEOUSLY THREADS * BLOCKS
-#define MAX_BOARDS_IN_MEMORY 1e6
+#define MAX_BOARDS_IN_MEMORY 5e6
 #define MAX_DEPTH 16
 #define BOARDS_GENERATED 64
 

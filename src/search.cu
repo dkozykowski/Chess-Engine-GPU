@@ -84,9 +84,9 @@ __global__ void init_sizes_tables(int* level_sizes, int * subtree_sizes, int* ma
 }
 
 void init() {
-    cudaMalloc(&level_sizes, sizeof(int) * MAX_DEPTH + 1);
-    cudaMalloc(&subtree_sizes, sizeof(int) * MAX_DEPTH + 2);
-    cudaMalloc(&max_depth_to_store, sizeof(int));
+    CHECK_ALLOC(cudaMalloc(&level_sizes, sizeof(int) * MAX_DEPTH + 1));
+    CHECK_ALLOC(cudaMalloc(&subtree_sizes, sizeof(int) * MAX_DEPTH + 2));
+    CHECK_ALLOC(cudaMalloc(&max_depth_to_store, sizeof(int)));
     init_sizes_tables<<<1, 1>>>(level_sizes, subtree_sizes, max_depth_to_store);
     cudaDeviceSynchronize();
 }
@@ -245,17 +245,17 @@ __global__ void do_searching(pos64 * white_pawns_boards,
     }
     else { // fullsearch
         int depth_difference = *current_depth - depths[0];
-        DBG(printf("Ww %d akceptuje %d\n", *stack_wsk, level_sizes[MAX_DEPTH - depth_difference]));
+        DBG2(printf("Ww %d akceptuje %d\n", *stack_wsk, level_sizes[MAX_DEPTH - depth_difference]));
         if (index >= level_sizes[MAX_DEPTH - depth_difference]) {
             return;
         }
 
         int offset = subtree_sizes[MAX_DEPTH - depth_difference + 1];
         int global_index = offset + index;
-        DBG(printf("%d %d %d\n", depth_difference, offset, global_index + *stack_wsk));
+        DBG2(printf("%d %d %d\n", depth_difference, offset, global_index + *stack_wsk));
 
         if (*current_depth == MAX_DEPTH) { // evaluating layer    
-            DBG(printf("Ewaluuje %d\n", global_index + *stack_wsk)); 
+            DBG2(printf("Ewaluuje %d\n", global_index + *stack_wsk)); 
             results[global_index] = evaluate_position(white_pawns_boards[global_index],
                                                         white_bishops_boards[global_index],
                                                         white_knights_boards[global_index],
@@ -273,11 +273,11 @@ __global__ void do_searching(pos64 * white_pawns_boards,
             int sons_offset = subtree_sizes[MAX_DEPTH - depth_difference];
             int sons_index = sons_offset + index * BOARDS_GENERATED;
             if (stack_states[0] == LEFT) {
-                DBG(printf("Zbieram wyniki z %d {2} od pozycji %d\n", global_index + *stack_wsk, sons_index + *stack_wsk));
+                DBG2(printf("Zbieram wyniki z %d {2} od pozycji %d\n", global_index + *stack_wsk, sons_index + *stack_wsk));
                 gather_results(&results[global_index], &results[sons_index], depths[global_index]);
             }
             else {
-                DBG(printf("Synowie %d od %d i im generuje\n", global_index + *stack_wsk, sons_index + *stack_wsk));
+                DBG2(printf("Synowie %d od %d i im generuje\n", global_index + *stack_wsk, sons_index + *stack_wsk));
                 generate_moves(&white_pawns_boards[sons_index],
                                 &white_bishops_boards[sons_index],
                                 &white_knights_boards[sons_index],
@@ -328,7 +328,7 @@ __global__ void search_main(pos64 * white_pawns_boards,
             *stack_wsk -= 1;
         }
         else if (stack_states[*stack_wsk] == RIGHT) {
-            DBG(printf("Ide dalej z %d do %d\n", *stack_wsk, *stack_wsk + BOARDS_GENERATED));
+            DBG(printf("Ide dalej z %d do %d na glebokosc %d\n", *stack_wsk, *stack_wsk + BOARDS_GENERATED, depths[*stack_wsk + BOARDS_GENERATED]));
             stack_states[*stack_wsk] = LEFT;
             *stack_wsk += BOARDS_GENERATED;
         }
@@ -401,24 +401,24 @@ void search(const int& current_player,
     int* current_depth;
 
     h_search_ended = new bool;
-    cudaMalloc(&white_pawns_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&white_bishops_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&white_knights_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&white_rooks_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&white_queens_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&white_kings_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&black_pawns_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&black_bishops_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&black_knights_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&black_rooks_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&black_queens_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&black_kings_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&results, sizeof(int) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&depths, sizeof(int) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&d_search_ended, sizeof(bool));
-    cudaMalloc(&stack_states, sizeof(short) * MAX_BOARDS_IN_MEMORY);
-    cudaMalloc(&stack_wsk, sizeof(int));
-    cudaMalloc(&current_depth, sizeof(int));
+    CHECK_ALLOC(cudaMalloc(&white_pawns_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));  
+    CHECK_ALLOC(cudaMalloc(&white_bishops_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&white_knights_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&white_rooks_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&white_queens_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&white_kings_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&black_pawns_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&black_bishops_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&black_knights_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&black_rooks_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&black_queens_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&black_kings_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&results, sizeof(int) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&depths, sizeof(int) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&d_search_ended, sizeof(bool)));
+    CHECK_ALLOC(cudaMalloc(&stack_states, sizeof(short) * MAX_BOARDS_IN_MEMORY));
+    CHECK_ALLOC(cudaMalloc(&stack_wsk, sizeof(int)));
+    CHECK_ALLOC(cudaMalloc(&current_depth, sizeof(int)));
 
     init_searching<<<1, 1>>>(white_pawns_boards,
                     white_bishops_boards,
