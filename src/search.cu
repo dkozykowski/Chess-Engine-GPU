@@ -255,7 +255,7 @@ __global__ void do_searching(pos64 * white_pawns_boards,
         DBG2(printf("%d %d %d\n", depth_difference, offset, global_index + *stack_wsk));
 
         if (*current_depth == MAX_DEPTH) { // evaluating layer    
-            DBG2(printf("Ewaluuje %d\n", global_index + *stack_wsk)); 
+            DBG2(printf("Ewaluuje %d\n", global_index + *stack_wsk));  
             results[global_index] = evaluate_position(white_pawns_boards[global_index],
                                                         white_bishops_boards[global_index],
                                                         white_knights_boards[global_index],

@@ -17,10 +17,10 @@ typedef unsigned long long int pos64;
             exit(EXIT_FAILURE))
 
 #define THREADS 1024
-#define BLOCKS 1024
+#define BLOCKS 65535
 
 #define MAX_BOARDS_SIMULTANEOUSLY THREADS * BLOCKS
-#define MAX_BOARDS_IN_MEMORY 5e6
+#define MAX_BOARDS_IN_MEMORY 7e7
 #define MAX_DEPTH 16
 #define BOARDS_GENERATED 64
 
