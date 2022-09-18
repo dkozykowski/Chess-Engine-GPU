@@ -8,6 +8,7 @@
 #include "position.cuh"
 #include "evaluate.cuh"
 #include "search.cuh"
+#include "moves.cuh"
 
 namespace UCI {
 
@@ -29,6 +30,8 @@ void move(std::istringstream & is, int & current_player, int & move_num);
 void print_game(int current_player, int move_num);
 void print_eval();
 void go(int & current_player, int & move_num);
+void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, pos64 white_rooks, pos64 white_queens, pos64 white_kings,
+                pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings, int current_player);
 
 void loop() {
     int current_player, move_num;
@@ -58,6 +61,8 @@ void loop() {
         else if (token == "go")         go(current_player, move_num);
         // else if (token == "bench")      bench(pos, is, states);
         else if (token == "eval")       print_eval();
+        else if (token == "moves")      print_moves(white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
+                          black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings, current_player);
         else
             std::cout << "Unknown command: " << cmd << std::endl;
     } while (true);
@@ -143,6 +148,87 @@ void go(int & current_player, int & move_num) {
            white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
            black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings);
 }
+
+void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, pos64 white_rooks, pos64 white_queens, pos64 white_kings,
+                pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings, int current_player) 
+{
+    int* results = new int[BOARDS_GENERATED];
+    int* depths = new int[BOARDS_GENERATED];
+    short* stack_states = new short[BOARDS_GENERATED];
+    int depth =  current_player + 1;
+
+    pos64 *white_pawn_moves, *white_bishop_moves, *white_knight_moves, *white_rook_moves, *white_queen_moves, *white_king_moves, 
+        *black_pawn_moves, *black_bishop_moves, *black_knight_moves, *black_rook_moves, *black_queen_moves, *black_king_moves;
+
+    white_pawn_moves = new pos64[BOARDS_GENERATED];
+    white_pawn_moves[0] = white_pawns;
+
+    white_bishop_moves = new pos64[BOARDS_GENERATED];
+    white_bishop_moves[0] = white_bishops;
+
+    white_knight_moves = new pos64[BOARDS_GENERATED];
+    white_knight_moves[0] = white_knights;
+
+    white_rook_moves = new pos64[BOARDS_GENERATED];
+    white_rook_moves[0] = white_rooks;
+
+    white_queen_moves = new pos64[BOARDS_GENERATED];
+    white_queen_moves[0] = white_queens;
+
+    white_king_moves = new pos64[BOARDS_GENERATED];
+    white_king_moves[0] = white_kings;
+
+    black_pawn_moves = new pos64[BOARDS_GENERATED];
+    black_pawn_moves[0] = black_pawns;
+
+    black_bishop_moves = new pos64[BOARDS_GENERATED];
+    black_bishop_moves[0] = black_bishops;
+
+    black_knight_moves = new pos64[BOARDS_GENERATED];
+    black_knight_moves[0] = black_knights;
+
+    black_rook_moves = new pos64[BOARDS_GENERATED];
+    black_rook_moves[0] = black_rooks;
+
+    black_queen_moves = new pos64[BOARDS_GENERATED];
+    black_queen_moves[0] = black_queens;
+
+    black_king_moves = new pos64[BOARDS_GENERATED];
+    black_king_moves[0] = black_kings;
+
+    generate_moves(white_pawn_moves, white_bishop_moves, white_knight_moves, white_rook_moves, white_queen_moves, white_king_moves, 
+                black_pawn_moves, black_bishop_moves, black_knight_moves, black_rook_moves, black_queen_moves,  black_king_moves,
+                results, depths, stack_states, depth);
+    char any;
+    for(int x = 0; x < BOARDS_GENERATED; x++)
+    {
+        print_position(white_pawn_moves[x], white_bishop_moves[x], white_knight_moves[x], white_rook_moves[x], white_queen_moves[x], white_king_moves[x], 
+                black_pawn_moves[x], black_bishop_moves[x], black_knight_moves[x], black_rook_moves[x], black_queen_moves[x],  black_king_moves[x]);
+        
+        scanf("%c", &any);
+        if(any == 'q')
+            break;
+    }
+
+    free(results);
+    free(depths);
+    free(stack_states);
+    free(white_pawn_moves);
+    free(white_bishop_moves);
+    free(white_knight_moves);
+    free(white_rook_moves);
+    free(white_queen_moves);
+    free(white_king_moves);
+    free(black_pawn_moves);
+    free(black_bishop_moves);
+    free(black_knight_moves);
+    free(black_rook_moves);
+    free(black_queen_moves);
+    free(black_king_moves);
+
+}
+
+
 
 
 } // namespace UCI

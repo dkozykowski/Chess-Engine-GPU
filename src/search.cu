@@ -1,8 +1,9 @@
+#include <algorithm>
+
 #include "search.cuh"
 #include "macros.cuh"
 #include "evaluate.cuh"
 #include "moves.cuh"
-
 // BASE BOARD IS DEPTH = 0
 // NEXT LEVEL IS DEPTH = 1
 
@@ -10,15 +11,25 @@ int * level_sizes;
 int * subtree_sizes;
 int * max_depth_to_store;
 
+__device__ int minD(int a, int b)
+{
+    return a > b ? b : a;
+}
+
+__device__ int maxD(int a, int b)
+{
+    return a > b ? a : b;
+}
+
 __device__ void gather_results(int* results, int* from, int depth) {
     if ((depth & 1) == 1) { // white moves, maximizes
         for (int i = 0; i < BOARDS_GENERATED; i++) {
-            results[0] = max(results[0], from[i]);
+            results[0] = maxD(results[0], from[i]);
         }
     } 
     else { // black moves, minimizes
         for (int i = 0; i < BOARDS_GENERATED; i++) {
-            results[0] = min(results[0], from[i]);
+            results[0] = minD(results[0], from[i]);
         }
     }
 } 
