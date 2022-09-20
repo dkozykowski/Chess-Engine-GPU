@@ -62,7 +62,7 @@ __host__ __device__ void generate_moves(pos64 * white_pawns_boards,
                     int depth) {
     // zakladamy, ze korzeniem drzewa, czyli graczem dla którego szukamu ruchu, jest gracz CZARNY
     // zakladamy, ze korzen ma numer 0
-    printf("entering function \n");
+
     pos64 initialOwnPawns, initialOwnBishops, initialOwnKnights, initialOwnRooks, initialOwnQueens, initialOwnKings, initialEnemyPawns, initialEnemyBishops, initialEnemyKnights, initialEnemyRooks, initialEnemyQueens, initialEnemyKings;
     pos64 *ownKnights, *ownRooks, *ownQueens, *ownKings, *ownBishops, *ownPawns, *enemyKnights, *enemyRooks, *enemyQueens, *enemyKings, *enemyBishops, *enemyPawns;
     pos64 allPieces =  white_pawns_boards[0] | white_bishops_boards[0] | white_knights_boards[0] | white_rooks_boards[0] | white_queens_boards[0] | white_kings_boards[0] |
@@ -279,7 +279,7 @@ __host__ __device__ void generate_moves(pos64 * white_pawns_boards,
             generatedMoves++;
         }
     }
-    printf("pawns done\n");
+
 
     //knight moves
     pos64 piece, attacks;
@@ -340,7 +340,7 @@ __host__ __device__ void generate_moves(pos64 * white_pawns_boards,
 
         movingKnights = resetLeastSignificantBit(movingKnights);
     }
-    printf("knight done\n");
+
     //king moves
     piece = getLeastSignificantBit(initialOwnKings);
     moves = noOne(piece) | soOne(piece) | westOne(piece) | eastOne(piece) | noEaOne(piece) | noWeOne(piece) | soEaOne(piece) | soWeOne(piece);
@@ -393,7 +393,7 @@ __host__ __device__ void generate_moves(pos64 * white_pawns_boards,
 
         generatedMoves++;
     }
-    printf("king done\n");
+
     // rooks moves
     pos64 movingRooks = initialOwnRooks;
     while(movingRooks != 0 && generatedMoves < BOARDS_GENERATED){
@@ -496,7 +496,7 @@ __host__ __device__ void generate_moves(pos64 * white_pawns_boards,
         }
         movingRooks = resetLeastSignificantBit(movingRooks);
     }
-    printf("rooks done\n");
+
     // bishop moves
     pos64 movingBishops = initialOwnBishops;
     while(movingBishops != 0 && generatedMoves < BOARDS_GENERATED){
@@ -599,7 +599,7 @@ __host__ __device__ void generate_moves(pos64 * white_pawns_boards,
         }
         movingBishops = resetLeastSignificantBit(movingRooks);
     }
-    printf("bishops done\n");
+
     for(int wsk = 0; wsk < BOARDS_GENERATED; wsk++)
     {
         depths[wsk] = depth;
@@ -622,5 +622,5 @@ __host__ __device__ void generate_moves(pos64 * white_pawns_boards,
         white_kings_boards[i] = 0;
         white_pawns_boards[i] = 0;
     }
-    printf("moves generate \n");
+
 }
