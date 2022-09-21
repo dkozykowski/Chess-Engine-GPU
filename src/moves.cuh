@@ -3,7 +3,7 @@
 
 #include "macros.cuh"
 
-__device__ void generate_moves(pos64 * white_pawns_boards,
+__host__ __device__ void generate_moves(pos64 * white_pawns_boards,
                     pos64 * white_bishops_boards,
                     pos64 * white_knights_boards,
                     pos64 * white_rooks_boards,

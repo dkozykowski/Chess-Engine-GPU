@@ -51,5 +51,7 @@ typedef unsigned long long int pos64;
 
 #define ALL_SET (pos64) 18446744073709551615
 
+#define NOT_A_FILE (pos64) 0xfefefefefefefefe
+#define NOT_H_FILE (pos64) 0x7f7f7f7f7f7f7f7f
 
 #endif
