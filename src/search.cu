@@ -11,28 +11,24 @@ int * level_sizes;
 int * subtree_sizes;
 int * max_depth_to_store;
 
-__device__ int minD(int a, int b)
-{
-    return a > b ? b : a;
-}
-
-__device__ int maxD(int a, int b)
-{
-    return a > b ? a : b;
-}
-
-__device__ void gather_results(int* results, int* from, int depth) {
-    if ((depth & 1) == 1) { // white moves, maximizes
+__device__ void gather_results(int* results, int* from, int depth, int * last_wsk) {
+    if ((depth & 1) == 0) { // white moves, maximizes
         for (int i = 0; i < BOARDS_GENERATED; i++) {
-            results[0] = maxD(results[0], from[i]);
+            if (from[i] > results[0]) {
+                *last_wsk = i;
+                results[0] = from[i];
+            }
         }
     } 
     else { // black moves, minimizes
         for (int i = 0; i < BOARDS_GENERATED; i++) {
-            results[0] = minD(results[0], from[i]);
+           if (from[i] < results[0]) {
+                *last_wsk = i;
+                results[0] = from[i];
+            }
         }
     }
-} 
+}  
 
 __global__ void init_searching(pos64 * white_pawns_boards,
                     pos64 * white_bishops_boards,
@@ -63,7 +59,7 @@ __global__ void init_searching(pos64 * white_pawns_boards,
                     short* stack_states,
                     int* stack_wsk,
                     int* current_depth) {
-    results[0] = INF;
+    results[0] = -INF;
     depths[0] = 0;
     stack_states[0] = RIGHT;
     *stack_wsk = 0;
@@ -108,95 +104,6 @@ void terminate() {
     cudaFree(max_depth_to_store);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 __global__ void do_searching(pos64 * white_pawns_boards,
                         pos64 * white_bishops_boards,
                         pos64 * white_knights_boards,
@@ -216,7 +123,8 @@ __global__ void do_searching(pos64 * white_pawns_boards,
                         int * level_sizes,
                         int * subtree_sizes,
                         const int * max_depth_to_store,
-                        int * stack_wsk) {
+                        int * stack_wsk,
+                        int * last_wsk) {
     white_pawns_boards = &white_pawns_boards[*stack_wsk]; 
     white_bishops_boards = &white_bishops_boards[*stack_wsk];
     white_knights_boards = &white_knights_boards[*stack_wsk];
@@ -285,7 +193,7 @@ __global__ void do_searching(pos64 * white_pawns_boards,
             int sons_index = sons_offset + index * BOARDS_GENERATED;
             if (stack_states[0] == LEFT) {
                 DBG2(printf("Zbieram wyniki z %d {2} od pozycji %d\n", global_index + *stack_wsk, sons_index + *stack_wsk));
-                gather_results(&results[global_index], &results[sons_index], depths[global_index]);
+                gather_results(&results[global_index], &results[sons_index], depths[global_index], last_wsk);
             }
             else {
                 DBG2(printf("Synowie %d od %d i im generuje\n", global_index + *stack_wsk, sons_index + *stack_wsk));
@@ -330,12 +238,13 @@ __global__ void search_main(pos64 * white_pawns_boards,
             bool * search_ended,
             int * max_depth_to_store,
             int * level_sizes,
-            int * subtree_sizes) {
+            int * subtree_sizes,
+            int * last_wsk) {
 
     if (depths[*stack_wsk] < * max_depth_to_store) { // non full search
         if (stack_states[*stack_wsk] == LEFT) {
             DBG(printf("Zbieram wyniki z %d\n", *stack_wsk));
-            gather_results(&results[*stack_wsk], &results[*stack_wsk + 1], depths[*stack_wsk]);
+            gather_results(&results[*stack_wsk], &results[*stack_wsk + 1], depths[*stack_wsk], last_wsk);
             *stack_wsk -= 1;
         }
         else if (stack_states[*stack_wsk] == RIGHT) {
@@ -364,8 +273,8 @@ __global__ void search_main(pos64 * white_pawns_boards,
         }
         else if (stack_states[*stack_wsk] == LEFT) {
             if (*current_depth == depths[*stack_wsk]) {
-                DBG(printf("Zbieram wyniki z %d\n", *stack_wsk);
-                gather_results(&results[*stack_wsk], &results[*stack_wsk + 1], depths[*stack_wsk]));
+                DBG(printf("Zbieram wyniki z %d\n", *stack_wsk));
+                gather_results(&results[*stack_wsk], &results[*stack_wsk + 1], depths[*stack_wsk], last_wsk);
                 *stack_wsk -= 1;
             }
             else {
@@ -378,18 +287,18 @@ __global__ void search_main(pos64 * white_pawns_boards,
 
 void search(const int& current_player,
             const int& move_num,
-            const pos64& white_pawns,
-            const pos64& white_bishops,
-            const pos64& white_knights,
-            const pos64& white_rooks,
-            const pos64& white_queens,
-            const pos64& white_kings,
-            const pos64& black_pawns,
-            const pos64& black_bishops,
-            const pos64& black_knights,
-            const pos64& black_rooks,
-            const pos64& black_queens,
-            const pos64& black_kings) {
+            pos64& white_pawns,
+            pos64& white_bishops,
+            pos64& white_knights,
+            pos64& white_rooks,
+            pos64& white_queens,
+            pos64& white_kings,
+            pos64& black_pawns,
+            pos64& black_bishops,
+            pos64& black_knights,
+            pos64& black_rooks,
+            pos64& black_queens,
+            pos64& black_kings) {
 
     pos64*  white_pawns_boards;
     pos64*  white_bishops_boards;
@@ -410,6 +319,7 @@ void search(const int& current_player,
     short* stack_states; 
     int* stack_wsk;
     int* current_depth;
+    int * last_wsk;
 
     h_search_ended = new bool;
     CHECK_ALLOC(cudaMalloc(&white_pawns_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));  
@@ -430,6 +340,8 @@ void search(const int& current_player,
     CHECK_ALLOC(cudaMalloc(&stack_states, sizeof(short) * MAX_BOARDS_IN_MEMORY));
     CHECK_ALLOC(cudaMalloc(&stack_wsk, sizeof(int)));
     CHECK_ALLOC(cudaMalloc(&current_depth, sizeof(int)));
+    CHECK_ALLOC(cudaMalloc(&last_wsk, sizeof(int)));
+
 
     init_searching<<<1, 1>>>(white_pawns_boards,
                     white_bishops_boards,
@@ -482,7 +394,8 @@ void search(const int& current_player,
                         level_sizes,
                         subtree_sizes,
                         max_depth_to_store,
-                        stack_wsk);
+                        stack_wsk,
+                        last_wsk);
         cudaDeviceSynchronize();
 
         search_main<<<1, 1>>>(white_pawns_boards,
@@ -505,13 +418,31 @@ void search(const int& current_player,
                 d_search_ended,
                 max_depth_to_store,
                 level_sizes,
-                subtree_sizes);
+                subtree_sizes,
+                last_wsk);
         cudaDeviceSynchronize();
 
         cudaMemcpy(h_search_ended, d_search_ended, sizeof(bool), cudaMemcpyDeviceToHost);
     } while(!(*h_search_ended));
 
+    int * wsk = new int;
+    cudaMemcpy(wsk, last_wsk, sizeof(int), cudaMemcpyDeviceToHost);
+    *wsk += 1;
+    cudaMemcpy(&white_pawns, &white_pawns_boards[*wsk], sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&white_bishops, &white_bishops_boards[*wsk], sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&white_knights, &white_knights_boards[*wsk], sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&white_rooks, &white_rooks_boards[*wsk], sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&white_queens, &white_queens_boards[*wsk], sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&white_kings, &white_kings_boards[*wsk], sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&black_pawns, &black_pawns_boards[*wsk], sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&black_bishops, &black_bishops_boards[*wsk], sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&black_knights, &black_knights_boards[*wsk], sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&black_rooks, &black_rooks_boards[*wsk], sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&black_queens, &black_queens_boards[*wsk], sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&black_kings, &black_kings_boards[*wsk], sizeof(pos64), cudaMemcpyDeviceToHost);
+
     delete h_search_ended;
+    delete wsk;
     cudaFree(white_pawns_boards);
     cudaFree(white_bishops_boards);
     cudaFree(white_knights_boards);
@@ -530,4 +461,5 @@ void search(const int& current_player,
     cudaFree(stack_states);
     cudaFree(stack_wsk);
     cudaFree(current_depth);
+    cudaFree(last_wsk);
 }

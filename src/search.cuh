@@ -9,17 +9,17 @@ void terminate();
 
 void search(const int& current_player,
             const int& move_num,
-            const pos64& white_pawns,
-            const pos64& white_bishops,
-            const pos64& white_knights,
-            const pos64& white_rooks,
-            const pos64& white_queens,
-            const pos64& white_kings,
-            const pos64& black_pawns,
-            const pos64& black_bishops,
-            const pos64& black_knights,
-            const pos64& black_rooks,
-            const pos64& black_queens,
-            const pos64& black_kings);
+            pos64& white_pawns,
+            pos64& white_bishops,
+            pos64& white_knights,
+            pos64& white_rooks,
+            pos64& white_queens,
+            pos64& white_kings,
+            pos64& black_pawns,
+            pos64& black_bishops,
+            pos64& black_knights,
+            pos64& black_rooks,
+            pos64& black_queens,
+            pos64& black_kings);
 
 #endif

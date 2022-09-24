@@ -604,7 +604,12 @@ __host__ __device__ void generate_moves(pos64 * white_pawns_boards,
     {
         depths[wsk] = depth;
         stack_states[wsk] = RIGHT;
-        results[wsk] = INF;
+        if ((depth & 1) == 0) {
+            results[wsk] = -INF;
+        }
+        else {
+            results[wsk] = INF;
+        }
     }
 
     for(int i = generatedMoves; i < BOARDS_GENERATED; i++)

@@ -32,6 +32,8 @@ void print_eval();
 void go(int & current_player, int & move_num);
 void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, pos64 white_rooks, pos64 white_queens, pos64 white_kings,
                 pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings, int current_player);
+std::string get_move_string(pos64 current_pos, pos64 new_pos);
+int _log2(pos64 x);
 
 void loop() {
     int current_player, move_num;
@@ -144,9 +146,56 @@ void print_eval() {
 }
 
 void go(int & current_player, int & move_num) {
+    pos64 new_white_pawns = white_pawns;
+    pos64 new_white_bishops = white_bishops;
+    pos64 new_white_knights = white_knights;
+    pos64 new_white_rooks = white_rooks;
+    pos64 new_white_queens = white_queens;
+    pos64 new_white_kings = white_kings;
+    pos64 new_black_pawns = black_pawns;
+    pos64 new_black_bishops = black_bishops;
+    pos64 new_black_knights = black_knights;
+    pos64 new_black_rooks = black_rooks;
+    pos64 new_black_queens = black_queens;
+    pos64 new_black_kings = black_kings;
+
     search(current_player, move_num,
-           white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
-           black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings);
+           new_white_pawns, new_white_bishops, new_white_knights, new_white_rooks, new_white_queens, new_white_kings, 
+           new_black_pawns, new_black_bishops, new_black_knights, new_black_rooks, new_black_queens, new_black_kings);
+
+    if (current_player == WHITE) {
+        pos64 current_pos = white_pawns & white_bishops & white_knights & white_rooks & white_queens & white_kings;
+        pos64 new_pos = new_white_pawns & new_white_bishops & new_white_knights & new_white_rooks & new_white_queens & new_white_kings;
+        std::cout << get_move_string(current_pos, new_pos) << "\n";
+    }
+    else if (current_player == BLACK) {
+        pos64 current_pos = black_pawns & black_bishops & black_knights & black_rooks & black_queens & black_kings;
+        pos64 new_pos = new_black_pawns & new_black_bishops & new_black_knights & new_black_rooks & new_black_queens & new_black_kings;
+        std::cout << get_move_string(current_pos, new_pos) << "\n";
+    }
+}
+
+std::string get_move_string(pos64 current_pos, pos64 new_pos) {
+    pos64 diff = current_pos ^ new_pos;
+    pos64 from = current_pos & diff;
+    pos64 to = new_pos & diff;
+    int from_pos = _log2(from);
+    int to_pos = _log2(to);
+    std::string result = "____";
+    result[0] = from_pos % 8 + 'a';
+    result[1] = from_pos / 8 + '1';
+    result[2] = to_pos % 8 + 'a';
+    result[3] = to_pos / 8 + '1';
+    return result;
+}
+
+int _log2(pos64 x) { // asserting x is a power of two
+    for (int i = 0; i < x; i++) {
+        if ((x & (1 << i)) != 0) {
+            return i;
+        }
+    }
+    return 0;
 }
 
 void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, pos64 white_rooks, pos64 white_queens, pos64 white_kings,
