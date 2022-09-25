@@ -44,18 +44,18 @@ __host__ __device__ pos64 checkIfTakenAndAssign(pos64 pieces, pos64 attack) {
     return pieces ^ (attack & pieces);
 }
 
-__host__ __device__ void generate_moves(const pos64 * start_white_pawns_boards,
-                    const pos64 * start_white_bishops_boards,
-                    const pos64 * start_white_knights_boards,
-                    const pos64 * start_white_rooks_boards,
-                    const pos64 * start_white_queens_boards,
-                    const pos64 * start_white_kings_boards,
-                    const pos64 * start_black_pawns_boards,
-                    const pos64 * start_black_bishops_boards,
-                    const pos64 * start_black_knights_boards,
-                    const pos64 * start_black_rooks_boards,
-                    const pos64 * start_black_queens_boards,
-                    const pos64 * start_black_kings_boards,
+__host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
+                    pos64 * start_white_bishops_boards,
+                    pos64 * start_white_knights_boards,
+                    pos64 * start_white_rooks_boards,
+                    pos64 * start_white_queens_boards,
+                    pos64 * start_white_kings_boards,
+                    pos64 * start_black_pawns_boards,
+                    pos64 * start_black_bishops_boards,
+                    pos64 * start_black_knights_boards,
+                    pos64 * start_black_rooks_boards,
+                    pos64 * start_black_queens_boards,
+                    pos64 * start_black_kings_boards,
                     pos64 * white_pawns_boards,
                     pos64 * white_bishops_boards,
                     pos64 * white_knights_boards,
@@ -98,19 +98,6 @@ __host__ __device__ void generate_moves(const pos64 * start_white_pawns_boards,
         initialEnemyQueens  = *start_black_queens_boards;
         initialEnemyKings  = *start_black_kings_boards;
 
-        
-        ownKnights = start_white_knights_boards;
-        ownRooks = start_white_rooks_boards;
-        ownQueens = start_white_queens_boards;
-        ownKings = start_white_kings_boards;
-        ownBishops = start_white_bishops_boards;
-        ownPawns = start_white_pawns_boards;
-        enemyKnights = start_black_knights_boards;
-        enemyRooks = start_black_rooks_boards;
-        enemyQueens = start_black_queens_boards;
-        enemyKings = start_black_kings_boards;
-        enemyBishops = start_black_bishops_boards;
-        enemyPawns = start_black_bishops_boards;
         // generate pawn moves forward
         moves = noOne(initialOwnPawns);
         occupied = moves & allPieces;
