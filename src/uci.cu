@@ -210,47 +210,27 @@ void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, po
         *black_pawn_moves, *black_bishop_moves, *black_knight_moves, *black_rook_moves, *black_queen_moves, *black_king_moves;
 
     white_pawn_moves = new pos64[BOARDS_GENERATED];
-    white_pawn_moves[0] = white_pawns;
-
     white_bishop_moves = new pos64[BOARDS_GENERATED];
-    white_bishop_moves[0] = white_bishops;
-
     white_knight_moves = new pos64[BOARDS_GENERATED];
-    white_knight_moves[0] = white_knights;
-
     white_rook_moves = new pos64[BOARDS_GENERATED];
-    white_rook_moves[0] = white_rooks;
-
     white_queen_moves = new pos64[BOARDS_GENERATED];
-    white_queen_moves[0] = white_queens;
-
     white_king_moves = new pos64[BOARDS_GENERATED];
-    white_king_moves[0] = white_kings;
-
     black_pawn_moves = new pos64[BOARDS_GENERATED];
-    black_pawn_moves[0] = black_pawns;
-
     black_bishop_moves = new pos64[BOARDS_GENERATED];
-    black_bishop_moves[0] = black_bishops;
-
     black_knight_moves = new pos64[BOARDS_GENERATED];
-    black_knight_moves[0] = black_knights;
-
     black_rook_moves = new pos64[BOARDS_GENERATED];
-    black_rook_moves[0] = black_rooks;
-
     black_queen_moves = new pos64[BOARDS_GENERATED];
-    black_queen_moves[0] = black_queens;
-
     black_king_moves = new pos64[BOARDS_GENERATED];
-    black_king_moves[0] = black_kings;
 
-    generate_moves(white_pawn_moves, white_bishop_moves, white_knight_moves, white_rook_moves, white_queen_moves, white_king_moves, 
+    generate_moves(white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
+                black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings,
+                white_pawn_moves, white_bishop_moves, white_knight_moves, white_rook_moves, white_queen_moves, white_king_moves, 
                 black_pawn_moves, black_bishop_moves, black_knight_moves, black_rook_moves, black_queen_moves,  black_king_moves,
                 results, depths, stack_states, depth);
     char any;
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {
+        if ((black_king_moves[x] & white_king_moves[x]) == 0) break;
         print_position(white_pawn_moves[x], white_bishop_moves[x], white_knight_moves[x], white_rook_moves[x], white_queen_moves[x], white_king_moves[x], 
                 black_pawn_moves[x], black_bishop_moves[x], black_knight_moves[x], black_rook_moves[x], black_queen_moves[x],  black_king_moves[x]);
         
@@ -276,8 +256,4 @@ void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, po
     free(black_king_moves);
 
 }
-
-
-
-
 } // namespace UCI

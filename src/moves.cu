@@ -44,7 +44,19 @@ __host__ __device__ pos64 checkIfTakenAndAssign(pos64 pieces, pos64 attack) {
     return pieces ^ (attack & pieces);
 }
 
-__host__ __device__ void generate_moves(pos64 * white_pawns_boards,
+__host__ __device__ void generate_moves(const pos64 * start_white_pawns_boards,
+                    const pos64 * start_white_bishops_boards,
+                    const pos64 * start_white_knights_boards,
+                    const pos64 * start_white_rooks_boards,
+                    const pos64 * start_white_queens_boards,
+                    const pos64 * start_white_kings_boards,
+                    const pos64 * start_black_pawns_boards,
+                    const pos64 * start_black_bishops_boards,
+                    const pos64 * start_black_knights_boards,
+                    const pos64 * start_black_rooks_boards,
+                    const pos64 * start_black_queens_boards,
+                    const pos64 * start_black_kings_boards,
+                    pos64 * white_pawns_boards,
                     pos64 * white_bishops_boards,
                     pos64 * white_knights_boards,
                     pos64 * white_rooks_boards,
@@ -65,40 +77,40 @@ __host__ __device__ void generate_moves(pos64 * white_pawns_boards,
 
     pos64 initialOwnPawns, initialOwnBishops, initialOwnKnights, initialOwnRooks, initialOwnQueens, initialOwnKings, initialEnemyPawns, initialEnemyBishops, initialEnemyKnights, initialEnemyRooks, initialEnemyQueens, initialEnemyKings;
     pos64 *ownKnights, *ownRooks, *ownQueens, *ownKings, *ownBishops, *ownPawns, *enemyKnights, *enemyRooks, *enemyQueens, *enemyKings, *enemyBishops, *enemyPawns;
-    pos64 allPieces =  white_pawns_boards[0] | white_bishops_boards[0] | white_knights_boards[0] | white_rooks_boards[0] | white_queens_boards[0] | white_kings_boards[0] |
-        black_pawns_boards[0] | black_bishops_boards[0] | black_knights_boards[0] | black_rooks_boards[0] | black_queens_boards[0] | black_kings_boards[0];
+    pos64 allPieces =  *start_white_pawns_boards | *start_white_bishops_boards | *start_white_knights_boards | *start_white_rooks_boards | *start_white_queens_boards | *start_white_kings_boards |
+        *start_black_pawns_boards | *start_black_bishops_boards | *start_black_knights_boards | *start_black_rooks_boards | *start_black_queens_boards | *start_black_kings_boards;
 
     pos64 enemyPieces, moves, occupied, singleMove;
     int generatedMoves = 0;
     if ((depth & 1) == 1) { // white pawn moves
-        enemyPieces = black_pawns_boards[0] | black_bishops_boards[0] | black_knights_boards[0] | black_rooks_boards[0] | black_queens_boards[0] | black_kings_boards[0];
+        enemyPieces = *start_black_pawns_boards | *start_black_bishops_boards | *start_black_knights_boards | *start_black_rooks_boards | *start_black_queens_boards | *start_black_kings_boards;
         
-        initialOwnPawns = white_pawns_boards[0];
-        initialOwnBishops = white_bishops_boards[0];
-        initialOwnKnights = white_knights_boards[0];
-        initialOwnRooks = white_rooks_boards[0];
-        initialOwnQueens  = white_queens_boards[0];
-        initialOwnKings  = white_kings_boards[0];
-        initialEnemyPawns = black_pawns_boards[0];
-        initialEnemyBishops = black_bishops_boards[0];
-        initialEnemyKnights = black_knights_boards[0];
-        initialEnemyRooks = black_rooks_boards[0];
-        initialEnemyQueens  = black_queens_boards[0];
-        initialEnemyKings  = black_kings_boards[0];
+        initialOwnPawns = *start_white_pawns_boards;
+        initialOwnBishops = *start_white_bishops_boards;
+        initialOwnKnights = *start_white_knights_boards;
+        initialOwnRooks = *start_white_rooks_boards;
+        initialOwnQueens  = *start_white_queens_boards;
+        initialOwnKings  = *start_white_kings_boards;
+        initialEnemyPawns = *start_black_pawns_boards;
+        initialEnemyBishops = *start_black_bishops_boards;
+        initialEnemyKnights = *start_black_knights_boards;
+        initialEnemyRooks = *start_black_rooks_boards;
+        initialEnemyQueens  = *start_black_queens_boards;
+        initialEnemyKings  = *start_black_kings_boards;
 
         
-        ownKnights = white_knights_boards;
-        ownRooks = white_rooks_boards;
-        ownQueens = white_queens_boards;
-        ownKings = white_kings_boards;
-        ownBishops = white_bishops_boards;
-        ownPawns = white_pawns_boards;
-        enemyKnights = black_knights_boards;
-        enemyRooks = black_rooks_boards;
-        enemyQueens = black_queens_boards;
-        enemyKings = black_kings_boards;
-        enemyBishops = black_bishops_boards;
-        enemyPawns = black_bishops_boards;
+        ownKnights = start_white_knights_boards;
+        ownRooks = start_white_rooks_boards;
+        ownQueens = start_white_queens_boards;
+        ownKings = start_white_kings_boards;
+        ownBishops = start_white_bishops_boards;
+        ownPawns = start_white_pawns_boards;
+        enemyKnights = start_black_knights_boards;
+        enemyRooks = start_black_rooks_boards;
+        enemyQueens = start_black_queens_boards;
+        enemyKings = start_black_kings_boards;
+        enemyBishops = start_black_bishops_boards;
+        enemyPawns = start_black_bishops_boards;
         // generate pawn moves forward
         moves = noOne(initialOwnPawns);
         occupied = moves & allPieces;
