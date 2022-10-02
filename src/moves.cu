@@ -98,6 +98,19 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
         initialEnemyQueens  = *start_black_queens_boards;
         initialEnemyKings  = *start_black_kings_boards;
 
+        ownKnights = white_knights_boards;
+        ownRooks = white_rooks_boards;
+        ownQueens = white_queens_boards;
+        ownKings = white_kings_boards;
+        ownBishops = white_bishops_boards;
+        ownPawns = white_pawns_boards;
+        enemyKnights = black_knights_boards;
+        enemyRooks = black_rooks_boards;
+        enemyQueens = black_queens_boards;
+        enemyKings = black_kings_boards;
+        enemyBishops = black_bishops_boards;
+        enemyPawns = black_bishops_boards;
+
         // generate pawn moves forward
         moves = noOne(initialOwnPawns);
         occupied = moves & allPieces;
