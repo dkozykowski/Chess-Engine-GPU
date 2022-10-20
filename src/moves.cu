@@ -243,7 +243,6 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         // generate pawn attacks east
         moves = soEaOne(initialOwnPawns) & enemyPieces;
-        printf("%lld\n", moves);
         while(moves != 0 && generatedMoves < BOARDS_GENERATED){
             black_bishops_boards[generatedMoves] = initialOwnBishops;
             black_knights_boards[generatedMoves] = initialOwnKnights;
@@ -269,7 +268,6 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         // generate pawn attacks west
         moves = soWeOne(initialOwnPawns) & enemyPieces;
-        printf("%lld\n", moves);
         while(moves != 0 && generatedMoves < BOARDS_GENERATED){
             black_bishops_boards[generatedMoves] = initialOwnBishops;
             black_knights_boards[generatedMoves] = initialOwnKnights;
@@ -355,7 +353,6 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         movingKnights = resetLeastSignificantBit(movingKnights);
     }
-    printf("knight moves %d\n", generatedMoves);
 
     //king moves
     piece = getLeastSignificantBit(initialOwnKings);
@@ -417,10 +414,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         //moving north
         singleMove = piece;
-        while((singleMove = noOne(singleMove) > piece) && generatedMoves < BOARDS_GENERATED) {
-            if(singleMove == 0){
-                break;
-            }
+        while(((singleMove = noOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
@@ -442,10 +436,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         // moving west
         singleMove = piece;
-        while((singleMove = westOne(singleMove) > piece) && generatedMoves < BOARDS_GENERATED) {
-            if(singleMove == 0){
-                break;
-            }
+        while(((singleMove = westOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
@@ -467,10 +458,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         // moving south
         singleMove = piece;
-        while((singleMove = soOne(singleMove) > piece) && generatedMoves < BOARDS_GENERATED) {
-            if(singleMove == 0){
-                break;
-            }
+        while(((singleMove = soOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
@@ -492,10 +480,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         // moving east
         singleMove = piece;
-        while((singleMove = eastOne(singleMove) > piece) && generatedMoves < BOARDS_GENERATED) {
-            if(singleMove == 0){
-                break;
-            }
+        while(((singleMove = eastOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
@@ -516,7 +501,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
         }
         movingRooks = resetLeastSignificantBit(movingRooks);
     }
-
+    
     // bishop moves
     pos64 movingBishops = initialOwnBishops;
     while(movingBishops != 0 && generatedMoves < BOARDS_GENERATED){
@@ -524,19 +509,16 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         //moving north east
         singleMove = piece;
-        while((singleMove = noEaOne(singleMove) > piece) && generatedMoves < BOARDS_GENERATED) {
-            if(singleMove == 0){
-                break;
-            }
+        while(((singleMove = noEaOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
-            ownBishops[generatedMoves] = initialOwnBishops;
+            ownRooks[generatedMoves] = initialOwnRooks;
             ownKnights[generatedMoves] = initialOwnKnights;
             ownPawns[generatedMoves] = initialOwnPawns;
             ownQueens[generatedMoves] = initialOwnQueens;
             ownKings[generatedMoves] = initialOwnKings;
-            ownRooks[generatedMoves] = (initialOwnRooks ^ piece) | singleMove;
+            ownBishops[generatedMoves] = (initialOwnBishops ^ piece) | singleMove;
             enemyBishops[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
             enemyKings[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
             enemyPawns[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
@@ -548,10 +530,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         // moving north west
         singleMove = piece;
-        while((singleMove = noWeOne(singleMove) > piece) && generatedMoves < BOARDS_GENERATED) {
-            if(singleMove == 0){
-                break;
-            }
+        while(((singleMove = noWeOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
@@ -572,10 +551,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         // moving south west
         singleMove = piece;
-        while((singleMove = soWeOne(singleMove) > piece) && generatedMoves < BOARDS_GENERATED) {
-            if(singleMove == 0){
-                break;
-            }
+        while(((singleMove = soWeOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
@@ -596,10 +572,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         // moving south east
         singleMove = piece;
-        while((singleMove = soEaOne(singleMove) > piece) && generatedMoves < BOARDS_GENERATED) {
-            if(singleMove == 0){
-                break;
-            }
+        while(((singleMove = soEaOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
@@ -617,7 +590,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
             generatedMoves++;
         }
-        movingBishops = resetLeastSignificantBit(movingRooks);
+        movingBishops = resetLeastSignificantBit(movingBishops);
     }
     for(int wsk = 0; wsk < BOARDS_GENERATED; wsk++)
     {
