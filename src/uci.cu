@@ -33,6 +33,7 @@ void go(int & current_player, int & move_num);
 void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, pos64 white_rooks, pos64 white_queens, pos64 white_kings,
                 pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings, int current_player);
 std::string get_move_string(pos64 current_pos, pos64 new_pos);
+
 int _log2(pos64 x);
 
 void loop() {
@@ -227,15 +228,15 @@ void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, po
                 white_pawn_moves, white_bishop_moves, white_knight_moves, white_rook_moves, white_queen_moves, white_king_moves, 
                 black_pawn_moves, black_bishop_moves, black_knight_moves, black_rook_moves, black_queen_moves,  black_king_moves,
                 results, depths, stack_states, depth);
-    char any;
+    std::string any;
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {
         if ((black_king_moves[x] | white_king_moves[x]) == 0) break;
         print_position(white_pawn_moves[x], white_bishop_moves[x], white_knight_moves[x], white_rook_moves[x], white_queen_moves[x], white_king_moves[x], 
                 black_pawn_moves[x], black_bishop_moves[x], black_knight_moves[x], black_rook_moves[x], black_queen_moves[x],  black_king_moves[x]);
         
-        scanf("%c ", &any);
-        if(any == 'q')
+        std::getline(std::cin, any);
+        if(any == "q")
             break;
     }
 
