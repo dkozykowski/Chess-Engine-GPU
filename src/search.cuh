@@ -7,7 +7,7 @@ void init();
 
 void terminate();
 
-void search(const int& current_player,
+void search(const short& current_player,
             const int& move_num,
             pos64& white_pawns,
             pos64& white_bishops,

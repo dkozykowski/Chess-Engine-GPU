@@ -12,21 +12,46 @@ int * subtree_sizes;
 int * max_depth_to_store;
 
 __device__ void gather_results(int* results, int* from, int depth, int * last_wsk) {
-    if ((depth & 1) == 0) { // white moves, maximizes
+    if ((depth & 1) == 0) { // maximizing
+        int result = -INF;
         for (int i = 0; i < BOARDS_GENERATED; i++) {
-            if (from[i] > results[0]) {
+            if (from[i] != INF && from[i] != -INF && from[i] > result) {
                 *last_wsk = i;
-                results[0] = from[i];
+                result = from[i];
             }
         }
+        results[0] = result;
     } 
-    else { // black moves, minimizes
+    else { // minimizing
+        int result = INF;
         for (int i = 0; i < BOARDS_GENERATED; i++) {
-           if (from[i] < results[0]) {
+           if (from[i] != INF && from[i] != -INF && from[i] < result) {
                 *last_wsk = i;
-                results[0] = from[i];
+                result = from[i];
             }
         }
+        results[0] = result;
+    }
+}  
+
+__device__ void gather_small_results(int* results, int* from, int depth, int * last_wsk) {
+    int i = 0;
+    if ((depth & 1) == 0) { // maximizing
+        int result = results[0] != INF && results[0] != -INF ? results[0] : -INF;
+        
+        if (from[i] != INF && from[i] != -INF && from[i] > result) {
+            *last_wsk = i;
+            result = from[i];
+        }
+        results[0] = result;
+    } 
+    else { // minimizing
+       int result = results[0] != INF && results[0] != -INF ? results[0] : INF;
+        if (from[i] != INF && from[i] != -INF && from[i] < result) {
+            *last_wsk = i;
+            result = from[i];
+        }
+        results[0] = result;
     }
 }  
 
@@ -59,7 +84,6 @@ __global__ void init_searching(pos64 * white_pawns_boards,
                     short* stack_states,
                     int* stack_wsk,
                     int* current_depth) {
-    results[0] = -INF;
     depths[0] = 0;
     stack_states[0] = RIGHT;
     *stack_wsk = 0;
@@ -82,11 +106,16 @@ __global__ void init_sizes_tables(int* level_sizes, int * subtree_sizes, int* ma
     level_sizes[MAX_DEPTH] = 1;
     subtree_sizes[MAX_DEPTH] = 1;
     subtree_sizes[MAX_DEPTH + 1] = 0;
+    bool still_fine = true;
     for (int i = MAX_DEPTH - 1;  i >= 0; i--) {
         level_sizes[i] = level_sizes[i + 1] * BOARDS_GENERATED;
         subtree_sizes[i] = subtree_sizes[i + 1] * BOARDS_GENERATED + 1;
-        *max_depth_to_store = i;
-        if (level_sizes[i] * BOARDS_GENERATED >= MAX_BOARDS_SIMULTANEOUSLY) break;
+        if (level_sizes[i] * BOARDS_GENERATED >= MAX_BOARDS_SIMULTANEOUSLY) {
+            still_fine = false;
+        }
+        if (still_fine) {
+            *max_depth_to_store = i;
+        }
     }
 }
 
@@ -124,7 +153,8 @@ __global__ void do_searching(pos64 * white_pawns_boards,
                         int * subtree_sizes,
                         const int * max_depth_to_store,
                         int * stack_wsk,
-                        int * last_wsk) {
+                        int * last_wsk,
+                        short current_player) {
     white_pawns_boards = &white_pawns_boards[*stack_wsk]; 
     white_bishops_boards = &white_bishops_boards[*stack_wsk];
     white_knights_boards = &white_knights_boards[*stack_wsk];
@@ -140,6 +170,7 @@ __global__ void do_searching(pos64 * white_pawns_boards,
     stack_states = &stack_states[*stack_wsk];
     results = &results[*stack_wsk];
     depths = &depths[*stack_wsk];
+    current_player = (current_player ^ (*current_depth & 1));
 
     int index = blockIdx.x * 1024 + threadIdx.x;
     if (*current_depth < * max_depth_to_store) { // non full search
@@ -172,22 +203,27 @@ __global__ void do_searching(pos64 * white_pawns_boards,
                        &results[1],
                        &depths[1],
                        &stack_states[1],
-                       depths[0] + 1);
+                       depths[0] + 1,
+                       current_player);
     }
     else { // fullsearch
         int depth_difference = *current_depth - depths[0];
-        DBG2(printf("Ww %d akceptuje %d\n", *stack_wsk, level_sizes[MAX_DEPTH - depth_difference]));
-        if (index >= level_sizes[MAX_DEPTH - depth_difference]) {
+        DBG2(printf("Ww %d akceptuje %d\n", *stack_wsk, level_sizes[MAX_DEPTH - depth_difference - 1]));
+        if (index >= level_sizes[MAX_DEPTH - depth_difference - 1]) {
             return;
         }
 
-        int offset = subtree_sizes[MAX_DEPTH - depth_difference + 1];
+        int offset = subtree_sizes[MAX_DEPTH - depth_difference];
         int global_index = offset + index;
         DBG2(printf("%d %d %d\n", depth_difference, offset, global_index + *stack_wsk));
 
         if (*current_depth == MAX_DEPTH) { // evaluating layer    
-            DBG2(printf("Ewaluuje %d\n", global_index + *stack_wsk));  
-            results[global_index] = evaluate_position(white_pawns_boards[global_index],
+            DBG2(printf("Ewaluuje %d\n", global_index + *stack_wsk));
+            if ((white_kings_boards[global_index] | black_kings_boards[global_index]) == 0) {
+                results[global_index] = INF;
+            }
+            else {
+                results[global_index] = evaluate_position(white_pawns_boards[global_index],
                                                         white_bishops_boards[global_index],
                                                         white_knights_boards[global_index],
                                                         white_rooks_boards[global_index],
@@ -199,13 +235,14 @@ __global__ void do_searching(pos64 * white_pawns_boards,
                                                         black_rooks_boards[global_index],
                                                         black_queens_boards[global_index],
                                                         black_kings_boards[global_index]);
+            }
         }
-        else if (*current_depth < MAX_DEPTH) {
-            int sons_offset = subtree_sizes[MAX_DEPTH - depth_difference];
+        else {
+            int sons_offset = subtree_sizes[MAX_DEPTH - depth_difference - 1];
             int sons_index = sons_offset + index * BOARDS_GENERATED;
             if (stack_states[0] == LEFT) {
                 DBG2(printf("Zbieram wyniki z %d {2} od pozycji %d\n", global_index + *stack_wsk, sons_index + *stack_wsk));
-                gather_results(&results[global_index], &results[sons_index], depths[global_index], last_wsk);
+                gather_results(&results[global_index], &results[sons_index], depths[global_index], &last_wsk[global_index]);
             }
             else {
                 DBG2(printf("Synowie %d od %d i im generuje\n", global_index + *stack_wsk, sons_index + *stack_wsk));
@@ -236,7 +273,8 @@ __global__ void do_searching(pos64 * white_pawns_boards,
                                 &results[sons_index],
                                 &depths[sons_index],
                                 &stack_states[sons_index],
-                                0);
+                                0,
+                                current_player);
             }
         }    
     }
@@ -263,12 +301,15 @@ __global__ void search_main(pos64 * white_pawns_boards,
             int * max_depth_to_store,
             int * level_sizes,
             int * subtree_sizes,
-            int * last_wsk) {
+            int * last_wsk,
+            int * fathers) {
 
     if (depths[*stack_wsk] < * max_depth_to_store) { // non full search
         if (stack_states[*stack_wsk] == LEFT) {
             DBG(printf("Zbieram wyniki z %d\n", *stack_wsk));
-            gather_results(&results[*stack_wsk], &results[*stack_wsk + 1], depths[*stack_wsk], last_wsk);
+            gather_results(&results[*stack_wsk], &results[*stack_wsk + 1], depths[*stack_wsk], &last_wsk[*stack_wsk]);
+            DBG(printf("Aktualizuje wynik ojcu %d\n", fathers[*stack_wsk]));
+            gather_small_results(&results[fathers[*stack_wsk]], &results[*stack_wsk], depthsfathers[*stack_wsk], &last_wsk[fathers[*stack_wsk]]);
             *stack_wsk -= 1;
         }
         else if (stack_states[*stack_wsk] == RIGHT) {
@@ -288,7 +329,6 @@ __global__ void search_main(pos64 * white_pawns_boards,
                 stack_states[*stack_wsk] = LEFT;
                 DBG(printf("Cofam sie z poziomami z %d do %d\n", *current_depth, *current_depth - 1));
                 *current_depth -= 1;
-            }
             else {
                 DBG(printf("Rozszerzam w prawo z %d. ", *stack_wsk));
                 DBG(printf("Ide dalej z poziomami z %d do %d\n", *current_depth, *current_depth + 1));
@@ -298,7 +338,7 @@ __global__ void search_main(pos64 * white_pawns_boards,
         else if (stack_states[*stack_wsk] == LEFT) {
             if (*current_depth == depths[*stack_wsk]) {
                 DBG(printf("Zbieram wyniki z %d\n", *stack_wsk));
-                gather_results(&results[*stack_wsk], &results[*stack_wsk + 1], depths[*stack_wsk], last_wsk);
+                gather_results(&results[*stack_wsk], &results[*stack_wsk + 1], depths[*stack_wsk], &last_wsk[*stack_wsk]);
                 *stack_wsk -= 1;
             }
             else {
@@ -309,7 +349,7 @@ __global__ void search_main(pos64 * white_pawns_boards,
     }
 }
 
-void search(const int& current_player,
+void search(const short& current_player,
             const int& move_num,
             pos64& white_pawns,
             pos64& white_bishops,
@@ -419,7 +459,8 @@ void search(const int& current_player,
                         subtree_sizes,
                         max_depth_to_store,
                         stack_wsk,
-                        last_wsk);
+                        last_wsk,
+                        current_player);
         cudaDeviceSynchronize();
 
         search_main<<<1, 1>>>(white_pawns_boards,

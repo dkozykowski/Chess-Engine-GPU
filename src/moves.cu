@@ -71,7 +71,8 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
                     int * results,
                     int * depths,
                     short * stack_states,
-                    int depth) {
+                    int depth,
+                    short current_player) {
     // zakladamy, ze korzeniem drzewa, czyli graczem dla którego szukamu ruchu, jest gracz CZARNY
     // zakladamy, ze korzen ma numer 0
 
@@ -82,7 +83,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
     pos64 enemyPieces, moves, occupied, singleMove;
     int generatedMoves = 0;
-    if ((depth & 1) == 1) { // white pawn moves
+    if (current_player == WHITE) { // white pawn moves
         enemyPieces = *start_black_pawns_boards | *start_black_bishops_boards | *start_black_knights_boards | *start_black_rooks_boards | *start_black_queens_boards | *start_black_kings_boards;
         
         initialOwnPawns = *start_white_pawns_boards;
@@ -596,12 +597,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
     {
         depths[wsk] = depth;
         stack_states[wsk] = RIGHT;
-        if ((depth & 1) == 0) {
-            results[wsk] = -INF;
-        }
-        else {
-            results[wsk] = INF;
-        }
+        results[wsk] = INF;
     }
 
     for(int i = generatedMoves; i < BOARDS_GENERATED; i++)

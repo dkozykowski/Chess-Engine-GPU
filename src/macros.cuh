@@ -21,10 +21,11 @@ typedef unsigned long long int pos64;
 
 #define MAX_BOARDS_SIMULTANEOUSLY THREADS * BLOCKS
 #define MAX_BOARDS_IN_MEMORY 7e7
+#define FIRST_STAGE_DEPTH 3
 #define MAX_DEPTH 5
 #define BOARDS_GENERATED 40
 
-#define INF 1e6;
+#define INF 1e6
 
 #define BOARD_SIZE 64
 

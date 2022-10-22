@@ -25,19 +25,20 @@ pos64 black_rooks;
 pos64 black_queens;
 pos64 black_kings;
 
-void newgame(int & current_player, int & move_num);
-void move(std::istringstream & is, int & current_player, int & move_num);
-void print_game(int current_player, int move_num);
+void newgame(short & current_player, int & move_num);
+void move(std::istringstream & is, short & current_player, int & move_num);
+void print_game(short current_player, int move_num);
 void print_eval();
-void go(int & current_player, int & move_num);
+void go(short & current_player, int & move_num);
 void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, pos64 white_rooks, pos64 white_queens, pos64 white_kings,
-                pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings, int current_player);
+                pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings, short current_player);
 std::string get_move_string(pos64 current_pos, pos64 new_pos);
 
 int _log2(pos64 x);
 
 void loop() {
-    int current_player, move_num;
+    short current_player;
+    int move_num;
     newgame(current_player, move_num);
     init();
 
@@ -73,7 +74,7 @@ void loop() {
     terminate();
 }
 
-void newgame(int & current_player, int & move_num) {
+void newgame(short & current_player, int & move_num) {
     white_pawns = WHITE_PAWN_STARTING_POS;
     white_bishops = WHITE_BISHOP_STARTING_POS;
     white_knights = WHITE_KNIGHT_STARTING_POS;
@@ -92,7 +93,7 @@ void newgame(int & current_player, int & move_num) {
     move_num = 0;
 }
 
-void move(std::istringstream & is, int & current_player, int & move_num) {
+void move(std::istringstream & is, short & current_player, int & move_num) {
     std::string move_token;
     is >> std::skipws >> move_token;
 
@@ -120,7 +121,7 @@ void move(std::istringstream & is, int & current_player, int & move_num) {
     current_player ^= 1;
 }
 
-void print_game(int current_player, int move_num) {
+void print_game(short current_player, int move_num) {
     printf("Move number %d\n", move_num);
     printf("Current player - %s\n", current_player == WHITE ? "White" : "Black");
     print_position(white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
@@ -146,7 +147,7 @@ void print_eval() {
     cudaFree(d_result);
 }
 
-void go(int & current_player, int & move_num) {
+void go(short & current_player, int & move_num) {
     pos64 new_white_pawns = white_pawns;
     pos64 new_white_bishops = white_bishops;
     pos64 new_white_knights = white_knights;
@@ -200,7 +201,7 @@ int _log2(pos64 x) { // asserting x is a power of two
 }
 
 void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, pos64 white_rooks, pos64 white_queens, pos64 white_kings,
-                pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings, int current_player) 
+                pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings, short current_player) 
 {
     int* results = new int[BOARDS_GENERATED];
     int* depths = new int[BOARDS_GENERATED];
@@ -227,7 +228,7 @@ void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, po
                 &black_pawns, &black_bishops, &black_knights, &black_rooks, &black_queens, &black_kings,
                 white_pawn_moves, white_bishop_moves, white_knight_moves, white_rook_moves, white_queen_moves, white_king_moves, 
                 black_pawn_moves, black_bishop_moves, black_knight_moves, black_rook_moves, black_queen_moves,  black_king_moves,
-                results, depths, stack_states, depth);
+                results, depths, stack_states, depth, current_player);
     std::string any;
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {

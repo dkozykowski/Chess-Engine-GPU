@@ -30,6 +30,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
                     int * results,
                     int * depths,
                     short * stack_states,
-                    int depth);
+                    int depth,
+                    short current_player);
 
 #endif
