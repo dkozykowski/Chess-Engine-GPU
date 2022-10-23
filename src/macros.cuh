@@ -7,9 +7,7 @@
 typedef unsigned long long int pos64;
 
 #define DEBUG 1
-#define DEBUG2 0
 #define DBG(cmd) if(DEBUG) cmd
-#define DBG2(cmd) if(DEBUG2) cmd
 #define CHECK_ALLOC(alloc) {cudaError_t cu_err;\
     if((cu_err = alloc) != cudaSuccess) ERR(cudaGetErrorString( cu_err ));}
 #define ERR(source) (perror(source),\
@@ -21,8 +19,8 @@ typedef unsigned long long int pos64;
 
 #define MAX_BOARDS_SIMULTANEOUSLY THREADS * BLOCKS
 #define MAX_BOARDS_IN_MEMORY 7e7
-#define FIRST_STAGE_DEPTH 3
-#define MAX_DEPTH 5
+#define FIRST_STAGE_DEPTH 3 
+#define MAX_DEPTH 6
 #define BOARDS_GENERATED 40
 
 #define INF 1e6

@@ -203,11 +203,6 @@ int _log2(pos64 x) { // asserting x is a power of two
 void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, pos64 white_rooks, pos64 white_queens, pos64 white_kings,
                 pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings, short current_player) 
 {
-    int* results = new int[BOARDS_GENERATED];
-    int* depths = new int[BOARDS_GENERATED];
-    short* stack_states = new short[BOARDS_GENERATED];
-    int depth =  current_player + 1;
-
     pos64 *white_pawn_moves, *white_bishop_moves, *white_knight_moves, *white_rook_moves, *white_queen_moves, *white_king_moves, 
         *black_pawn_moves, *black_bishop_moves, *black_knight_moves, *black_rook_moves, *black_queen_moves, *black_king_moves;
 
@@ -228,7 +223,7 @@ void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, po
                 &black_pawns, &black_bishops, &black_knights, &black_rooks, &black_queens, &black_kings,
                 white_pawn_moves, white_bishop_moves, white_knight_moves, white_rook_moves, white_queen_moves, white_king_moves, 
                 black_pawn_moves, black_bishop_moves, black_knight_moves, black_rook_moves, black_queen_moves,  black_king_moves,
-                results, depths, stack_states, depth, current_player);
+                current_player);
     std::string any;
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {
@@ -241,9 +236,6 @@ void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, po
             break;
     }
 
-    free(results);
-    free(depths);
-    free(stack_states);
     free(white_pawn_moves);
     free(white_bishop_moves);
     free(white_knight_moves);

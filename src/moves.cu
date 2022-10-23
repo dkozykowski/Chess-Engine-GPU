@@ -68,10 +68,6 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
                     pos64 * black_rooks_boards,
                     pos64 * black_queens_boards,
                     pos64 * black_kings_boards,
-                    int * results,
-                    int * depths,
-                    short * stack_states,
-                    int depth,
                     short current_player) {
     // zakladamy, ze korzeniem drzewa, czyli graczem dla którego szukamu ruchu, jest gracz CZARNY
     // zakladamy, ze korzen ma numer 0
@@ -592,12 +588,6 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             generatedMoves++;
         }
         movingBishops = resetLeastSignificantBit(movingBishops);
-    }
-    for(int wsk = 0; wsk < BOARDS_GENERATED; wsk++)
-    {
-        depths[wsk] = depth;
-        stack_states[wsk] = RIGHT;
-        results[wsk] = INF;
     }
 
     for(int i = generatedMoves; i < BOARDS_GENERATED; i++)
