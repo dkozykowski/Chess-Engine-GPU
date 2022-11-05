@@ -19,8 +19,8 @@ typedef unsigned long long int pos64;
 
 #define MAX_BOARDS_SIMULTANEOUSLY THREADS * BLOCKS
 #define MAX_BOARDS_IN_MEMORY 7e7
-#define FIRST_STAGE_DEPTH 3 
-#define MAX_DEPTH 6
+#define FIRST_STAGE_DEPTH 1 
+#define MAX_DEPTH 5
 #define BOARDS_GENERATED 40
 
 #define INF 1e6
@@ -52,5 +52,6 @@ typedef unsigned long long int pos64;
 
 #define NOT_A_FILE (pos64) 0xfefefefefefefefe
 #define NOT_H_FILE (pos64) 0x7f7f7f7f7f7f7f7f
+
 
 #endif

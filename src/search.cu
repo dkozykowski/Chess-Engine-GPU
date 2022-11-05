@@ -5,6 +5,17 @@
 #include "evaluate.cuh"
 #include "moves.cuh"
 
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+
+inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
+{
+   if (code != cudaSuccess) 
+   {
+      fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      if (abort) exit(code);
+   }
+}
+
 int * h_level_sizes;
 int * d_level_sizes;
 int * h_subtree_sizes;
@@ -53,7 +64,8 @@ void init() {
 
     init_sizes_tables<<<1, 1>>>(d_level_sizes, d_subtree_sizes);
     _init_sizes_tables(h_level_sizes, h_subtree_sizes);
-    cudaDeviceSynchronize();
+    gpuErrchk(cudaDeviceSynchronize());
+    gpuErrchk(cudaPeekAtLastError());
 }
 
 void terminate() {
@@ -168,8 +180,8 @@ __global__ void run_first_stage_results(int * results,
     current_player ^= (level & 1);
 
     DBG(if (index != 0) {return;})
-    DBG(printf("Zbieram wyniki gracza %d od pozycji %d i current_player %d i czy maksymalizuje? %d\n", 
-        index + index_offset, kids_offset, current_player, current_player == WHITE));
+    // DBG(printf("Zbieram wyniki gracza %d od pozycji %d i current_player %d i czy maksymalizuje? %d\n", 
+    //     index + index_offset, kids_offset, current_player, current_player == WHITE));
 
     gather_results(&results[index + index_offset], &results[kids_offset], current_player == WHITE);
 }
@@ -192,6 +204,9 @@ __global__ void run_first_stage_evaluate(pos64 * white_pawns_boards,
                 int basic_offset = 0) {
     int level = MAX_DEPTH - FIRST_STAGE_DEPTH;
     int index = blockIdx.x * 1024 + threadIdx.x;
+    if(index == 0){
+        printf("Evaluuje %d i mam %d\n", 0, 0);
+    }
     if (index >= level_sizes[level]) return;
     int index_offset = (level == 0 ? 0 : subtree_sizes[level - 1]) + basic_offset;
     
@@ -214,7 +229,6 @@ __global__ void run_first_stage_evaluate(pos64 * white_pawns_boards,
                                                         black_queens_boards[index + index_offset],
                                                         black_kings_boards[index + index_offset]);
     }
-    printf("Evaluuje %d i mam %d\n", index + index_offset, results[index + index_offset]);
 }
 
 __global__ void copy_result(int * results, int from, int to) {
@@ -316,7 +330,8 @@ void search(const short& current_player,
                 black_rooks,
                 black_queens,
                 black_kings);
-    cudaDeviceSynchronize();
+    gpuErrchk(cudaDeviceSynchronize());
+    gpuErrchk(cudaPeekAtLastError());
 
     // generating moves in first stage
     DBG(printf("Stage 1 - generating moves\n"));
@@ -337,7 +352,8 @@ void search(const short& current_player,
                     current_player,
                     d_level_sizes,
                     d_subtree_sizes);
-        cudaDeviceSynchronize();
+        gpuErrchk(cudaDeviceSynchronize());
+        gpuErrchk(cudaPeekAtLastError());
     }
     DBG(printf("Stage finished successfully\n"));
 
@@ -360,7 +376,8 @@ void search(const short& current_player,
                     black_kings_boards, 
                     player_offset + o,
                     basic_offset);
-        cudaDeviceSynchronize();
+        gpuErrchk(cudaDeviceSynchronize());
+        gpuErrchk(cudaPeekAtLastError());
 
         DBG(printf("Stage 2 - generating moves\n"));
         //generating moves
@@ -382,12 +399,14 @@ void search(const short& current_player,
                     d_level_sizes,
                     d_subtree_sizes,
                     basic_offset);
-            cudaDeviceSynchronize();
+            gpuErrchk(cudaDeviceSynchronize());
+            gpuErrchk(cudaPeekAtLastError());
         }
         DBG(printf("Stage finished successfully\n"));
 
         DBG(printf("Stage 2 - evaluating\n"));
         // evaluating
+        printf("Wchodze w run first stage\n");
         run_first_stage_evaluate<<<BLOCKS, THREADS>>>(white_pawns_boards,
                     white_bishops_boards,
                     white_knights_boards,
@@ -404,7 +423,9 @@ void search(const short& current_player,
                     d_subtree_sizes,
                     results,
                     basic_offset);
-        cudaDeviceSynchronize();
+        gpuErrchk(cudaDeviceSynchronize());
+        gpuErrchk(cudaPeekAtLastError());
+        printf("Wychodze z run first stage\n");
         DBG(printf("Stage finished successfully\n"));
 
         DBG(printf("Stage 2 - gathering results\n"));
@@ -416,12 +437,14 @@ void search(const short& current_player,
                     d_level_sizes,
                     d_subtree_sizes,
                     basic_offset);
-            cudaDeviceSynchronize();   
+            gpuErrchk(cudaDeviceSynchronize());
+            gpuErrchk(cudaPeekAtLastError());   
         }
         DBG(printf("Stage finished successfully\n"));
 
         copy_result<<<1, 1>>>(results, basic_offset, player_offset + o);
-        cudaDeviceSynchronize();
+        gpuErrchk(cudaDeviceSynchronize());
+        gpuErrchk(cudaPeekAtLastError());
     }
 
     DBG(printf("Stage 1 - gathering results\n"));
@@ -432,7 +455,8 @@ void search(const short& current_player,
                     current_player,
                     d_level_sizes,
                     d_subtree_sizes);
-        cudaDeviceSynchronize();
+        gpuErrchk(cudaDeviceSynchronize());
+        gpuErrchk(cudaPeekAtLastError());
     }
     DBG(printf("Stage finished successfully\n"));
 
