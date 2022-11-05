@@ -20,14 +20,16 @@ int * h_level_sizes;
 int * d_level_sizes;
 int * h_subtree_sizes;
 int * d_subtree_sizes;
+int * last;
 
-__device__ void gather_results(int* results_to, int* results_from, bool maximize) {
+__device__ void gather_results(int* results_to, int* results_from, bool maximize, int * last) {
     int result;
     if (maximize) { // maximizing
         result = -INF;
         for (int i = 0; i < BOARDS_GENERATED; i++) {
             if (results_from[i] != INF && results_from[i] != -INF && results_from[i] > result) {
                 result = results_from[i];
+                *last = i;
             }
         }
     } 
@@ -36,6 +38,7 @@ __device__ void gather_results(int* results_to, int* results_from, bool maximize
         for (int i = 0; i < BOARDS_GENERATED; i++) {
            if (results_from[i] != INF && results_from[i] != -INF && results_from[i] < result) {
                 result = results_from[i];
+                *last = i;
             }
         }
     }
@@ -61,6 +64,7 @@ void init() {
     h_subtree_sizes = new int[MAX_DEPTH + 2];
     CHECK_ALLOC(cudaMalloc(&d_level_sizes, sizeof(int) * MAX_DEPTH + 1));
     CHECK_ALLOC(cudaMalloc(&d_subtree_sizes, sizeof(int) * MAX_DEPTH + 2));
+    CHECK_ALLOC(cudaMalloc(&last, sizeof(int)));
 
     init_sizes_tables<<<1, 1>>>(d_level_sizes, d_subtree_sizes);
     _init_sizes_tables(h_level_sizes, h_subtree_sizes);
@@ -73,6 +77,7 @@ void terminate() {
     free(h_subtree_sizes);
     cudaFree(d_level_sizes);
     cudaFree(d_subtree_sizes);
+    cudaFree(last);
 }
 
 __global__ void init_searching(pos64 * white_pawns_boards,
@@ -111,6 +116,47 @@ __global__ void init_searching(pos64 * white_pawns_boards,
     black_rooks_boards[0]   = black_rooks;
     black_queens_boards[0]  = black_queens;
     black_kings_boards[0]   = black_kings;
+}
+
+void end_searching(pos64 * white_pawns,
+                    pos64 * white_bishops,
+                    pos64 * white_knights,
+                    pos64 * white_rooks,
+                    pos64 * white_queens,
+                    pos64 * white_kings,
+                    pos64 * black_pawns,
+                    pos64 * black_bishops,
+                    pos64 * black_knights,
+                    pos64 * black_rooks,
+                    pos64 * black_queens,
+                    pos64 * black_kings,
+                    pos64 * white_pawns_boards,
+                    pos64 * white_bishops_boards,
+                    pos64 * white_knights_boards,
+                    pos64 * white_rooks_boards,
+                    pos64 * white_queens_boards,
+                    pos64 * white_kings_boards,
+                    pos64 * black_pawns_boards,
+                    pos64 * black_bishops_boards,
+                    pos64 * black_knights_boards,
+                    pos64 * black_rooks_boards,
+                    pos64 * black_queens_boards,
+                    pos64 * black_kings_boards,
+                    int * d_last) {
+    int last;
+    cudaMemcpy(&last, d_last, sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(white_pawns, white_pawns_boards + last + 1, sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(white_bishops, white_bishops_boards + last + 1, sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(white_knights, white_knights_boards + last + 1, sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(white_rooks, white_rooks_boards + last + 1, sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(white_queens, white_queens_boards + last + 1, sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(white_kings, white_kings_boards + last + 1, sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(black_pawns, black_pawns_boards + last + 1, sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(black_bishops, black_bishops_boards + last + 1, sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(black_knights, black_knights_boards + last + 1, sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(black_rooks, black_rooks_boards + last + 1, sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(black_queens, black_queens_boards + last + 1, sizeof(pos64), cudaMemcpyDeviceToHost);
+    cudaMemcpy(black_kings, black_kings_boards + last + 1, sizeof(pos64), cudaMemcpyDeviceToHost);
 }
 
 
@@ -172,6 +218,7 @@ __global__ void run_first_stage_results(int * results,
                 short current_player,
                 int * level_sizes,
                 int * subtree_sizes,
+                int * last,
                 int basic_offset = 0) {
     int index = blockIdx.x * 1024 + threadIdx.x;
     if (index >= level_sizes[level]) return;
@@ -183,7 +230,7 @@ __global__ void run_first_stage_results(int * results,
     // DBG(printf("Zbieram wyniki gracza %d od pozycji %d i current_player %d i czy maksymalizuje? %d\n", 
     //     index + index_offset, kids_offset, current_player, current_player == WHITE));
 
-    gather_results(&results[index + index_offset], &results[kids_offset], current_player == WHITE);
+    gather_results(&results[index + index_offset], &results[kids_offset], current_player == WHITE, last);
 }
 
 __global__ void run_first_stage_evaluate(pos64 * white_pawns_boards,
@@ -204,9 +251,6 @@ __global__ void run_first_stage_evaluate(pos64 * white_pawns_boards,
                 int basic_offset = 0) {
     int level = MAX_DEPTH - FIRST_STAGE_DEPTH;
     int index = blockIdx.x * 1024 + threadIdx.x;
-    if(index == 0){
-        printf("Evaluuje %d i mam %d\n", 0, 0);
-    }
     if (index >= level_sizes[level]) return;
     int index_offset = (level == 0 ? 0 : subtree_sizes[level - 1]) + basic_offset;
     
@@ -229,6 +273,7 @@ __global__ void run_first_stage_evaluate(pos64 * white_pawns_boards,
                                                         black_queens_boards[index + index_offset],
                                                         black_kings_boards[index + index_offset]);
     }
+    DBG(printf("Evaluuje [%d] %d i mam %d\n", index, index + index_offset, results[index + index_offset]));
 }
 
 __global__ void copy_result(int * results, int from, int to) {
@@ -406,7 +451,6 @@ void search(const short& current_player,
 
         DBG(printf("Stage 2 - evaluating\n"));
         // evaluating
-        printf("Wchodze w run first stage\n");
         run_first_stage_evaluate<<<BLOCKS, THREADS>>>(white_pawns_boards,
                     white_bishops_boards,
                     white_knights_boards,
@@ -425,7 +469,6 @@ void search(const short& current_player,
                     basic_offset);
         gpuErrchk(cudaDeviceSynchronize());
         gpuErrchk(cudaPeekAtLastError());
-        printf("Wychodze z run first stage\n");
         DBG(printf("Stage finished successfully\n"));
 
         DBG(printf("Stage 2 - gathering results\n"));
@@ -436,6 +479,7 @@ void search(const short& current_player,
                     current_player ^ (i & 1) ^ ((FIRST_STAGE_DEPTH + i) & 1),
                     d_level_sizes,
                     d_subtree_sizes,
+                    last,
                     basic_offset);
             gpuErrchk(cudaDeviceSynchronize());
             gpuErrchk(cudaPeekAtLastError());   
@@ -454,11 +498,39 @@ void search(const short& current_player,
                     i,
                     current_player,
                     d_level_sizes,
-                    d_subtree_sizes);
+                    d_subtree_sizes,
+                    last);
         gpuErrchk(cudaDeviceSynchronize());
         gpuErrchk(cudaPeekAtLastError());
     }
     DBG(printf("Stage finished successfully\n"));
+    
+    end_searching(
+        &white_pawns,
+        &white_bishops,
+        &white_knights,
+        &white_rooks,
+        &white_queens,
+        &white_kings,
+        &black_pawns,
+        &black_bishops,
+        &black_knights,
+        &black_rooks,
+        &black_queens,
+        &black_kings,
+        white_pawns_boards,
+        white_bishops_boards,
+        white_knights_boards,
+        white_rooks_boards,
+        white_queens_boards,
+        white_kings_boards,
+        black_pawns_boards,
+        black_bishops_boards,
+        black_knights_boards,
+        black_rooks_boards,
+        black_queens_boards,
+        black_kings_boards,
+        last);
 
     cudaFree(white_pawns_boards);
     cudaFree(white_bishops_boards);

@@ -166,13 +166,13 @@ void go(short & current_player, int & move_num) {
            new_black_pawns, new_black_bishops, new_black_knights, new_black_rooks, new_black_queens, new_black_kings);
 
     if (current_player == WHITE) {
-        pos64 current_pos = white_pawns & white_bishops & white_knights & white_rooks & white_queens & white_kings;
-        pos64 new_pos = new_white_pawns & new_white_bishops & new_white_knights & new_white_rooks & new_white_queens & new_white_kings;
+        pos64 current_pos = white_pawns | white_bishops | white_knights | white_rooks | white_queens | white_kings;
+        pos64 new_pos = new_white_pawns | new_white_bishops | new_white_knights | new_white_rooks | new_white_queens | new_white_kings;
         std::cout << get_move_string(current_pos, new_pos) << "\n";
     }
     else if (current_player == BLACK) {
-        pos64 current_pos = black_pawns & black_bishops & black_knights & black_rooks & black_queens & black_kings;
-        pos64 new_pos = new_black_pawns & new_black_bishops & new_black_knights & new_black_rooks & new_black_queens & new_black_kings;
+        pos64 current_pos = black_pawns | black_bishops | black_knights | black_rooks | black_queens | black_kings;
+        pos64 new_pos = new_black_pawns | new_black_bishops | new_black_knights | new_black_rooks | new_black_queens | new_black_kings;
         std::cout << get_move_string(current_pos, new_pos) << "\n";
     }
 }
@@ -185,15 +185,15 @@ std::string get_move_string(pos64 current_pos, pos64 new_pos) {
     int to_pos = _log2(to);
     std::string result = "____";
     result[0] = from_pos % 8 + 'a';
-    result[1] = from_pos / 8 + '1';
+    result[1] = '8' - from_pos / 8;
     result[2] = to_pos % 8 + 'a';
-    result[3] = to_pos / 8 + '1';
+    result[3] = '8' - to_pos / 8;
     return result;
 }
 
 int _log2(pos64 x) { // asserting x is a power of two
     for (int i = 0; i < x; i++) {
-        if ((x & (1 << i)) != 0) {
+        if ((x & (((pos64)1) << i)) != 0) {
             return i;
         }
     }
