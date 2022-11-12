@@ -6,8 +6,10 @@
 
 typedef unsigned long long int pos64;
 
-#define DEBUG 1
+#define DEBUG 0
+#define DEBUG2 1
 #define DBG(cmd) if(DEBUG) cmd
+#define DBG2(cmd) if(DEBUG2) cmd
 #define CHECK_ALLOC(alloc) {cudaError_t cu_err;\
     if((cu_err = alloc) != cudaSuccess) ERR(cudaGetErrorString( cu_err ));}
 #define ERR(source) (perror(source),\

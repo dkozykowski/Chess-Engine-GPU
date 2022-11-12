@@ -164,6 +164,11 @@ void go(short & current_player, int & move_num) {
     search(current_player, move_num,
            new_white_pawns, new_white_bishops, new_white_knights, new_white_rooks, new_white_queens, new_white_kings, 
            new_black_pawns, new_black_bishops, new_black_knights, new_black_rooks, new_black_queens, new_black_kings);
+    
+    DBG2(print_position(
+        new_white_pawns, new_white_bishops, new_white_knights, new_white_rooks, new_white_queens, new_white_kings, 
+        new_black_pawns, new_black_bishops, new_black_knights, new_black_rooks, new_black_queens, new_black_kings
+    ));
 
     if (current_player == WHITE) {
         pos64 current_pos = white_pawns | white_bishops | white_knights | white_rooks | white_queens | white_kings;
