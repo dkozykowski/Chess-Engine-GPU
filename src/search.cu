@@ -4,6 +4,8 @@
 #include "macros.cuh"
 #include "evaluate.cuh"
 #include "moves.cuh"
+#include "vector"
+#include "thread"
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 
@@ -177,7 +179,7 @@ __global__ void run_first_stage(pos64 * white_pawns_boards,
                 int * level_sizes,
                 int * subtree_sizes,
                 int basic_offset = 0) {
-    int index = blockIdx.x * 1024 + threadIdx.x;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
     if (index >= level_sizes[level]) return;
     int index_offset = (level == 0 ? 0 : subtree_sizes[level - 1]) + basic_offset;
     int kids_offset = subtree_sizes[level] + index * BOARDS_GENERATED + basic_offset;
@@ -220,7 +222,7 @@ __global__ void run_first_stage_results(int * results,
                 int * subtree_sizes,
                 int * last,
                 int basic_offset = 0) {
-    int index = blockIdx.x * 1024 + threadIdx.x;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
     if (index >= level_sizes[level]) return;
     int index_offset = (level == 0 ? 0 : subtree_sizes[level - 1]) + basic_offset;
     int kids_offset = subtree_sizes[level] + index * BOARDS_GENERATED + basic_offset;
@@ -250,7 +252,7 @@ __global__ void run_first_stage_evaluate(pos64 * white_pawns_boards,
                 int * results,
                 int basic_offset = 0) {
     int level = MAX_DEPTH - FIRST_STAGE_DEPTH;
-    int index = blockIdx.x * 1024 + threadIdx.x;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
     if (index >= level_sizes[level]) return;
     int index_offset = (level == 0 ? 0 : subtree_sizes[level - 1]) + basic_offset;
     
@@ -350,6 +352,10 @@ void search(const short& current_player,
     CHECK_ALLOC(cudaMalloc(&black_queens_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
     CHECK_ALLOC(cudaMalloc(&black_kings_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
     CHECK_ALLOC(cudaMalloc(&results, sizeof(int) * MAX_BOARDS_IN_MEMORY));
+
+    std::vector<std::thread> threads;
+
+
 
     init_searching<<<1, 1>>>(white_pawns_boards,
                 white_bishops_boards,
