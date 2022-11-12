@@ -6,6 +6,7 @@
 
 typedef unsigned long long int pos64;
 
+#define MAX_MUTEXES 100
 #define DEBUG 0
 #define DEBUG2 1
 #define DBG(cmd) if(DEBUG) cmd
