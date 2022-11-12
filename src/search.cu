@@ -46,30 +46,27 @@ __device__ void gather_results(int* results_to, int* results_from, bool maximize
     *results_to = result;
 }  
 
-__device__ __host__ void _init_sizes_tables(int* level_sizes, int * subtree_sizes) {
+void _init_sizes_tables(int* level_sizes, int * subtree_sizes) {
     level_sizes[0] = 1;
     subtree_sizes[0] = 1;
     for (int i = 1;  i <= MAX_DEPTH; i++) {
         level_sizes[i] = level_sizes[i - 1] * BOARDS_GENERATED;
-        subtree_sizes[i] = level_sizes[i - 1] * BOARDS_GENERATED + subtree_sizes[i - 1];
+        subtree_sizes[i] = level_sizes[i] + subtree_sizes[i - 1];
     }
-}
+    subtree_sizes[MAX_DEPTH + 1] = level_sizes[MAX_DEPTH]  + subtree_sizes[MAX_DEPTH];
 
-__global__ void init_sizes_tables(int* level_sizes, int * subtree_sizes) {
-    _init_sizes_tables(level_sizes, subtree_sizes);   
 }
 
 void init() {
     h_level_sizes = new int[MAX_DEPTH + 1];
     h_subtree_sizes = new int[MAX_DEPTH + 2];
-    CHECK_ALLOC(cudaMalloc(&d_level_sizes, sizeof(int) * MAX_DEPTH + 1));
-    CHECK_ALLOC(cudaMalloc(&d_subtree_sizes, sizeof(int) * MAX_DEPTH + 2));
+    CHECK_ALLOC(cudaMalloc(&d_level_sizes, sizeof(int) * (MAX_DEPTH + 1)));
+    CHECK_ALLOC(cudaMalloc(&d_subtree_sizes, sizeof(int) * (MAX_DEPTH + 2)));
     CHECK_ALLOC(cudaMalloc(&last, sizeof(int)));
 
-    init_sizes_tables<<<1, 1>>>(d_level_sizes, d_subtree_sizes);
     _init_sizes_tables(h_level_sizes, h_subtree_sizes);
-    gpuErrchk(cudaDeviceSynchronize());
-    gpuErrchk(cudaPeekAtLastError());
+    gpuErrchk(cudaMemcpy(d_level_sizes, h_level_sizes, sizeof(int) * (MAX_DEPTH + 1), cudaMemcpyHostToDevice));
+    gpuErrchk(cudaMemcpy(d_subtree_sizes, h_subtree_sizes, sizeof(int) * (MAX_DEPTH + 2), cudaMemcpyHostToDevice));
 }
 
 void terminate() {
@@ -177,11 +174,11 @@ __global__ void run_first_stage(pos64 * white_pawns_boards,
                 int * level_sizes,
                 int * subtree_sizes,
                 int basic_offset = 0) {
-    int index = blockIdx.x * 1024 + threadIdx.x;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
     if (index >= level_sizes[level]) return;
     int index_offset = (level == 0 ? 0 : subtree_sizes[level - 1]) + basic_offset;
     int kids_offset = subtree_sizes[level] + index * BOARDS_GENERATED + basic_offset;
-    current_player ^= (level & 1);
+    current_player = (current_player ^ (level & 1));
 
     DBG(if (index != 0) {return;})
     DBG(printf("Generuje ruchy gracza %d od pozycji %d i current_player %d\n", index + index_offset, kids_offset, current_player));
@@ -220,17 +217,16 @@ __global__ void run_first_stage_results(int * results,
                 int * subtree_sizes,
                 int * last,
                 int basic_offset = 0) {
-    int index = blockIdx.x * 1024 + threadIdx.x;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
     if (index >= level_sizes[level]) return;
     int index_offset = (level == 0 ? 0 : subtree_sizes[level - 1]) + basic_offset;
     int kids_offset = subtree_sizes[level] + index * BOARDS_GENERATED + basic_offset;
-    current_player ^= (level & 1);
 
     DBG(if (index != 0) {return;})
     // DBG(printf("Zbieram wyniki gracza %d od pozycji %d i current_player %d i czy maksymalizuje? %d\n", 
     //     index + index_offset, kids_offset, current_player, current_player == WHITE));
 
-    gather_results(&results[index + index_offset], &results[kids_offset], current_player == WHITE, last);
+    gather_results(&results[index + index_offset], &results[kids_offset], current_player == (current_player ^ (level & 1)), last);
 }
 
 __global__ void run_first_stage_evaluate(pos64 * white_pawns_boards,
@@ -250,7 +246,7 @@ __global__ void run_first_stage_evaluate(pos64 * white_pawns_boards,
                 int * results,
                 int basic_offset = 0) {
     int level = MAX_DEPTH - FIRST_STAGE_DEPTH;
-    int index = blockIdx.x * 1024 + threadIdx.x;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
     if (index >= level_sizes[level]) return;
     int index_offset = (level == 0 ? 0 : subtree_sizes[level - 1]) + basic_offset;
     
