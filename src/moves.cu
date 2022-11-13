@@ -298,11 +298,10 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         moves = (noOne(noEaOne(piece)) | eastOne(noEaOne(piece)) | eastOne(soEaOne(piece)) | soOne(soEaOne(piece)) | soOne(soWeOne(piece)) | westOne(soWeOne(piece)) | westOne(noWeOne(piece)) | noOne(noWeOne(piece)));
 
-        occupied = moves & (allPieces ^ enemyPieces);
-        moves = moves ^ occupied;
-        attacks = moves & enemyPieces;
-        moves = moves ^ attacks;
-
+        occupied = (moves & (allPieces ^ enemyPieces));
+        moves = (moves ^ occupied);
+        attacks = (moves & enemyPieces);
+        moves = (moves ^ attacks);
         while(moves != 0 && generatedMoves < BOARDS_GENERATED){
             ownBishops[generatedMoves] = initialOwnBishops;
             ownKings[generatedMoves] = initialOwnKings;
@@ -318,7 +317,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
             singleMove = getLeastSignificantBit(moves);
 
-            ownKnights[generatedMoves] = (initialOwnKnights ^ piece) | singleMove;
+            ownKnights[generatedMoves] = ((initialOwnKnights ^ piece) | singleMove);
 
             moves = resetLeastSignificantBit(moves);
 
@@ -332,7 +331,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             ownQueens[generatedMoves] = initialOwnQueens;
             ownRooks[generatedMoves] = initialOwnRooks;
 
-            singleMove = getLeastSignificantBit(moves);
+            singleMove = getLeastSignificantBit(attacks);
 
             ownKnights[generatedMoves] = (initialOwnKnights ^ piece) | singleMove;
 
@@ -343,7 +342,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
             enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
 
-            moves = resetLeastSignificantBit(moves);
+            attacks = resetLeastSignificantBit(attacks);
 
             generatedMoves++;
         }
@@ -388,7 +387,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
         ownQueens[generatedMoves] = initialOwnQueens;
         ownRooks[generatedMoves] = initialOwnRooks;
 
-        singleMove = getLeastSignificantBit(moves);
+        singleMove = getLeastSignificantBit(attacks);
 
         ownKings[generatedMoves] = (initialOwnKings ^ piece) | singleMove;
 
@@ -399,7 +398,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
         enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
         enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
 
-        moves = resetLeastSignificantBit(moves);
+        attacks = resetLeastSignificantBit(attacks);
 
         generatedMoves++;
     }
@@ -588,6 +587,13 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             generatedMoves++;
         }
         movingBishops = resetLeastSignificantBit(movingBishops);
+    }
+
+    if(generatedMoves == 0){
+        if(*start_white_pawns_boards != 0 || *start_white_bishops_boards != 0 ||  *start_white_knights_boards != 0 || *start_white_rooks_boards != 0 ||  *start_white_queens_boards != 0 || *start_white_kings_boards != 0 || *start_black_pawns_boards != 0 ||  *start_black_bishops_boards != 0 || *start_black_knights_boards != 0 ||  *start_black_rooks_boards != 0 || *start_black_queens_boards != 0 || *start_black_kings_boards != 0){
+        printf("some trouble with move generation\n");
+        printf("%lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld \n", *start_white_pawns_boards, *start_white_bishops_boards, *start_white_knights_boards, *start_white_rooks_boards, *start_white_queens_boards, *start_white_kings_boards, *start_black_pawns_boards, *start_black_bishops_boards, *start_black_knights_boards, *start_black_rooks_boards, *start_black_queens_boards, *start_black_kings_boards);
+        }
     }
 
     for(int i = generatedMoves; i < BOARDS_GENERATED; i++)
