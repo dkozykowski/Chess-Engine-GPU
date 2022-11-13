@@ -4,3 +4,14 @@
 src/.*
 *engine*
 *2.*
+ ALL_BUILD.vcxproj
+ALL_BUILD.vcxproj.filters
+CMakeCache.txt
+CMakeFiles/
+Project.sln
+ZERO_CHECK.vcxproj
+ZERO_CHECK.vcxproj.filters
+cmake_install.cmake
+runTests.vcxproj
+runTests.vcxproj.filters
+ALL_BUILD.vcxproj
