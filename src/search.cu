@@ -372,8 +372,6 @@ void search(const short& current_player,
     std::vector<std::thread> threads;
     int devices_count;
     cudaGetDeviceCount(&devices_count);
-    devices_count = devices_count <= MAX_MUTEXES ? devices_count : MAX_MUTEXES;
-    std::mutex mutexes[MAX_MUTEXES];
     for (int i = 0; i < devices_count; i++) {
         cudaSetDevice(i);
         CHECK_ALLOC(cudaMalloc(&white_pawns_boards, sizeof(pos64) * MAX_BOARDS_IN_MEMORY));
@@ -446,31 +444,11 @@ void search(const short& current_player,
     // second stage
     int basic_offset = h_subtree_sizes[FIRST_STAGE_DEPTH] + 1;
     int player_offset = h_subtree_sizes[FIRST_STAGE_DEPTH - 1];
-    for (int o = 0; o < h_level_sizes[FIRST_STAGE_DEPTH - 1]; o++) {
-
-        threads.push_back (std::thread ([&,o] () {
-            int device_id = o % devices_count;
-            mutexes[device_id].lock();
-                
-            set_device_and_copy_data(white_pawns_boards,
-                    white_bishops_boards,
-                    white_knights_boards,
-                    white_rooks_boards,
-                    white_queens_boards,
-                    white_kings_boards,
-                    black_pawns_boards,
-                    black_bishops_boards,
-                    black_knights_boards,
-                    black_rooks_boards,
-                    black_queens_boards,
-                    black_kings_boards, 
-                    player_offset + o,
-                    basic_offset,
-                    device_id);
-
-            //generating moves
-            for (int i = 0; i < MAX_DEPTH - FIRST_STAGE_DEPTH; i++) {
-                run_first_stage<<<BLOCKS, THREADS>>>(white_pawns_boards,
+    for (int j = 0; j < devices_count; j++) {
+        threads.push_back (std::thread ([&,j] () {
+            for (int o = j; o < h_level_sizes[FIRST_STAGE_DEPTH - 1]; o += devices_count) 
+            {
+                set_device_and_copy_data(white_pawns_boards,
                         white_bishops_boards,
                         white_knights_boards,
                         white_rooks_boards,
@@ -481,51 +459,68 @@ void search(const short& current_player,
                         black_knights_boards,
                         black_rooks_boards,
                         black_queens_boards,
-                        black_kings_boards,
-                        i,
-                        current_player ^ (i & 1) ^ ((FIRST_STAGE_DEPTH + i) & 1),
-                        d_level_sizes,
-                        d_subtree_sizes,
-                        basic_offset);
+                        black_kings_boards, 
+                        player_offset + o,
+                        basic_offset,
+                        j);
+
+                //generating moves
+                for (int i = 0; i < MAX_DEPTH - FIRST_STAGE_DEPTH; i++) {
+                    run_first_stage<<<BLOCKS, THREADS>>>(white_pawns_boards,
+                            white_bishops_boards,
+                            white_knights_boards,
+                            white_rooks_boards,
+                            white_queens_boards,
+                            white_kings_boards,
+                            black_pawns_boards,
+                            black_bishops_boards,
+                            black_knights_boards,
+                            black_rooks_boards,
+                            black_queens_boards,
+                            black_kings_boards,
+                            i,
+                            current_player ^ (i & 1) ^ ((FIRST_STAGE_DEPTH + i) & 1),
+                            d_level_sizes,
+                            d_subtree_sizes,
+                            basic_offset);
+                    gpuErrchk(cudaDeviceSynchronize());
+                    gpuErrchk(cudaPeekAtLastError());
+                }
+
+                // evaluating
+                run_first_stage_evaluate<<<BLOCKS, THREADS>>>(white_pawns_boards,
+                            white_bishops_boards,
+                            white_knights_boards,
+                            white_rooks_boards,
+                            white_queens_boards,
+                            white_kings_boards,
+                            black_pawns_boards,
+                            black_bishops_boards,
+                            black_knights_boards,
+                            black_rooks_boards,
+                            black_queens_boards,
+                            black_kings_boards,
+                            d_level_sizes,
+                            d_subtree_sizes,
+                            results,
+                            basic_offset);
                 gpuErrchk(cudaDeviceSynchronize());
                 gpuErrchk(cudaPeekAtLastError());
+                
+                // gathering results
+                for (int i = MAX_DEPTH - FIRST_STAGE_DEPTH - 1; i >= 0 ; i--) {
+                    run_first_stage_results<<<BLOCKS, THREADS>>>(results,
+                            i,
+                            current_player ^ (i & 1) ^ ((FIRST_STAGE_DEPTH + i) & 1),
+                            d_level_sizes,
+                            d_subtree_sizes,
+                            last,
+                            basic_offset);
+                    gpuErrchk(cudaDeviceSynchronize());
+                    gpuErrchk(cudaPeekAtLastError());   
+                }
+                unset_device_and_copy_result(results, basic_offset, player_offset + o);
             }
-
-            // evaluating
-            run_first_stage_evaluate<<<BLOCKS, THREADS>>>(white_pawns_boards,
-                        white_bishops_boards,
-                        white_knights_boards,
-                        white_rooks_boards,
-                        white_queens_boards,
-                        white_kings_boards,
-                        black_pawns_boards,
-                        black_bishops_boards,
-                        black_knights_boards,
-                        black_rooks_boards,
-                        black_queens_boards,
-                        black_kings_boards,
-                        d_level_sizes,
-                        d_subtree_sizes,
-                        results,
-                        basic_offset);
-            gpuErrchk(cudaDeviceSynchronize());
-            gpuErrchk(cudaPeekAtLastError());
-            
-            // gathering results
-            for (int i = MAX_DEPTH - FIRST_STAGE_DEPTH - 1; i >= 0 ; i--) {
-                run_first_stage_results<<<BLOCKS, THREADS>>>(results,
-                        i,
-                        current_player ^ (i & 1) ^ ((FIRST_STAGE_DEPTH + i) & 1),
-                        d_level_sizes,
-                        d_subtree_sizes,
-                        last,
-                        basic_offset);
-                gpuErrchk(cudaDeviceSynchronize());
-                gpuErrchk(cudaPeekAtLastError());   
-            }
-
-            unset_device_and_copy_result(results, basic_offset, player_offset + o);
-            mutexes[device_id].unlock();
         }));
     }
 
