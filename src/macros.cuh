@@ -17,8 +17,8 @@ typedef unsigned long long int pos64;
             fprintf(stderr,"%s:%d\n",__FILE__,__LINE__),\
             exit(EXIT_FAILURE))
 
-#define THREADS 1024
-#define BLOCKS 65535
+#define THREADS 256
+#define BLOCKS 5000
 
 #define MAX_BOARDS_SIMULTANEOUSLY THREADS * BLOCKS
 #define MAX_BOARDS_IN_MEMORY 7e7
