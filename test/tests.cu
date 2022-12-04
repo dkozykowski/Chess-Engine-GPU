@@ -267,7 +267,7 @@ TEST(GenerateMovesTest, WhiteKnightMovesTests) {
     int generated_attacks_count = 0;
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {
-        if (white_king_moves[x]) == 0) break;
+        if (white_king_moves[x] == 0) break;
         if(white_pawn_moves[x] < white_pawns){ 
             generated_attacks_count++;
         }
