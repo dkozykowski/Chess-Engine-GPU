@@ -623,9 +623,6 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
         }
     }
 
-    printf("generated : %d\n", generatedMoves);
-
-    printf("White pawns: %lld\n", *start_white_pawns_boards);
 
     for(int i = generatedMoves; i < BOARDS_GENERATED; i++)
     {
