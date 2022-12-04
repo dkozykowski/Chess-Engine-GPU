@@ -288,7 +288,7 @@ TEST(GenerateMovesTest, BlackKnightMovesTests) {
     pos64 white_queens = 0;
     pos64 white_kings = 0;
 
-    pos64 black_pawns = BLACK_PAWN_STARTING_POS;
+    pos64 black_pawns = BLACk_PAWN_STARTING_POS;
     pos64 black_bishops = BLACK_BISHOP_STARTING_POS;
     pos64 black_knights = BLACK_KNIGHT_STARTING_POS;
     pos64 black_rooks = BLACK_ROOK_STARTING_POS;
@@ -319,11 +319,11 @@ TEST(GenerateMovesTest, BlackKnightMovesTests) {
                 white_pawn_moves, white_bishop_moves, white_knight_moves, white_rook_moves, white_queen_moves, white_king_moves, 
                 black_pawn_moves, black_bishop_moves, black_knight_moves, black_rook_moves, black_queen_moves,  black_king_moves,
                 current_player);
-        int generated_moves_count = 0;
+    int generated_moves_count = 0;
     int generated_attacks_count = 0;
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {
-        if (black_king_moves[x]) == 0) break;
+        if (black_king_moves[x] == 0) break;
         if(black_pawn_moves[x] < black_pawns){ 
             generated_attacks_count++;
         }
@@ -379,7 +379,7 @@ TEST(GenerateMovesTest, WhiteRookMovesTests) {
     int generated_attacks_count = 0;
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {
-        if (white_king_moves[x]) == 0) break;
+        if (white_king_moves[x] == 0) break;
         if(white_pawn_moves[x] < white_pawns){ 
             generated_attacks_count++;
         }
@@ -400,7 +400,7 @@ TEST(GenerateMovesTest, BlackRookMovesTests) {
     pos64 white_queens = 0;
     pos64 white_kings = 0;
 
-    pos64 black_pawns = BLACK_PAWN_STARTING_POS;
+    pos64 black_pawns = BLACk_PAWN_STARTING_POS;
     pos64 black_bishops = BLACK_BISHOP_STARTING_POS;
     pos64 black_knights = BLACK_KNIGHT_STARTING_POS;
     pos64 black_rooks = BLACK_ROOK_STARTING_POS;
@@ -431,11 +431,11 @@ TEST(GenerateMovesTest, BlackRookMovesTests) {
                 white_pawn_moves, white_bishop_moves, white_knight_moves, white_rook_moves, white_queen_moves, white_king_moves, 
                 black_pawn_moves, black_bishop_moves, black_knight_moves, black_rook_moves, black_queen_moves,  black_king_moves,
                 current_player);
-        int generated_moves_count = 0;
+    int generated_moves_count = 0;
     int generated_attacks_count = 0;
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {
-        if (black_king_moves[x]) == 0) break;
+        if (black_king_moves[x] == 0) break;
         if(black_pawn_moves[x] < black_pawns){ 
             generated_attacks_count++;
         }
