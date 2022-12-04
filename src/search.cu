@@ -180,7 +180,7 @@ void search(const short& current_player,
         // evaluating
 
         pos64 *lowestLevelAdress = secStageBoards + (h_subtree_sizes[MAX_DEPTH - FIRST_STAGE_DEPTH - 1] * BOARD_SIZE);
-        evaluate_boards<<<BLOCKS, THREADS>>>(lowestLevelAdress, h_level_sizes[MAX_DEPTH - FIRST_STAGE_DEPTH], secStageResult);
+        evaluate_boards<<<BLOCKS, THREADS>>>(lowestLevelAdress, h_level_sizes[MAX_DEPTH - FIRST_STAGE_DEPTH], secStageResult + h_subtree_sizes[MAX_DEPTH - FIRST_STAGE_DEPTH - 1]);
         gpuErrchk(cudaDeviceSynchronize());
         gpuErrchk(cudaPeekAtLastError());
         DBG(printf("Stage finished successfully\n"));
