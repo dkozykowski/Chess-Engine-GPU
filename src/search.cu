@@ -99,7 +99,7 @@ __global__ void evaluate_boards(pos64 * boards,
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     if (index >= boardCount) return;
     pos64 *board_address = boards + (index * BOARD_SIZE);
-    if (board_address[WHITE_KING_OFFSET] == 0 | board_address[BLACK_KING_OFFSET] == 0) { // is it properly handled ??
+    if (board_address[WHITE_KING_OFFSET] == 0 && board_address[BLACK_KING_OFFSET] == 0) { // is it properly handled ??
         results[index] = INF;    
     }
     else {
