@@ -283,7 +283,7 @@ TEST(GenerateMovesTest, WhiteKnightMovesTests) {
     // given
     pos64 white_pawns = 0;
     pos64 white_bishops = 0;
-    pos64 white_knights = 268435456;
+    pos64 white_knights = 68719476736;
     pos64 white_rooks = 0;
     pos64 white_queens = 0;
     pos64 white_kings = 0;
@@ -396,7 +396,7 @@ TEST(GenerateMovesTest, WhiteRookMovesTests) {
     pos64 white_pawns = 0;
     pos64 white_bishops = 0;
     pos64 white_knights = 0;
-    pos64 white_rooks = 268435456;
+    pos64 white_rooks = 68719476736;
     pos64 white_queens = 0;
     pos64 white_kings = 0;
 
