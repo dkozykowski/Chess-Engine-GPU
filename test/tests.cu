@@ -447,7 +447,7 @@ TEST(GenerateMovesTest, WhiteRookMovesTests) {
     ASSERT_EQ(1, generated_attacks_count);
 }
 
-TEST(GenerateMovesTest, BlackRookMovesTests) {
+TEST(GenerateMovesTest, BlackBishopMovesTests) {
     // given
     pos64 white_pawns = WHITE_PAWN_STARTING_POS;
     pos64 white_bishops = WHITE_BISHOP_STARTING_POS;
@@ -503,7 +503,7 @@ TEST(GenerateMovesTest, BlackRookMovesTests) {
     ASSERT_EQ(2, generated_attacks_count);
 }
 
-TEST(GenerateMovesTest, WhiteRookMovesTests) {
+TEST(GenerateMovesTest, WhiteBishopMovesTests) {
     // given
     pos64 white_pawns = 0;
     pos64 white_bishops = 68719476736;
