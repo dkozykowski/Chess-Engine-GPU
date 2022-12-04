@@ -1,6 +1,8 @@
 #ifndef EVALUATE_H_INCLUDED
 #define EVALUATE_H_INCLUDED
 
+#include "macros.cuh"
+
 // implementation of PeSTO's evaluation function 
 // source: https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
 

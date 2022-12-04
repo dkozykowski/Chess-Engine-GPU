@@ -110,8 +110,8 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
 
         // generate pawn moves forward
         moves = noOne(initialOwnPawns);
-        occupied = moves & allPieces;
-        moves = moves ^ occupied;         
+        occupied = (moves & allPieces);
+        moves = (moves ^ occupied);         
 
         while(moves != 0 && generatedMoves < BOARDS_GENERATED) {
             black_pawns_boards[generatedMoves] = initialEnemyPawns;
@@ -134,7 +134,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
         }
 
         // generate pawn attacks east
-        moves = noEaOne(initialOwnPawns) & enemyPieces;
+        moves = (noEaOne(initialOwnPawns) & enemyPieces);
         while(moves != 0 && generatedMoves < BOARDS_GENERATED){
             white_bishops_boards[generatedMoves] = initialOwnBishops;
             white_knights_boards[generatedMoves] = initialOwnKnights;
@@ -159,7 +159,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
         }
 
         // generate pawn attacks west
-        moves = noWeOne(white_pawns_boards[0]) & enemyPieces;
+        moves = (noWeOne(initialOwnPawns) & enemyPieces);
         while(moves != 0 && generatedMoves < BOARDS_GENERATED){
             white_bishops_boards[generatedMoves] = initialOwnBishops;
             white_knights_boards[generatedMoves] = initialOwnKnights;
@@ -215,8 +215,8 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
         
         // generate pawn moves forward
         moves = soOne(initialOwnPawns);
-        occupied = moves & allPieces;
-        moves = moves ^ occupied;         
+        occupied = (moves & allPieces);
+        moves = (moves ^ occupied);         
 
         while(moves != 0 && generatedMoves < BOARDS_GENERATED) {
             black_bishops_boards[generatedMoves] = initialOwnBishops;
@@ -239,7 +239,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
         }
 
         // generate pawn attacks east
-        moves = soEaOne(initialOwnPawns) & enemyPieces;
+        moves = (soEaOne(initialOwnPawns) & enemyPieces);
         while(moves != 0 && generatedMoves < BOARDS_GENERATED){
             black_bishops_boards[generatedMoves] = initialOwnBishops;
             black_knights_boards[generatedMoves] = initialOwnKnights;
@@ -264,7 +264,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
         }
 
         // generate pawn attacks west
-        moves = soWeOne(initialOwnPawns) & enemyPieces;
+        moves = (soWeOne(initialOwnPawns) & enemyPieces);
         while(moves != 0 && generatedMoves < BOARDS_GENERATED){
             black_bishops_boards[generatedMoves] = initialOwnBishops;
             black_knights_boards[generatedMoves] = initialOwnKnights;
@@ -428,6 +428,10 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
             enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
             generatedMoves++;
+
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
         }
 
         // moving west
@@ -450,6 +454,10 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
             enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
             generatedMoves++;
+
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
         }
 
         // moving south
@@ -472,6 +480,10 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
             enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
             generatedMoves++;
+
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
         }
 
         // moving east
@@ -494,6 +506,9 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
             enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
             generatedMoves++;
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
         }
         movingRooks = resetLeastSignificantBit(movingRooks);
     }
@@ -522,6 +537,9 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
             enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
             generatedMoves++;
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
         }
 
         // moving north west
@@ -543,6 +561,9 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
             enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
             generatedMoves++;
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
         }
 
         // moving south west
@@ -564,6 +585,9 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
             enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
             generatedMoves++;
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
         }
 
         // moving south east
@@ -585,6 +609,9 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
             enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
             generatedMoves++;
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
         }
         movingBishops = resetLeastSignificantBit(movingBishops);
     }
@@ -595,6 +622,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
         printf("%lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld \n", *start_white_pawns_boards, *start_white_bishops_boards, *start_white_knights_boards, *start_white_rooks_boards, *start_white_queens_boards, *start_white_kings_boards, *start_black_pawns_boards, *start_black_bishops_boards, *start_black_knights_boards, *start_black_rooks_boards, *start_black_queens_boards, *start_black_kings_boards);
         }
     }
+
 
     for(int i = generatedMoves; i < BOARDS_GENERATED; i++)
     {
