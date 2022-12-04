@@ -148,23 +148,36 @@ void print_eval() {
 }
 
 void go(short & current_player, int & move_num) {
-    pos64 new_white_pawns = white_pawns;
-    pos64 new_white_bishops = white_bishops;
-    pos64 new_white_knights = white_knights;
-    pos64 new_white_rooks = white_rooks;
-    pos64 new_white_queens = white_queens;
-    pos64 new_white_kings = white_kings;
-    pos64 new_black_pawns = black_pawns;
-    pos64 new_black_bishops = black_bishops;
-    pos64 new_black_knights = black_knights;
-    pos64 new_black_rooks = black_rooks;
-    pos64 new_black_queens = black_queens;
-    pos64 new_black_kings = black_kings;
 
-    search(current_player, move_num,
-           new_white_pawns, new_white_bishops, new_white_knights, new_white_rooks, new_white_queens, new_white_kings, 
-           new_black_pawns, new_black_bishops, new_black_knights, new_black_rooks, new_black_queens, new_black_kings);
+    pos64 * position = new pos64[12];
+    position[WHITE_PAWN_OFFSET] = white_pawns;
+    position[WHITE_BISHOP_OFFSET] = white_bishops;
+    position[WHITE_KNIGHT_OFFSET] = white_knights;
+    position[WHITE_ROOK_OFFSET] = white_rooks;
+    position[WHITE_QUEEN_OFFSET] = white_queens;
+    position[WHITE_KING_OFFSET] = white_kings;
+    position[BLACK_PAWN_OFFSET] = black_pawns;
+    position[BLACK_BISHOP_OFFSET] = black_bishops;
+    position[BLACK_KNIGHT_OFFSET] = black_knights;
+    position[BLACK_ROOK_OFFSET] = black_rooks;
+    position[BLACK_QUEEN_OFFSET] = black_queens;
+    position[BLACK_KING_OFFSET] = black_kings;
     
+    search(current_player, move_num, position);
+
+    pos64 new_white_pawns = position[WHITE_PAWN_OFFSET];
+    pos64 new_white_bishops = position[WHITE_BISHOP_OFFSET];
+    pos64 new_white_knights = position[WHITE_KNIGHT_OFFSET];
+    pos64 new_white_rooks = position[WHITE_ROOK_OFFSET];
+    pos64 new_white_queens = position[WHITE_QUEEN_OFFSET];
+    pos64 new_white_kings = position[WHITE_KING_OFFSET];
+    pos64 new_black_pawns = position[BLACK_PAWN_OFFSET];
+    pos64 new_black_bishops = position[BLACK_BISHOP_OFFSET];
+    pos64 new_black_knights = position[BLACK_KNIGHT_OFFSET];
+    pos64 new_black_rooks = position[BLACK_ROOK_OFFSET];
+    pos64 new_black_queens = position[BLACK_QUEEN_OFFSET];
+    pos64 new_black_kings = position[BLACK_KING_OFFSET];
+
     DBG2(print_position(
         new_white_pawns, new_white_bishops, new_white_knights, new_white_rooks, new_white_queens, new_white_kings, 
         new_black_pawns, new_black_bishops, new_black_knights, new_black_rooks, new_black_queens, new_black_kings
@@ -208,51 +221,38 @@ int _log2(pos64 x) { // asserting x is a power of two
 void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, pos64 white_rooks, pos64 white_queens, pos64 white_kings,
                 pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings, short current_player) 
 {
-    pos64 *white_pawn_moves, *white_bishop_moves, *white_knight_moves, *white_rook_moves, *white_queen_moves, *white_king_moves, 
-        *black_pawn_moves, *black_bishop_moves, *black_knight_moves, *black_rook_moves, *black_queen_moves, *black_king_moves;
+    pos64 *position = new pos64[12];
+    pos64 *generatedBoards = new pos64[BOARDS_GENERATED * BOARD_SIZE];
 
-    white_pawn_moves = new pos64[BOARDS_GENERATED];
-    white_bishop_moves = new pos64[BOARDS_GENERATED];
-    white_knight_moves = new pos64[BOARDS_GENERATED];
-    white_rook_moves = new pos64[BOARDS_GENERATED];
-    white_queen_moves = new pos64[BOARDS_GENERATED];
-    white_king_moves = new pos64[BOARDS_GENERATED];
-    black_pawn_moves = new pos64[BOARDS_GENERATED];
-    black_bishop_moves = new pos64[BOARDS_GENERATED];
-    black_knight_moves = new pos64[BOARDS_GENERATED];
-    black_rook_moves = new pos64[BOARDS_GENERATED];
-    black_queen_moves = new pos64[BOARDS_GENERATED];
-    black_king_moves = new pos64[BOARDS_GENERATED];
+    position[WHITE_PAWN_OFFSET] = white_pawns;
+    position[WHITE_BISHOP_OFFSET] = white_bishops;
+    position[WHITE_KNIGHT_OFFSET] = white_knights;
+    position[WHITE_ROOK_OFFSET] = white_rooks;
+    position[WHITE_QUEEN_OFFSET] = white_queens;
+    position[WHITE_KING_OFFSET] = white_kings;
+    position[BLACK_PAWN_OFFSET] = black_pawns;
+    position[BLACK_BISHOP_OFFSET] = black_bishops;
+    position[BLACK_KNIGHT_OFFSET] = black_knights;
+    position[BLACK_ROOK_OFFSET] = black_rooks;
+    position[BLACK_QUEEN_OFFSET] = black_queens;
+    position[BLACK_KING_OFFSET] = black_kings;
 
-    generate_moves(&white_pawns, &white_bishops, &white_knights, &white_rooks, &white_queens, &white_kings, 
-                &black_pawns, &black_bishops, &black_knights, &black_rooks, &black_queens, &black_kings,
-                white_pawn_moves, white_bishop_moves, white_knight_moves, white_rook_moves, white_queen_moves, white_king_moves, 
-                black_pawn_moves, black_bishop_moves, black_knight_moves, black_rook_moves, black_queen_moves,  black_king_moves,
-                current_player);
+    generate_moves(position, generatedBoards, current_player == WHITE);
     std::string any;
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {
-        if ((black_king_moves[x] | white_king_moves[x]) == 0) break;
-        print_position(white_pawn_moves[x], white_bishop_moves[x], white_knight_moves[x], white_rook_moves[x], white_queen_moves[x], white_king_moves[x], 
-                black_pawn_moves[x], black_bishop_moves[x], black_knight_moves[x], black_rook_moves[x], black_queen_moves[x],  black_king_moves[x]);
+        if (((generatedBoards + (x * BOARD_SIZE))[BLACK_KING_OFFSET] | (generatedBoards + (x * BOARD_SIZE))[WHITE_KING_OFFSET]) == 0) break;
+        print_position((generatedBoards + (x * BOARD_SIZE))[WHITE_PAWN_OFFSET], (generatedBoards + (x * BOARD_SIZE))[WHITE_BISHOP_OFFSET], (generatedBoards + (x * BOARD_SIZE))[WHITE_KNIGHT_OFFSET],
+         (generatedBoards + (x * BOARD_SIZE))[WHITE_ROOK_OFFSET], (generatedBoards + (x * BOARD_SIZE))[WHITE_QUEEN_OFFSET], (generatedBoards + (x * BOARD_SIZE))[WHITE_KING_OFFSET], 
+        (generatedBoards + (x * BOARD_SIZE))[BLACK_PAWN_OFFSET], (generatedBoards + (x * BOARD_SIZE))[BLACK_BISHOP_OFFSET], (generatedBoards + (x * BOARD_SIZE))[BLACK_KNIGHT_OFFSET],
+         (generatedBoards + (x * BOARD_SIZE))[BLACK_ROOK_OFFSET], (generatedBoards + (x * BOARD_SIZE))[BLACK_QUEEN_OFFSET], (generatedBoards + (x * BOARD_SIZE))[BLACK_KING_OFFSET]);
         
         std::getline(std::cin, any);
         if(any == "q")
             break;
     }
 
-    free(white_pawn_moves);
-    free(white_bishop_moves);
-    free(white_knight_moves);
-    free(white_rook_moves);
-    free(white_queen_moves);
-    free(white_king_moves);
-    free(black_pawn_moves);
-    free(black_bishop_moves);
-    free(black_knight_moves);
-    free(black_rook_moves);
-    free(black_queen_moves);
-    free(black_king_moves);
-
+    free(position);
+    free(generatedBoards);
 }
 } // namespace UCI

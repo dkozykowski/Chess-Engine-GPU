@@ -1,5 +1,13 @@
 #include "moves.cuh"
 
+#define PAWN_OFFSET 0
+#define KNIGHT_OFFSET 1
+#define BISHOP_OFFSET 2
+#define ROOK_OFFSET 3
+#define QUEEN_OFFSET 4
+#define KING_OFFSET 5
+
+
 __host__ __device__ pos64 eastOne (pos64 position){
     return ((position << 1) & NOT_A_FILE);
 }
@@ -44,255 +52,168 @@ __host__ __device__ pos64 checkIfTakenAndAssign(pos64 pieces, pos64 attack) {
     return pieces ^ (attack & pieces);
 }
 
-__host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
-                    pos64 * start_white_bishops_boards,
-                    pos64 * start_white_knights_boards,
-                    pos64 * start_white_rooks_boards,
-                    pos64 * start_white_queens_boards,
-                    pos64 * start_white_kings_boards,
-                    pos64 * start_black_pawns_boards,
-                    pos64 * start_black_bishops_boards,
-                    pos64 * start_black_knights_boards,
-                    pos64 * start_black_rooks_boards,
-                    pos64 * start_black_queens_boards,
-                    pos64 * start_black_kings_boards,
-                    pos64 * white_pawns_boards,
-                    pos64 * white_bishops_boards,
-                    pos64 * white_knights_boards,
-                    pos64 * white_rooks_boards,
-                    pos64 * white_queens_boards,
-                    pos64 * white_kings_boards,
-                    pos64 * black_pawns_boards,
-                    pos64 * black_bishops_boards,
-                    pos64 * black_knights_boards,
-                    pos64 * black_rooks_boards,
-                    pos64 * black_queens_boards,
-                    pos64 * black_kings_boards,
-                    short current_player) {
-    // zakladamy, ze korzeniem drzewa, czyli graczem dla którego szukamu ruchu, jest gracz CZARNY
-    // zakladamy, ze korzen ma numer 0
+__host__ __device__ void copyPosition(pos64 *from, pos64 *to) {
+    for(int i = 0; i < BOARD_SIZE; i++) {
+        to[i] = from[i];
+    }
+}
 
-    pos64 initialOwnPawns, initialOwnBishops, initialOwnKnights, initialOwnRooks, initialOwnQueens, initialOwnKings, initialEnemyPawns, initialEnemyBishops, initialEnemyKnights, initialEnemyRooks, initialEnemyQueens, initialEnemyKings;
-    pos64 *ownKnights, *ownRooks, *ownQueens, *ownKings, *ownBishops, *ownPawns, *enemyKnights, *enemyRooks, *enemyQueens, *enemyKings, *enemyBishops, *enemyPawns;
-    pos64 allPieces =  *start_white_pawns_boards | *start_white_bishops_boards | *start_white_knights_boards | *start_white_rooks_boards | *start_white_queens_boards | *start_white_kings_boards |
-        *start_black_pawns_boards | *start_black_bishops_boards | *start_black_knights_boards | *start_black_rooks_boards | *start_black_queens_boards | *start_black_kings_boards;
+__host__ __device__ void copyOneColorPieces(pos64 *from, pos64 *to) {
+    for(int i = 0; i < BOARD_SIZE / 2; i++) {
+        to[i] = from[i];
+    }
+}
 
-    pos64 enemyPieces, moves, occupied, singleMove;
+__host__ __device__ void copyOneColorPiecesAndCheckIfTaken(pos64 *from, pos64* to, pos64 attack){
+            for(int i = 0; i < BOARD_SIZE / 2; i++) {
+        to[i] = checkIfTakenAndAssign(from[i], attack);
+    }
+}
+
+__device__ __host__ bool isEmpty(pos64 *boards) {
+    if(boards[WHITE_PAWN_OFFSET] == 0 && boards[WHITE_BISHOP_OFFSET] == 0 && boards[WHITE_KNIGHT_OFFSET] == 0
+    && boards[WHITE_ROOK_OFFSET] == 0 && boards[WHITE_QUEEN_OFFSET] == 0 && boards[WHITE_KING_OFFSET] == 0
+    && boards[BLACK_PAWN_OFFSET] == 0 && boards[BLACK_BISHOP_OFFSET] == 0 && boards[BLACK_KNIGHT_OFFSET] == 0
+    && boards[BLACK_ROOK_OFFSET] == 0 && boards[BLACK_QUEEN_OFFSET] == 0 && boards[BLACK_KING_OFFSET] == 0) {
+        return true;
+    }
+    return false;
+}
+
+__host__ __device__ void generate_moves(pos64 *starting_boards, pos64 * generated_boards_space, bool isWhite) {
     int generatedMoves = 0;
-    if (current_player == WHITE) { // white pawn moves
-        enemyPieces = *start_black_pawns_boards | *start_black_bishops_boards | *start_black_knights_boards | *start_black_rooks_boards | *start_black_queens_boards | *start_black_kings_boards;
-        
-        initialOwnPawns = *start_white_pawns_boards;
-        initialOwnBishops = *start_white_bishops_boards;
-        initialOwnKnights = *start_white_knights_boards;
-        initialOwnRooks = *start_white_rooks_boards;
-        initialOwnQueens  = *start_white_queens_boards;
-        initialOwnKings  = *start_white_kings_boards;
-        initialEnemyPawns = *start_black_pawns_boards;
-        initialEnemyBishops = *start_black_bishops_boards;
-        initialEnemyKnights = *start_black_knights_boards;
-        initialEnemyRooks = *start_black_rooks_boards;
-        initialEnemyQueens  = *start_black_queens_boards;
-        initialEnemyKings  = *start_black_kings_boards;
 
-        ownKnights = white_knights_boards;
-        ownRooks = white_rooks_boards;
-        ownQueens = white_queens_boards;
-        ownKings = white_kings_boards;
-        ownBishops = white_bishops_boards;
-        ownPawns = white_pawns_boards;
-        enemyKnights = black_knights_boards;
-        enemyRooks = black_rooks_boards;
-        enemyQueens = black_queens_boards;
-        enemyKings = black_kings_boards;
-        enemyBishops = black_bishops_boards;
-        enemyPawns = black_pawns_boards;
+    if(isEmpty(starting_boards)) {
+        for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+            generated_boards_space[i] = 0;
+        }
+        return;
+    }
 
-        // generate pawn moves forward
-        moves = noOne(initialOwnPawns);
+    pos64 *startingOwnPieces, *startingEnemyPieces;
+    pos64 allPieces =  (starting_boards[WHITE_PAWN_OFFSET] | starting_boards[WHITE_BISHOP_OFFSET] | starting_boards[WHITE_KNIGHT_OFFSET] | starting_boards[WHITE_ROOK_OFFSET] | starting_boards[WHITE_QUEEN_OFFSET] | starting_boards[WHITE_KING_OFFSET] |
+        starting_boards[BLACK_PAWN_OFFSET] | starting_boards[BLACK_BISHOP_OFFSET] | starting_boards[BLACK_KNIGHT_OFFSET] | starting_boards[BLACK_ROOK_OFFSET] | starting_boards[BLACK_QUEEN_OFFSET] | starting_boards[BLACK_KING_OFFSET]);
+    pos64 enemyPieces, moves, occupied, singleMove;
+
+    int currentBoardOffset = 0;
+    int ownPiecesOffset, enemyPiecesOffset;
+    if(isWhite) {
+        ownPiecesOffset = WHITE_PAWN_OFFSET;
+        enemyPiecesOffset = BLACK_PAWN_OFFSET;
+        startingOwnPieces = starting_boards + WHITE_PAWN_OFFSET;
+        startingEnemyPieces = starting_boards + BLACK_PAWN_OFFSET;
+        enemyPieces = (starting_boards[BLACK_PAWN_OFFSET] | starting_boards[BLACK_BISHOP_OFFSET] | starting_boards[BLACK_KNIGHT_OFFSET] | starting_boards[BLACK_ROOK_OFFSET] | starting_boards[BLACK_QUEEN_OFFSET] | starting_boards[BLACK_KING_OFFSET]);
+    } else {
+        ownPiecesOffset = BLACK_PAWN_OFFSET;
+        enemyPiecesOffset = WHITE_PAWN_OFFSET;
+        startingOwnPieces = starting_boards + BLACK_PAWN_OFFSET;
+        startingEnemyPieces = starting_boards + WHITE_PAWN_OFFSET;
+        enemyPieces = (starting_boards[WHITE_PAWN_OFFSET] | starting_boards[WHITE_BISHOP_OFFSET] | starting_boards[WHITE_KNIGHT_OFFSET] | starting_boards[WHITE_ROOK_OFFSET] | starting_boards[WHITE_QUEEN_OFFSET] | starting_boards[WHITE_KING_OFFSET]);
+    }
+
+
+    // generate pawn moves forward
+    if (isWhite) { 
+        moves = noOne(startingOwnPieces[PAWN_OFFSET]);
         occupied = (moves & allPieces);
         moves = (moves ^ occupied);         
 
         while(moves != 0 && generatedMoves < BOARDS_GENERATED) {
-            black_pawns_boards[generatedMoves] = initialEnemyPawns;
-            black_bishops_boards[generatedMoves] = initialEnemyBishops;
-            black_knights_boards[generatedMoves] = initialEnemyKnights;
-            black_rooks_boards[generatedMoves] = initialEnemyRooks;
-            black_queens_boards[generatedMoves] = initialEnemyQueens;
-            black_kings_boards[generatedMoves] = initialEnemyKings;
-            white_bishops_boards[generatedMoves] = initialOwnBishops;
-            white_knights_boards[generatedMoves] = initialOwnKnights;
-            white_rooks_boards[generatedMoves] = initialOwnRooks;
-            white_queens_boards[generatedMoves] = initialOwnQueens;
-            white_kings_boards[generatedMoves] = initialOwnKings;
+            copyPosition(starting_boards, generated_boards_space + currentBoardOffset);
 
             singleMove = getLeastSignificantBit(moves);
-            white_pawns_boards[generatedMoves] = (initialOwnPawns ^ soOne(singleMove)) | singleMove;
+            (generated_boards_space + currentBoardOffset)[ownPiecesOffset + PAWN_OFFSET] = ((startingOwnPieces[PAWN_OFFSET] ^ soOne(singleMove)) | singleMove);
 
             moves = resetLeastSignificantBit(moves);
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
         }
 
         // generate pawn attacks east
-        moves = (noEaOne(initialOwnPawns) & enemyPieces);
+        moves = (noEaOne(startingOwnPieces[PAWN_OFFSET]) & enemyPieces);
         while(moves != 0 && generatedMoves < BOARDS_GENERATED){
-            white_bishops_boards[generatedMoves] = initialOwnBishops;
-            white_knights_boards[generatedMoves] = initialOwnKnights;
-            white_rooks_boards[generatedMoves] = initialOwnRooks;
-            white_queens_boards[generatedMoves] = initialOwnQueens;
-            white_kings_boards[generatedMoves] = initialOwnKings;
+            copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
 
             singleMove = getLeastSignificantBit(moves);
 
-            white_pawns_boards[generatedMoves] = (initialOwnPawns ^ soWeOne(singleMove)) | singleMove;
+            (generated_boards_space + currentBoardOffset)[ownPiecesOffset + PAWN_OFFSET] = ((startingOwnPieces[PAWN_OFFSET] ^ soWeOne(singleMove)) | singleMove);
 
-            // finding a piece that has been taken
-            black_pawns_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            black_bishops_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            black_knights_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            black_rooks_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
-            black_queens_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            black_kings_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
 
             moves = resetLeastSignificantBit(moves);
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
         }
 
         // generate pawn attacks west
-        moves = (noWeOne(initialOwnPawns) & enemyPieces);
+        moves = (noWeOne(startingOwnPieces[PAWN_OFFSET]) & enemyPieces);
         while(moves != 0 && generatedMoves < BOARDS_GENERATED){
-            white_bishops_boards[generatedMoves] = initialOwnBishops;
-            white_knights_boards[generatedMoves] = initialOwnKnights;
-            white_rooks_boards[generatedMoves] = initialOwnRooks;
-            white_queens_boards[generatedMoves] = initialOwnQueens;
-            white_kings_boards[generatedMoves] = initialOwnKings;
+            copyOneColorPieces(startingOwnPieces, generated_boards_space + currentBoardOffset + ownPiecesOffset);
 
             singleMove = getLeastSignificantBit(moves);
 
-            white_pawns_boards[generatedMoves] = (initialOwnPawns ^ soEaOne(singleMove)) | singleMove;
+            (generated_boards_space + currentBoardOffset)[ownPiecesOffset + PAWN_OFFSET] = ((startingOwnPieces[PAWN_OFFSET] ^ soEaOne(singleMove)) | singleMove);
 
-            // finding a piece that has been taken
-            black_pawns_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            black_bishops_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            black_knights_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            black_rooks_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
-            black_queens_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            black_kings_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
 
             moves = resetLeastSignificantBit(moves);
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
         }
     }
-    else
-    {
-        enemyPieces = *start_white_pawns_boards | *start_white_bishops_boards | *start_white_knights_boards | *start_white_rooks_boards | *start_white_queens_boards | *start_white_kings_boards;
-        
-        initialOwnPawns = *start_black_pawns_boards;
-        initialOwnBishops = *start_black_bishops_boards;
-        initialOwnKnights = *start_black_knights_boards;
-        initialOwnRooks = *start_black_rooks_boards;
-        initialOwnQueens  = *start_black_queens_boards;
-        initialOwnKings  = *start_black_kings_boards;
-        initialEnemyPawns = *start_white_pawns_boards;
-        initialEnemyBishops = *start_white_bishops_boards;
-        initialEnemyKnights = *start_white_knights_boards;
-        initialEnemyRooks = *start_white_rooks_boards;
-        initialEnemyQueens  = *start_white_queens_boards;
-        initialEnemyKings  = *start_white_kings_boards;
-
-        ownKnights = black_knights_boards;
-        ownRooks = black_rooks_boards;
-        ownQueens = black_queens_boards;
-        ownKings = black_kings_boards;
-        ownBishops = black_bishops_boards;
-        ownPawns = black_pawns_boards;
-        enemyKnights = white_knights_boards;
-        enemyRooks = white_rooks_boards;
-        enemyQueens = white_queens_boards;
-        enemyKings = white_kings_boards;
-        enemyBishops = white_bishops_boards;
-        enemyPawns = white_pawns_boards;
-        
-        // generate pawn moves forward
-        moves = soOne(initialOwnPawns);
+    else {
+        moves = soOne(startingOwnPieces[PAWN_OFFSET]);
         occupied = (moves & allPieces);
         moves = (moves ^ occupied);         
 
         while(moves != 0 && generatedMoves < BOARDS_GENERATED) {
-            black_bishops_boards[generatedMoves] = initialOwnBishops;
-            black_knights_boards[generatedMoves] = initialOwnKnights;
-            black_rooks_boards[generatedMoves] = initialOwnRooks;
-            black_queens_boards[generatedMoves] = initialOwnQueens;
-            black_kings_boards[generatedMoves] = initialOwnKings;
-            white_bishops_boards[generatedMoves] = initialEnemyBishops;
-            white_knights_boards[generatedMoves] = initialEnemyKnights;
-            white_rooks_boards[generatedMoves] = initialEnemyRooks;
-            white_queens_boards[generatedMoves] = initialEnemyQueens;
-            white_kings_boards[generatedMoves] = initialEnemyKings;
-            white_pawns_boards[generatedMoves] = initialEnemyPawns;
+            copyPosition(starting_boards, generated_boards_space + currentBoardOffset);
 
             singleMove = getLeastSignificantBit(moves);
-            black_pawns_boards[generatedMoves] = (initialOwnPawns ^ noOne(singleMove)) | singleMove;
+            (generated_boards_space + currentBoardOffset)[ownPiecesOffset + PAWN_OFFSET] = ((startingOwnPieces[PAWN_OFFSET] ^ noOne(singleMove)) | singleMove);
 
             moves = resetLeastSignificantBit(moves);
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
         }
 
         // generate pawn attacks east
-        moves = (soEaOne(initialOwnPawns) & enemyPieces);
+        moves = (soEaOne(startingOwnPieces[PAWN_OFFSET]) & enemyPieces);
         while(moves != 0 && generatedMoves < BOARDS_GENERATED){
-            black_bishops_boards[generatedMoves] = initialOwnBishops;
-            black_knights_boards[generatedMoves] = initialOwnKnights;
-            black_rooks_boards[generatedMoves] = initialOwnRooks;
-            black_queens_boards[generatedMoves] = initialOwnQueens;
-            black_kings_boards[generatedMoves] = initialOwnKings;
+            copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
 
             singleMove = getLeastSignificantBit(moves);
 
-            black_pawns_boards[generatedMoves] = (initialOwnPawns ^ noWeOne(singleMove)) | singleMove;
+            (generated_boards_space + currentBoardOffset)[ownPiecesOffset + PAWN_OFFSET] = ((startingOwnPieces[PAWN_OFFSET] ^ noWeOne(singleMove)) | singleMove);
 
-            // finding a piece that has been taken
-            white_pawns_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            white_bishops_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            white_knights_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            white_rooks_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
-            white_queens_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            white_kings_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
 
             moves = resetLeastSignificantBit(moves);
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
         }
 
         // generate pawn attacks west
-        moves = (soWeOne(initialOwnPawns) & enemyPieces);
+        moves = (soWeOne(startingOwnPieces[PAWN_OFFSET]) & enemyPieces);
         while(moves != 0 && generatedMoves < BOARDS_GENERATED){
-            black_bishops_boards[generatedMoves] = initialOwnBishops;
-            black_knights_boards[generatedMoves] = initialOwnKnights;
-            black_rooks_boards[generatedMoves] = initialOwnRooks;
-            black_queens_boards[generatedMoves] = initialOwnQueens;
-            black_kings_boards[generatedMoves] = initialOwnKings;
+            copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
 
             singleMove = getLeastSignificantBit(moves);
 
-            black_pawns_boards[generatedMoves] = (initialOwnPawns ^ noEaOne(singleMove)) | singleMove;
+            (generated_boards_space + currentBoardOffset)[ownPiecesOffset + PAWN_OFFSET] = ((startingOwnPieces[PAWN_OFFSET] ^ noEaOne(singleMove)) | singleMove);
 
-            // finding a piece that has been taken
-            white_pawns_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            white_bishops_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            white_knights_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            white_rooks_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
-            white_queens_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            white_kings_boards[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
 
             moves = resetLeastSignificantBit(moves);
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
         }
     }
 
 
     //knight moves
     pos64 piece, attacks;
-    pos64 movingKnights = initialOwnKnights;
+    pos64 movingKnights = (starting_boards + ownPiecesOffset)[KNIGHT_OFFSET];
     while(movingKnights != 0){
         piece = getLeastSignificantBit(movingKnights);
 
@@ -303,55 +224,38 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
         attacks = (moves & enemyPieces);
         moves = (moves ^ attacks);
         while(moves != 0 && generatedMoves < BOARDS_GENERATED){
-            ownBishops[generatedMoves] = initialOwnBishops;
-            ownKings[generatedMoves] = initialOwnKings;
-            ownPawns[generatedMoves] = initialOwnPawns;
-            ownQueens[generatedMoves] = initialOwnQueens;
-            ownRooks[generatedMoves] = initialOwnRooks;
-            enemyBishops[generatedMoves] = initialEnemyBishops;
-            enemyKings[generatedMoves] = initialEnemyKings;
-            enemyPawns[generatedMoves] = initialEnemyPawns;
-            enemyKnights[generatedMoves] = initialEnemyKnights;
-            enemyQueens[generatedMoves] = initialEnemyQueens;
-            enemyRooks[generatedMoves] = initialEnemyRooks;
+            copyPosition(starting_boards, generated_boards_space + currentBoardOffset);
 
             singleMove = getLeastSignificantBit(moves);
 
-            ownKnights[generatedMoves] = ((initialOwnKnights ^ piece) | singleMove);
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[KNIGHT_OFFSET] = (((starting_boards + ownPiecesOffset)[KNIGHT_OFFSET] ^ piece) | singleMove);
 
             moves = resetLeastSignificantBit(moves);
 
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
         }
 
         while(attacks != 0 && generatedMoves < BOARDS_GENERATED){
-            ownBishops[generatedMoves] = initialOwnBishops;
-            ownKings[generatedMoves] = initialOwnKings;
-            ownPawns[generatedMoves] = initialOwnPawns;
-            ownQueens[generatedMoves] = initialOwnQueens;
-            ownRooks[generatedMoves] = initialOwnRooks;
+            copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
 
             singleMove = getLeastSignificantBit(attacks);
 
-            ownKnights[generatedMoves] = (initialOwnKnights ^ piece) | singleMove;
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[KNIGHT_OFFSET] = ((starting_boards + ownPiecesOffset)[KNIGHT_OFFSET] ^ piece) | singleMove;
 
-            enemyBishops[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            enemyKings[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
-            enemyPawns[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            enemyKnights[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
 
             attacks = resetLeastSignificantBit(attacks);
 
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
         }
 
         movingKnights = resetLeastSignificantBit(movingKnights);
     }
 
     //king moves
-    piece = getLeastSignificantBit(initialOwnKings);
+    piece = getLeastSignificantBit((starting_boards + ownPiecesOffset)[KING_OFFSET]);
     moves = noOne(piece) | soOne(piece) | westOne(piece) | eastOne(piece) | noEaOne(piece) | noWeOne(piece) | soEaOne(piece) | soWeOne(piece);
     occupied = moves & (allPieces ^ enemyPieces);
     moves = moves ^ occupied;
@@ -359,52 +263,35 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
     moves = moves ^ attacks;
 
     while(moves != 0 && generatedMoves < BOARDS_GENERATED){
-            ownBishops[generatedMoves] = initialOwnBishops;
-            ownKnights[generatedMoves] = initialOwnKnights;
-            ownPawns[generatedMoves] = initialOwnPawns;
-            ownQueens[generatedMoves] = initialOwnQueens;
-            ownRooks[generatedMoves] = initialOwnRooks;
-            enemyBishops[generatedMoves] = initialEnemyBishops;
-            enemyKings[generatedMoves] = initialEnemyKings;
-            enemyPawns[generatedMoves] = initialEnemyPawns;
-            enemyKnights[generatedMoves] = initialEnemyKnights;
-            enemyQueens[generatedMoves] = initialEnemyQueens;
-            enemyRooks[generatedMoves] = initialEnemyRooks;
+           copyPosition(starting_boards, generated_boards_space + currentBoardOffset);
 
             singleMove = getLeastSignificantBit(moves);
 
-            ownKings[generatedMoves] = (initialOwnKings ^ piece) | singleMove;
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[KING_OFFSET] = ((starting_boards + ownPiecesOffset)[KING_OFFSET] ^ piece) | singleMove;
 
             moves = resetLeastSignificantBit(moves);
 
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
         }
 
     while(attacks != 0 && generatedMoves < BOARDS_GENERATED){
-        ownBishops[generatedMoves] = initialOwnBishops;
-        ownKnights[generatedMoves] = initialOwnKnights;
-        ownPawns[generatedMoves] = initialOwnPawns;
-        ownQueens[generatedMoves] = initialOwnQueens;
-        ownRooks[generatedMoves] = initialOwnRooks;
+        copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
 
         singleMove = getLeastSignificantBit(attacks);
 
-        ownKings[generatedMoves] = (initialOwnKings ^ piece) | singleMove;
+        (generated_boards_space + currentBoardOffset + ownPiecesOffset)[KING_OFFSET] = ((starting_boards + ownPiecesOffset)[KING_OFFSET] ^ piece) | singleMove;
 
-        enemyBishops[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-        enemyKings[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
-        enemyPawns[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-        enemyKnights[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-        enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-        enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
+        copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
 
         attacks = resetLeastSignificantBit(attacks);
 
         generatedMoves++;
+        currentBoardOffset += BOARD_SIZE;
     }
 
     // rooks moves
-    pos64 movingRooks = initialOwnRooks;
+    pos64 movingRooks = (starting_boards + ownPiecesOffset)[ROOK_OFFSET];
     while(movingRooks != 0 && generatedMoves < BOARDS_GENERATED){
         piece = getLeastSignificantBit(movingRooks);
 
@@ -415,19 +302,13 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
                 break;
             }
             
-            ownBishops[generatedMoves] = initialOwnBishops;
-            ownKnights[generatedMoves] = initialOwnKnights;
-            ownPawns[generatedMoves] = initialOwnPawns;
-            ownQueens[generatedMoves] = initialOwnQueens;
-            ownKings[generatedMoves] = initialOwnKings;
-            ownRooks[generatedMoves] = (initialOwnRooks ^ piece) | singleMove;
-            enemyBishops[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            enemyKings[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
-            enemyPawns[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            enemyKnights[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
+            copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[ROOK_OFFSET] = ((starting_boards + ownPiecesOffset)[ROOK_OFFSET] ^ piece) | singleMove;
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
 
             if((singleMove & enemyPieces) != 0) {
                 break;
@@ -441,45 +322,32 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
                 break;
             }
             
-            ownBishops[generatedMoves] = initialOwnBishops;
-            ownKnights[generatedMoves] = initialOwnKnights;
-            ownPawns[generatedMoves] = initialOwnPawns;
-            ownQueens[generatedMoves] = initialOwnQueens;
-            ownKings[generatedMoves] = initialOwnKings;
-            ownRooks[generatedMoves] = (initialOwnRooks ^ piece) | singleMove;
-            enemyBishops[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            enemyKings[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
-            enemyPawns[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            enemyKnights[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
+            copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[ROOK_OFFSET] = ((starting_boards + ownPiecesOffset)[ROOK_OFFSET] ^ piece) | singleMove;
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
 
             if((singleMove & enemyPieces) != 0) {
                 break;
             }
         }
-
         // moving south
         singleMove = piece;
-        while(((singleMove = soOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
+       while(((singleMove = soOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
             
-            ownBishops[generatedMoves] = initialOwnBishops;
-            ownKnights[generatedMoves] = initialOwnKnights;
-            ownPawns[generatedMoves] = initialOwnPawns;
-            ownQueens[generatedMoves] = initialOwnQueens;
-            ownKings[generatedMoves] = initialOwnKings;
-            ownRooks[generatedMoves] = (initialOwnRooks ^ piece) | singleMove;
-            enemyBishops[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            enemyKings[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
-            enemyPawns[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            enemyKnights[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
+            copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[ROOK_OFFSET] = ((starting_boards + ownPiecesOffset)[ROOK_OFFSET] ^ piece) | singleMove;
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
 
             if((singleMove & enemyPieces) != 0) {
                 break;
@@ -493,19 +361,14 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
                 break;
             }
             
-            ownBishops[generatedMoves] = initialOwnBishops;
-            ownKnights[generatedMoves] = initialOwnKnights;
-            ownPawns[generatedMoves] = initialOwnPawns;
-            ownQueens[generatedMoves] = initialOwnQueens;
-            ownKings[generatedMoves] = initialOwnKings;
-            ownRooks[generatedMoves] = (initialOwnRooks ^ piece) | singleMove;
-            enemyBishops[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            enemyKings[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
-            enemyPawns[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            enemyKnights[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
+            copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[ROOK_OFFSET] = ((starting_boards + ownPiecesOffset)[ROOK_OFFSET] ^ piece) | singleMove;
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
             if((singleMove & enemyPieces) != 0) {
                 break;
             }
@@ -514,7 +377,7 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
     }
     
     // bishop moves
-    pos64 movingBishops = initialOwnBishops;
+    pos64 movingBishops = (starting_boards + ownPiecesOffset)[BISHOP_OFFSET];
     while(movingBishops != 0 && generatedMoves < BOARDS_GENERATED){
         piece = getLeastSignificantBit(movingBishops);
 
@@ -524,19 +387,15 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
-            ownRooks[generatedMoves] = initialOwnRooks;
-            ownKnights[generatedMoves] = initialOwnKnights;
-            ownPawns[generatedMoves] = initialOwnPawns;
-            ownQueens[generatedMoves] = initialOwnQueens;
-            ownKings[generatedMoves] = initialOwnKings;
-            ownBishops[generatedMoves] = (initialOwnBishops ^ piece) | singleMove;
-            enemyBishops[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            enemyKings[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
-            enemyPawns[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            enemyKnights[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
+            
+            copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[BISHOP_OFFSET] = ((starting_boards + ownPiecesOffset)[BISHOP_OFFSET] ^ piece) | singleMove;
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
             if((singleMove & enemyPieces) != 0) {
                 break;
             }
@@ -548,19 +407,15 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
-            ownRooks[generatedMoves] = initialOwnRooks;
-            ownKnights[generatedMoves] = initialOwnKnights;
-            ownPawns[generatedMoves] = initialOwnPawns;
-            ownQueens[generatedMoves] = initialOwnQueens;
-            ownKings[generatedMoves] = initialOwnKings;
-            ownBishops[generatedMoves] = (initialOwnBishops ^ piece) | singleMove;
-            enemyBishops[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            enemyKings[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
-            enemyPawns[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            enemyKnights[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
+            
+            copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[BISHOP_OFFSET] = ((starting_boards + ownPiecesOffset)[BISHOP_OFFSET] ^ piece) | singleMove;
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
             if((singleMove & enemyPieces) != 0) {
                 break;
             }
@@ -572,19 +427,15 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
-            ownRooks[generatedMoves] = initialOwnRooks;
-            ownKnights[generatedMoves] = initialOwnKnights;
-            ownPawns[generatedMoves] = initialOwnPawns;
-            ownQueens[generatedMoves] = initialOwnQueens;
-            ownKings[generatedMoves] = initialOwnKings;
-            ownBishops[generatedMoves] = (initialOwnBishops ^ piece) | singleMove;
-            enemyBishops[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            enemyKings[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
-            enemyPawns[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            enemyKnights[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
+            
+            copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[ROOK_OFFSET] = ((starting_boards + ownPiecesOffset)[BISHOP_OFFSET] ^ piece) | singleMove;
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
             if((singleMove & enemyPieces) != 0) {
                 break;
             }
@@ -596,19 +447,15 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
             if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
                 break;
             }
-            ownRooks[generatedMoves] = initialOwnRooks;
-            ownKnights[generatedMoves] = initialOwnKnights;
-            ownPawns[generatedMoves] = initialOwnPawns;
-            ownQueens[generatedMoves] = initialOwnQueens;
-            ownKings[generatedMoves] = initialOwnKings;
-            ownBishops[generatedMoves] = (initialOwnBishops ^ piece) | singleMove;
-            enemyBishops[generatedMoves] = checkIfTakenAndAssign(initialEnemyBishops, singleMove);
-            enemyKings[generatedMoves] = checkIfTakenAndAssign(initialEnemyKings, singleMove);
-            enemyPawns[generatedMoves] = checkIfTakenAndAssign(initialEnemyPawns, singleMove);
-            enemyKnights[generatedMoves] = checkIfTakenAndAssign(initialEnemyKnights, singleMove);
-            enemyQueens[generatedMoves] = checkIfTakenAndAssign(initialEnemyQueens, singleMove);
-            enemyRooks[generatedMoves] = checkIfTakenAndAssign(initialEnemyRooks, singleMove);
+            
+            copyOneColorPieces(starting_boards + ownPiecesOffset, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[BISHOP_OFFSET] = ((starting_boards + ownPiecesOffset)[BISHOP_OFFSET] ^ piece) | singleMove;
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
             generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
             if((singleMove & enemyPieces) != 0) {
                 break;
             }
@@ -617,27 +464,24 @@ __host__ __device__ void generate_moves(pos64 * start_white_pawns_boards,
     }
 
     if(generatedMoves == 0){
-        if(*start_white_pawns_boards != 0 || *start_white_bishops_boards != 0 ||  *start_white_knights_boards != 0 || *start_white_rooks_boards != 0 ||  *start_white_queens_boards != 0 || *start_white_kings_boards != 0 || *start_black_pawns_boards != 0 ||  *start_black_bishops_boards != 0 || *start_black_knights_boards != 0 ||  *start_black_rooks_boards != 0 || *start_black_queens_boards != 0 || *start_black_kings_boards != 0){
-        printf("some trouble with move generation\n");
-        printf("%lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld \n", *start_white_pawns_boards, *start_white_bishops_boards, *start_white_knights_boards, *start_white_rooks_boards, *start_white_queens_boards, *start_white_kings_boards, *start_black_pawns_boards, *start_black_bishops_boards, *start_black_knights_boards, *start_black_rooks_boards, *start_black_queens_boards, *start_black_kings_boards);
-        }
+        printf("%lld %lld \n", starting_boards[WHITE_PAWN_OFFSET], starting_boards[BLACK_PAWN_OFFSET]);
     }
-
 
     for(int i = generatedMoves; i < BOARDS_GENERATED; i++)
     {
-        black_pawns_boards[i] = 0;
-        black_bishops_boards[i] = 0;
-        black_knights_boards[i] = 0;
-        black_rooks_boards[i] = 0;
-        black_queens_boards[i] = 0;
-        black_kings_boards[i] = 0;
-        white_bishops_boards[i] = 0;
-        white_knights_boards[i] = 0;
-        white_rooks_boards[i] = 0;
-        white_queens_boards[i] = 0;
-        white_kings_boards[i] = 0;
-        white_pawns_boards[i] = 0;
+        (generated_boards_space + currentBoardOffset)[0] = 0;
+        (generated_boards_space + currentBoardOffset)[1] = 0;
+        (generated_boards_space + currentBoardOffset)[2] = 0;
+        (generated_boards_space + currentBoardOffset)[3] = 0;
+        (generated_boards_space + currentBoardOffset)[4] = 0;
+        (generated_boards_space + currentBoardOffset)[5] = 0;
+        (generated_boards_space + currentBoardOffset)[6] = 0;
+        (generated_boards_space + currentBoardOffset)[7] = 0;
+        (generated_boards_space + currentBoardOffset)[8] = 0;
+        (generated_boards_space + currentBoardOffset)[9] = 0;
+        (generated_boards_space + currentBoardOffset)[10] = 0;
+        (generated_boards_space + currentBoardOffset)[11] = 0;
+        currentBoardOffset += BOARD_SIZE;
     }
 
 }
