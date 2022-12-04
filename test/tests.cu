@@ -223,7 +223,7 @@ TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForBlack) {
 }
 
 
-TEST(GenerateMovesTest, WhiteKnightMovesTests) {
+TEST(GenerateMovesTest, BlackKnightMovesTests) {
     // given
     pos64 white_pawns = WHITE_PAWN_STARTING_POS;
     pos64 white_bishops = WHITE_BISHOP_STARTING_POS;
@@ -239,7 +239,7 @@ TEST(GenerateMovesTest, WhiteKnightMovesTests) {
     pos64 black_queens = 0;
     pos64 black_kings = 0;
 
-    short current_player = 0;
+    short current_player = 1;
 
     pos64 *white_pawn_moves, *white_bishop_moves, *white_knight_moves, *white_rook_moves, *white_queen_moves, *white_king_moves, 
         *black_pawn_moves, *black_bishop_moves, *black_knight_moves, *black_rook_moves, *black_queen_moves, *black_king_moves;
@@ -279,7 +279,7 @@ TEST(GenerateMovesTest, WhiteKnightMovesTests) {
     ASSERT_EQ(2, generated_attacks_count);
 }
 
-TEST(GenerateMovesTest, BlackKnightMovesTests) {
+TEST(GenerateMovesTest, WhiteKnightMovesTests) {
     // given
     pos64 white_pawns = 0;
     pos64 white_bishops = 0;
@@ -295,7 +295,7 @@ TEST(GenerateMovesTest, BlackKnightMovesTests) {
     pos64 black_queens = BLACK_QUEEN_STARTING_POS;
     pos64 black_kings = BLACK_KING_STARTING_POS;
 
-    short current_player = 1;
+    short current_player = 0;
 
     pos64 *white_pawn_moves, *white_bishop_moves, *white_knight_moves, *white_rook_moves, *white_queen_moves, *white_king_moves, 
         *black_pawn_moves, *black_bishop_moves, *black_knight_moves, *black_rook_moves, *black_queen_moves, *black_king_moves;
@@ -335,7 +335,7 @@ TEST(GenerateMovesTest, BlackKnightMovesTests) {
     ASSERT_EQ(2, generated_attacks_count);
 }
 
-TEST(GenerateMovesTest, WhiteRookMovesTests) {
+TEST(GenerateMovesTest, BlackRookMovesTests) {
     // given
     pos64 white_pawns = WHITE_PAWN_STARTING_POS;
     pos64 white_bishops = WHITE_BISHOP_STARTING_POS;
@@ -351,7 +351,7 @@ TEST(GenerateMovesTest, WhiteRookMovesTests) {
     pos64 black_queens = 0;
     pos64 black_kings = 0;
 
-    short current_player = 0;
+    short current_player = 1;
 
     pos64 *white_pawn_moves, *white_bishop_moves, *white_knight_moves, *white_rook_moves, *white_queen_moves, *white_king_moves, 
         *black_pawn_moves, *black_bishop_moves, *black_knight_moves, *black_rook_moves, *black_queen_moves, *black_king_moves;
@@ -391,7 +391,7 @@ TEST(GenerateMovesTest, WhiteRookMovesTests) {
     ASSERT_EQ(1, generated_attacks_count);
 }
 
-TEST(GenerateMovesTest, BlackRookMovesTests) {
+TEST(GenerateMovesTest, WhiteRookMovesTests) {
     // given
     pos64 white_pawns = 0;
     pos64 white_bishops = 0;
@@ -407,7 +407,7 @@ TEST(GenerateMovesTest, BlackRookMovesTests) {
     pos64 black_queens = BLACK_QUEEN_STARTING_POS;
     pos64 black_kings = BLACK_KING_STARTING_POS;
 
-    short current_player = 1;
+    short current_player = 0;
 
     pos64 *white_pawn_moves, *white_bishop_moves, *white_knight_moves, *white_rook_moves, *white_queen_moves, *white_king_moves, 
         *black_pawn_moves, *black_bishop_moves, *black_knight_moves, *black_rook_moves, *black_queen_moves, *black_king_moves;
