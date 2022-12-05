@@ -467,6 +467,7 @@ __host__ __device__ void generate_moves(pos64 *starting_boards, pos64 * generate
         printf("%lld %lld \n", starting_boards[WHITE_PAWN_OFFSET], starting_boards[BLACK_PAWN_OFFSET]);
     }
 
+
     for(int i = generatedMoves; i < BOARDS_GENERATED; i++)
     {
         (generated_boards_space + currentBoardOffset)[0] = 0;
