@@ -16,20 +16,19 @@ typedef unsigned long long int pos64;
             fprintf(stderr,"%s:%d\n",__FILE__,__LINE__),\
             exit(EXIT_FAILURE))
 
-#define THREADS 1024
-#define BLOCKS 65535
+#define THREADS 256
+#define BLOCKS 60000
+#define MAX_BLOCKS_COUNT 2147483647
 
 #define DEVICES 10
 
-#define MAX_BOARDS_SIMULTANEOUSLY THREADS * BLOCKS
+#define MAX_BOARDS_SIMULTANEOUSLY THREADS * MAX_BLOCKS_COUNT
 #define MAX_BOARDS_IN_MEMORY 7e7
 #define FIRST_STAGE_DEPTH 1
 #define MAX_DEPTH 5
 #define BOARDS_GENERATED 40
 
 #define INF 1e6
-
-#define BOARD_SIZE 64
 
 #define WHITE 0
 #define BLACK 1
@@ -57,5 +56,21 @@ typedef unsigned long long int pos64;
 #define NOT_A_FILE (pos64) 0xfefefefefefefefe
 #define NOT_H_FILE (pos64) 0x7f7f7f7f7f7f7f7f
 
+
+#define WHITE_PAWN_OFFSET 0
+#define WHITE_KNIGHT_OFFSET 1
+#define WHITE_BISHOP_OFFSET 2
+#define WHITE_ROOK_OFFSET 3
+#define WHITE_QUEEN_OFFSET 4
+#define WHITE_KING_OFFSET 5
+
+#define BLACK_PAWN_OFFSET 6
+#define BLACK_KNIGHT_OFFSET 7
+#define BLACK_BISHOP_OFFSET 8
+#define BLACK_ROOK_OFFSET 9
+#define BLACK_QUEEN_OFFSET 10
+#define BLACK_KING_OFFSET 11
+
+#define BOARD_SIZE 12
 
 #endif
