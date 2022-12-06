@@ -132,22 +132,18 @@ void search(const short& current_player,
             const int& move_num,
             pos64 *position) {
     
-    pos64 *firstStageBoards, *secStageBoards;
-    int* firstStageResults, *secStageResult;
+    pos64 *firstStageBoards;
+    int* firstStageResults;
     int firstStageTotalBoardsCount  = h_subtree_sizes[FIRST_STAGE_DEPTH];
     int secStageTotalBoardsCount = h_subtree_sizes[MAX_DEPTH - FIRST_STAGE_DEPTH];
     CHECK_ALLOC(cudaMalloc(&firstStageBoards, sizeof(pos64) * BOARD_SIZE * firstStageTotalBoardsCount));
     CHECK_ALLOC(cudaMalloc(&firstStageResults, sizeof(int) * firstStageTotalBoardsCount));
-    CHECK_ALLOC(cudaMalloc(&secStageBoards, sizeof(pos64) * BOARD_SIZE * secStageTotalBoardsCount));
-    CHECK_ALLOC(cudaMalloc(&secStageResult, sizeof(int) * secStageTotalBoardsCount));
 
-    pos64 *temp_firstStageBoards, *temp_secStageBoards;
-    int* temp_firstStageResults, *temp_secStageResult;
+    pos64 *temp_firstStageBoards;
+    int* temp_firstStageResults;
     try {
         temp_firstStageBoards = new pos64[BOARD_SIZE * firstStageTotalBoardsCount];
         temp_firstStageResults = new int[firstStageTotalBoardsCount];
-        temp_secStageBoards = new pos64[BOARD_SIZE * secStageTotalBoardsCount];
-        temp_secStageResult = new int[secStageTotalBoardsCount];
     } catch (std::bad_alloc&) {
         ERR("Operator new");
     }
@@ -171,19 +167,15 @@ void search(const short& current_player,
     // copying data
     copy_from_gpu_to_cpu(firstStageBoards, temp_firstStageBoards, sizeof(pos64) * BOARD_SIZE * firstStageTotalBoardsCount);
     copy_from_gpu_to_cpu(firstStageResults, temp_firstStageResults, sizeof(int) * firstStageTotalBoardsCount);
-    copy_from_gpu_to_cpu(secStageBoards, temp_secStageBoards, sizeof(pos64) * BOARD_SIZE * secStageTotalBoardsCount);
-    copy_from_gpu_to_cpu(secStageResult, temp_secStageResult, sizeof(int) * secStageTotalBoardsCount);
 
     cudaFree(firstStageBoards);
     cudaFree(firstStageResults);
-    cudaFree(secStageBoards);
-    cudaFree(secStageResult);
 
     std::vector<std::thread> threads;
     int devices_count;
     cudaGetDeviceCount(&devices_count);
 
-    DBG(printf("Stage two started"));
+    DBG(printf("Stage two started\n"));
     for (int j = 0; j < devices_count; j++) {
         threads.push_back (std::thread ([&, j, firstStageTotalBoardsCount, secStageTotalBoardsCount, isWhite, devices_count] () {
             gpuErrchk(cudaSetDevice(j));
@@ -254,18 +246,12 @@ void search(const short& current_player,
     DBG(printf("Stage 1 - gathering results\n"));
     CHECK_ALLOC(cudaMalloc(&firstStageBoards, sizeof(pos64) * BOARD_SIZE * firstStageTotalBoardsCount));
     CHECK_ALLOC(cudaMalloc(&firstStageResults, sizeof(int) * firstStageTotalBoardsCount));
-    CHECK_ALLOC(cudaMalloc(&secStageBoards, sizeof(pos64) * BOARD_SIZE * secStageTotalBoardsCount));
-    CHECK_ALLOC(cudaMalloc(&secStageResult, sizeof(int) * secStageTotalBoardsCount));
 
     copy_from_cpu_to_gpu(temp_firstStageBoards, firstStageBoards, sizeof(pos64) * BOARD_SIZE * firstStageTotalBoardsCount);
     copy_from_cpu_to_gpu(temp_firstStageResults, firstStageResults, sizeof(int) * firstStageTotalBoardsCount);
-    copy_from_cpu_to_gpu(temp_secStageBoards, secStageBoards, sizeof(pos64) * BOARD_SIZE * secStageTotalBoardsCount);
-    copy_from_cpu_to_gpu(temp_secStageResult, secStageResult, sizeof(int) * secStageTotalBoardsCount);
 
     delete[] temp_firstStageBoards;
-    delete[] temp_secStageBoards;
     delete[] temp_firstStageResults;
-    delete[] temp_secStageResult;
 
     // acquiring results for first stage
     int *firstResultAddress;
@@ -288,7 +274,5 @@ void search(const short& current_player,
     gpuErrchk(cudaMemcpy(position, firstStageBoards + BOARD_SIZE + (bestMoveNr * BOARD_SIZE), sizeof(pos64) * BOARD_SIZE, cudaMemcpyDeviceToHost));
 
     cudaFree(firstStageBoards);
-    cudaFree(secStageBoards);
     cudaFree(firstStageResults);
-    cudaFree(secStageResult);
 }
