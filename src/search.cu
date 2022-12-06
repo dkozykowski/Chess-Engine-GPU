@@ -183,8 +183,9 @@ void search(const short& current_player,
     int devices_count;
     cudaGetDeviceCount(&devices_count);
 
+    DBG(printf("Stage two started"));
     for (int j = 0; j < devices_count; j++) {
-        threads.push_back (std::thread ([&, j, firstStageTotalBoardsCount, secStageTotalBoardsCount, isWhite] () {
+        threads.push_back (std::thread ([&, j, firstStageTotalBoardsCount, secStageTotalBoardsCount, isWhite, devices_count] () {
             gpuErrchk(cudaSetDevice(j));
 
             pos64* firstBoardAddress;
@@ -198,7 +199,7 @@ void search(const short& current_player,
             pos64 * basicBoardAddres = temp_firstStageBoards + (h_subtree_sizes[FIRST_STAGE_DEPTH - 1] * BOARD_SIZE); 
             int *basicResultAddress = temp_firstStageResults + h_subtree_sizes[FIRST_STAGE_DEPTH - 1];
 
-            for (int o = 0; o < h_level_sizes[FIRST_STAGE_DEPTH]; o++) {
+            for (int o = j; o < h_level_sizes[FIRST_STAGE_DEPTH]; o += devices_count) {
                 copy_from_cpu_to_gpu(basicBoardAddres + (o * BOARD_SIZE), secStageBoards, sizeof(pos64) * BOARD_SIZE);
                 
                 //generating moves
