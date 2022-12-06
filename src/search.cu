@@ -183,6 +183,8 @@ void search(const short& current_player,
             pos64* firstBoardAddress;
             pos64 *firstStageBoards, *secStageBoards;
             int* firstStageResults, *secStageResult;
+            int * last;
+            CHECK_ALLOC(cudaMalloc(&last, sizeof(int)));
             CHECK_ALLOC(cudaMalloc(&firstStageBoards, sizeof(pos64) * BOARD_SIZE * firstStageTotalBoardsCount));
             CHECK_ALLOC(cudaMalloc(&firstStageResults, sizeof(int) * firstStageTotalBoardsCount));
             CHECK_ALLOC(cudaMalloc(&secStageBoards, sizeof(pos64) * BOARD_SIZE * secStageTotalBoardsCount));
@@ -224,7 +226,7 @@ void search(const short& current_player,
                     else {
                         firstResultAddress = secStageResult + h_level_sizes[i - 1];
                     }
-                    gather_results_for_boards<<<BLOCKS, THREADS>>>(firstResultAddress, h_level_sizes[i], !isWhiteTemp , last);
+                    gather_results_for_boards<<<BLOCKS, THREADS>>>(firstResultAddress, h_level_sizes[i], !isWhiteTemp, last);
                     gpuErrchk(cudaDeviceSynchronize());
                     gpuErrchk(cudaPeekAtLastError());   
                     isWhiteTemp = !isWhiteTemp;
@@ -236,6 +238,7 @@ void search(const short& current_player,
             cudaFree(firstStageResults);
             cudaFree(secStageBoards);
             cudaFree(secStageResult);
+            cudaFree(last);
         }));
     }
     for (int j = 0; j < devices_count; j++) {
