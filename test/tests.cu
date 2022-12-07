@@ -40,7 +40,7 @@ TEST(EvaluationTest, StartPositionEvaluation) {
     h_result = new int;
     cudaMalloc(&d_result, sizeof(int));
     eval<<<1, 1>>>(d_result, position[WHITE_PAWN_OFFSET], position[WHITE_BISHOP_OFFSET], position[WHITE_KNIGHT_OFFSET], position[WHITE_ROOK_OFFSET], position[WHITE_QUEEN_OFFSET], position[WHITE_KING_OFFSET], 
-                          position[BLACK_PAWN_OFFSET], position[BLACK_BISHOP_OFFSET], position[BLACK_KNIGHT_OFFSET], position[BLACK_ROOK_OFFSET], position[BLACK_QUEEN_OFFSET], position[BLACK_KING_OFFSET],);
+                          position[BLACK_PAWN_OFFSET], position[BLACK_BISHOP_OFFSET], position[BLACK_KNIGHT_OFFSET], position[BLACK_ROOK_OFFSET], position[BLACK_QUEEN_OFFSET], position[BLACK_KING_OFFSET]);
     cudaMemcpy(h_result, d_result, sizeof(int), cudaMemcpyDeviceToHost);
     result = *h_result;
     delete h_result;
@@ -92,8 +92,7 @@ TEST(GenerateMovesTest, StartPositionMovesSearch) {
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
     // when
-    generate_moves(position, generatedMoves
-                current_player);
+    generate_moves(position, generatedMoves, current_player == WHITE);
     int generated_moves_count = 0;
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {
@@ -111,7 +110,6 @@ TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForWhite) {
     initBasePosition(position);
 
     short current_player = 0;
-    int move_num = 0;
     // when
     init();
     search(current_player, position);
@@ -136,7 +134,6 @@ TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForBlack) {
     initBasePosition(position);
 
     short current_player = 1;
-    int move_num = 0;
     // when
     init();
     search(current_player, position);
