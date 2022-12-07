@@ -181,7 +181,7 @@ TEST(GenerateMovesTest, BlackKnightMovesTests) {
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {
         if ((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] == 0) break;
-        if((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] < position[WHITE_PAWN_OFFSET]){ 
+        if((generatedMoves + x * BOARD_SIZE)[WHITE_PAWN_OFFSET] < position[WHITE_PAWN_OFFSET]){ 
             generated_attacks_count++;
         }
         generated_moves_count = x + 1;
@@ -259,7 +259,7 @@ TEST(GenerateMovesTest, BlackRookMovesTests) {
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {
         if ((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] == 0) break;
-        if((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] < position[WHITE_PAWN_OFFSET]){ 
+        if((generatedMoves + x * BOARD_SIZE)[WHITE_PAWN_OFFSET] < position[WHITE_PAWN_OFFSET]){ 
             generated_attacks_count++;
         }
         generated_moves_count = x + 1;
@@ -336,7 +336,7 @@ TEST(GenerateMovesTest, BlackBishopMovesTests) {
     for(int x = 0; x < BOARDS_GENERATED; x++)
     {
         if ((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] == 0) break;
-        if((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] < position[WHITE_PAWN_OFFSET]){ 
+        if((generatedMoves + x * BOARD_SIZE)[WHITE_PAWN_OFFSET] < position[WHITE_PAWN_OFFSET]){ 
             generated_attacks_count++;
         }
         generated_moves_count = x + 1;
@@ -382,9 +382,87 @@ TEST(GenerateMovesTest, WhiteBishopMovesTests) {
     }
 
     // then 
-    ASSERT_EQ(10, generated_moves_count);
-    ASSERT_EQ(1, generated_attacks_count);
+    ASSERT_EQ(11, generated_moves_count);
+    ASSERT_EQ(2, generated_attacks_count);
 }
+
+TEST(GenerateMovesTest, BlackQueenMovesTests) {
+    pos64 position[BOARD_SIZE];
+    position[WHITE_PAWN_OFFSET] = WHITE_PAWN_STARTING_POS;
+    position[WHITE_BISHOP_OFFSET] = WHITE_BISHOP_STARTING_POS;
+    position[WHITE_KNIGHT_OFFSET] = WHITE_KNIGHT_STARTING_POS;
+    position[WHITE_ROOK_OFFSET] = WHITE_ROOK_STARTING_POS;
+    position[WHITE_QUEEN_OFFSET] = WHITE_QUEEN_STARTING_POS;
+    position[WHITE_KING_OFFSET] = WHITE_KING_STARTING_POS;
+
+    position[BLACK_PAWN_OFFSET] = 0;
+    position[BLACK_BISHOP_OFFSET] = 0;
+    position[BLACK_KNIGHT_OFFSET] = 0;
+    position[BLACK_ROOK_OFFSET] = 0;
+    position[BLACK_QUEEN_OFFSET] = 536870912;
+    position[BLACK_KING_OFFSET] = 0;
+
+    short current_player = 1;
+
+    pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
+
+    // when
+    generate_moves(position, generatedMoves, current_player == WHITE);
+    int generated_moves_count = 0;
+    int generated_attacks_count = 0;
+    for(int x = 0; x < BOARDS_GENERATED; x++)
+    {
+        if ((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] == 0) break;
+        if((generatedMoves + x * BOARD_SIZE)[WHITE_PAWN_OFFSET] < position[WHITE_PAWN_OFFSET]){ 
+            generated_attacks_count++;
+        }
+        generated_moves_count = x + 1;
+    }
+
+    // then 
+    ASSERT_EQ(23, generated_moves_count);
+    ASSERT_EQ(3, generated_attacks_count);
+}
+
+TEST(GenerateMovesTest, WhiteQueenMovesTests) {
+    // given
+    pos64 position[BOARD_SIZE];
+    position[WHITE_PAWN_OFFSET] = 0;
+    position[WHITE_BISHOP_OFFSET] = 0;
+    position[WHITE_KNIGHT_OFFSET] = 0;
+    position[WHITE_ROOK_OFFSET] = 0;
+    position[WHITE_QUEEN_OFFSET] = 68719476736;
+    position[WHITE_KING_OFFSET] = 0;
+
+    position[BLACK_PAWN_OFFSET] = BLACk_PAWN_STARTING_POS;
+    position[BLACK_BISHOP_OFFSET] = BLACK_BISHOP_STARTING_POS;
+    position[BLACK_KNIGHT_OFFSET] = BLACK_KNIGHT_STARTING_POS;
+    position[BLACK_ROOK_OFFSET] = BLACK_ROOK_STARTING_POS;
+    position[BLACK_QUEEN_OFFSET] = BLACK_QUEEN_STARTING_POS;
+    position[BLACK_KING_OFFSET] = BLACK_KING_STARTING_POS;
+
+    short current_player = 0;
+
+    pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
+
+    // when
+    generate_moves(position, generatedMoves, current_player == WHITE);
+    int generated_moves_count = 0;
+    int generated_attacks_count = 0;
+    for(int x = 0; x < BOARDS_GENERATED; x++)
+    {
+        if ((generatedMoves + x * BOARD_SIZE)[BLACK_KING_OFFSET] == 0) break;
+        if((generatedMoves + x * BOARD_SIZE)[BLACK_PAWN_OFFSET] < position[BLACK_PAWN_OFFSET]){ 
+            generated_attacks_count++;
+        }
+        generated_moves_count = x + 1;
+    }
+
+    // then 
+    ASSERT_EQ(24, generated_moves_count);
+    ASSERT_EQ(3, generated_attacks_count);
+}
+
 
 
 int main(int argc, char **argv) {
