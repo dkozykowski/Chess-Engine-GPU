@@ -163,7 +163,7 @@ void go(short & current_player, int & move_num) {
     position[BLACK_QUEEN_OFFSET] = black_queens;
     position[BLACK_KING_OFFSET] = black_kings;
     
-    search(current_player, move_num, position);
+    search(current_player, position);
 
     pos64 new_white_pawns = position[WHITE_PAWN_OFFSET];
     pos64 new_white_bishops = position[WHITE_BISHOP_OFFSET];

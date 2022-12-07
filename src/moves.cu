@@ -112,8 +112,24 @@ __host__ __device__ void generate_moves(pos64 *starting_boards, pos64 * generate
     }
 
 
-    // generate pawn moves forward
     if (isWhite) { 
+
+        //when on base position try move 2 forward
+        moves = noOne(noOne(startingOwnPieces[PAWN_OFFSET] & WHITE_PAWN_STARTING_POS));
+        occupied = (moves & allPieces);
+        moves = (moves ^ occupied); 
+        while(moves != 0 && generatedMoves < BOARDS_GENERATED) {
+            copyPosition(starting_boards, generated_boards_space + currentBoardOffset);
+
+            singleMove = getLeastSignificantBit(moves);
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[PAWN_OFFSET] = ((startingOwnPieces[PAWN_OFFSET] ^ soOne(soOne(singleMove))) | singleMove);
+
+            moves = resetLeastSignificantBit(moves);
+            generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+        }
+
+        // generate pawn moves forward
         moves = noOne(startingOwnPieces[PAWN_OFFSET]);
         occupied = (moves & allPieces);
         moves = (moves ^ occupied);         
@@ -162,6 +178,25 @@ __host__ __device__ void generate_moves(pos64 *starting_boards, pos64 * generate
         }
     }
     else {
+
+        //when on base position try move 2 forward
+        moves = soOne(soOne(startingOwnPieces[PAWN_OFFSET] & BLACk_PAWN_STARTING_POS));
+        occupied = (moves & allPieces);
+        moves = (moves ^ occupied); 
+        while(moves != 0 && generatedMoves < BOARDS_GENERATED) {
+            copyPosition(starting_boards, generated_boards_space + currentBoardOffset);
+
+            singleMove = getLeastSignificantBit(moves);
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[PAWN_OFFSET] = ((startingOwnPieces[PAWN_OFFSET] ^ noOne(noOne(singleMove))) | singleMove);
+
+            moves = resetLeastSignificantBit(moves);
+            generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+        }
+
+
+
+        // generate move forward
         moves = soOne(startingOwnPieces[PAWN_OFFSET]);
         occupied = (moves & allPieces);
         moves = (moves ^ occupied);         
@@ -462,6 +497,174 @@ __host__ __device__ void generate_moves(pos64 *starting_boards, pos64 * generate
         }
         movingBishops = resetLeastSignificantBit(movingBishops);
     }
+
+    // queen moves
+    pos64 movingQueens = startingOwnPieces[QUEEN_OFFSET];
+    while(movingQueens != 0 && generatedMoves < BOARDS_GENERATED){
+        piece = getLeastSignificantBit(movingQueens);
+
+        //moving north
+        singleMove = piece;
+        while(((singleMove = noOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
+            if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
+                break;
+            }
+            
+            copyOneColorPieces(startingOwnPieces, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[QUEEN_OFFSET] = ((startingOwnPieces[QUEEN_OFFSET] ^ piece) | singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
+            generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
+        }
+
+        // moving west
+        singleMove = piece;
+        while(((singleMove = westOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
+            if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
+                break;
+            }
+            
+            copyOneColorPieces(startingOwnPieces, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[QUEEN_OFFSET] = ((startingOwnPieces[QUEEN_OFFSET] ^ piece) | singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
+            generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
+        }
+        // moving south
+        singleMove = piece;
+       while(((singleMove = soOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
+            if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
+                break;
+            }
+            
+            copyOneColorPieces(startingOwnPieces, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[QUEEN_OFFSET] = ((startingOwnPieces[QUEEN_OFFSET] ^ piece) | singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
+            generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
+        }
+
+        // moving east
+        singleMove = piece;
+        while(((singleMove = eastOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
+            if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
+                break;
+            }
+            
+            copyOneColorPieces(startingOwnPieces, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[QUEEN_OFFSET] = ((startingOwnPieces[QUEEN_OFFSET] ^ piece) | singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
+            generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
+        }
+
+                singleMove = piece;
+        while(((singleMove = noEaOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
+            if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
+                break;
+            }
+            
+            copyOneColorPieces(startingOwnPieces, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[QUEEN_OFFSET] = ((startingOwnPieces[QUEEN_OFFSET] ^ piece) | singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
+            generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
+        }
+
+        // moving north west
+        singleMove = piece;
+        while(((singleMove = noWeOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
+            if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
+                break;
+            }
+            
+            copyOneColorPieces(startingOwnPieces, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[QUEEN_OFFSET] = ((startingOwnPieces[QUEEN_OFFSET] ^ piece) | singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
+            generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
+        }
+
+        // moving south west
+        singleMove = piece;
+        while(((singleMove = soWeOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
+            if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
+                break;
+            }
+            
+            copyOneColorPieces(startingOwnPieces, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[QUEEN_OFFSET] = ((startingOwnPieces[QUEEN_OFFSET] ^ piece) | singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
+            generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
+        }
+
+        // moving south east
+        singleMove = piece;
+        while(((singleMove = soEaOne(singleMove)) != 0) && generatedMoves < BOARDS_GENERATED) {
+            if(((singleMove & allPieces) != 0) && ((singleMove & enemyPieces) == 0)){
+                break;
+            }
+            
+            copyOneColorPieces(startingOwnPieces, generated_boards_space + currentBoardOffset + ownPiecesOffset);
+
+            (generated_boards_space + currentBoardOffset + ownPiecesOffset)[QUEEN_OFFSET] = ((startingOwnPieces[QUEEN_OFFSET] ^ piece) | singleMove);
+            copyOneColorPiecesAndCheckIfTaken(startingEnemyPieces, generated_boards_space + currentBoardOffset + enemyPiecesOffset, singleMove);
+
+            generatedMoves++;
+            currentBoardOffset += BOARD_SIZE;
+
+            if((singleMove & enemyPieces) != 0) {
+                break;
+            }
+        }
+
+        movingQueens = resetLeastSignificantBit(movingQueens);
+    }
+    
+
 
     if(generatedMoves == 0){
         printf("%lld %lld \n", starting_boards[WHITE_PAWN_OFFSET], starting_boards[BLACK_PAWN_OFFSET]);

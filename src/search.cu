@@ -129,7 +129,6 @@ __global__ void evaluate_boards(pos64 * boards,
 }
 
 void search(const short& current_player,
-            const int& move_num,
             pos64 *position) {
     
     pos64 *firstStageBoards;
