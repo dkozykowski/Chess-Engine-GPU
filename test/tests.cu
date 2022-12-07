@@ -31,7 +31,7 @@ void initBasePosition(pos64* board)
 TEST(EvaluationTest, StartPositionEvaluation) {
     // given
 
-    pos64[BOARD_SIZE] position;
+    pos64 position[BOARD_SIZE];
     initBasePosition(position);
     
     // when
@@ -84,12 +84,12 @@ TEST(EvaluationTest, EndgamePositionEvaluation) {
 
 TEST(GenerateMovesTest, StartPositionMovesSearch) {
     // given
-    pos64[BOARD_SIZE] position;
+    pos64 position[BOARD_SIZE];
     initBasePosition(position);
     
     short current_player = 0;
 
-    pos64[BOARDS_GENERATED * BOARD_SIZE] generatedMoves;
+    pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
     // when
     generate_moves(position, generatedMoves
@@ -107,7 +107,7 @@ TEST(GenerateMovesTest, StartPositionMovesSearch) {
 
 TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForWhite) {
     // given
-    pos64[BOARD_SIZE] position;
+    pos64 position[BOARD_SIZE];
     initBasePosition(position);
 
     short current_player = 0;
@@ -117,7 +117,7 @@ TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForWhite) {
     search(current_player, position);
     terminate();
 
-    pos64[BOARD_SIZE] basePosition;
+    pos64 basePosition[BOARD_SIZE];
     initBasePosition(basePosition);
 
     pos64 current_pos_white = position[WHITE_PAWN_OFFSET] | position[WHITE_BISHOP_OFFSET] | position[WHITE_KNIGHT_OFFSET] | position[WHITE_ROOK_OFFSET] | position[WHITE_QUEEN_OFFSET] | position[WHITE_KING_OFFSET];
@@ -132,7 +132,7 @@ TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForWhite) {
 
 TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForBlack) {
    // given
-    pos64[BOARD_SIZE] position;
+    pos64 position[BOARD_SIZE];
     initBasePosition(position);
 
     short current_player = 1;
@@ -142,7 +142,7 @@ TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForBlack) {
     search(current_player, position);
     terminate();
 
-    pos64[BOARD_SIZE] basePosition;
+    pos64 basePosition[BOARD_SIZE];
     initBasePosition(basePosition);
 
     pos64 current_pos_white = position[WHITE_PAWN_OFFSET] | position[WHITE_BISHOP_OFFSET] | position[WHITE_KNIGHT_OFFSET] | position[WHITE_ROOK_OFFSET] | position[WHITE_QUEEN_OFFSET] | position[WHITE_KING_OFFSET];
@@ -158,7 +158,7 @@ TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForBlack) {
 
 TEST(GenerateMovesTest, BlackKnightMovesTests) {
     // given
-    pos64[BOARD_SIZE] position;
+    pos64 position[BOARD_SIZE];
     position[WHITE_PAWN_OFFSET] = WHITE_PAWN_STARTING_POS;
     position[WHITE_BISHOP_OFFSET] = WHITE_BISHOP_STARTING_POS;
     position[WHITE_KNIGHT_OFFSET] = WHITE_KNIGHT_STARTING_POS;
@@ -175,11 +175,10 @@ TEST(GenerateMovesTest, BlackKnightMovesTests) {
 
     short current_player = 1;
 
-    pos64[BOARDS_GENERATED * BOARD_SIZE] generatedMoves;
+    pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
     // when
-    generate_moves(position, generatedMoves
-                current_player);
+    generate_moves(position, generatedMoves, current_player == WHITE);
     int generated_moves_count = 0;
     int generated_attacks_count = 0;
     for(int x = 0; x < BOARDS_GENERATED; x++)
@@ -198,7 +197,7 @@ TEST(GenerateMovesTest, BlackKnightMovesTests) {
 
 TEST(GenerateMovesTest, WhiteKnightMovesTests) {
 
-    pos64[BOARD_SIZE] position;
+    pos64 position[BOARD_SIZE];
     position[WHITE_PAWN_OFFSET] = 0;
     position[WHITE_BISHOP_OFFSET] = 0;
     position[WHITE_KNIGHT_OFFSET] = 68719476736;
@@ -215,11 +214,10 @@ TEST(GenerateMovesTest, WhiteKnightMovesTests) {
 
     short current_player = 0;
 
-    pos64[BOARDS_GENERATED * BOARD_SIZE] generatedMoves;
+    pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
     // when
-    generate_moves(position, generatedMoves
-                current_player);
+    generate_moves(position, generatedMoves, current_player == WHITE);
     int generated_moves_count = 0;
     int generated_attacks_count = 0;
     for(int x = 0; x < BOARDS_GENERATED; x++)
@@ -238,7 +236,7 @@ TEST(GenerateMovesTest, WhiteKnightMovesTests) {
 
 TEST(GenerateMovesTest, BlackRookMovesTests) {
 
-    pos64[BOARD_SIZE] position;
+    pos64 position[BOARD_SIZE];
     position[WHITE_PAWN_OFFSET] = WHITE_PAWN_STARTING_POS;
     position[WHITE_BISHOP_OFFSET] = WHITE_BISHOP_STARTING_POS;
     position[WHITE_KNIGHT_OFFSET] = WHITE_KNIGHT_STARTING_POS;
@@ -255,11 +253,10 @@ TEST(GenerateMovesTest, BlackRookMovesTests) {
 
     short current_player = 1;
 
-    pos64[BOARDS_GENERATED * BOARD_SIZE] generatedMoves;
+    pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
     // when
-    generate_moves(position, generatedMoves
-                current_player);
+    generate_moves(position, generatedMoves, current_player == WHITE);
     int generated_moves_count = 0;
     int generated_attacks_count = 0;
     for(int x = 0; x < BOARDS_GENERATED; x++)
@@ -278,7 +275,7 @@ TEST(GenerateMovesTest, BlackRookMovesTests) {
 
 TEST(GenerateMovesTest, WhiteRookMovesTests) {
     
-    pos64[BOARD_SIZE] position;
+    pos64 position[BOARD_SIZE];
     position[WHITE_PAWN_OFFSET] = 0;
     position[WHITE_BISHOP_OFFSET] = 0;
     position[WHITE_KNIGHT_OFFSET] = 0;
@@ -295,11 +292,10 @@ TEST(GenerateMovesTest, WhiteRookMovesTests) {
 
     short current_player = 0;
 
-    pos64[BOARDS_GENERATED * BOARD_SIZE] generatedMoves;
+    pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
     // when
-    generate_moves(position, generatedMoves
-                current_player);
+    generate_moves(position, generatedMoves, current_player == WHITE);
     int generated_moves_count = 0;
     int generated_attacks_count = 0;
     for(int x = 0; x < BOARDS_GENERATED; x++)
@@ -317,7 +313,7 @@ TEST(GenerateMovesTest, WhiteRookMovesTests) {
 }
 
 TEST(GenerateMovesTest, BlackBishopMovesTests) {
-    pos64[BOARD_SIZE] position;
+    pos64 position[BOARD_SIZE];
     position[WHITE_PAWN_OFFSET] = WHITE_PAWN_STARTING_POS;
     position[WHITE_BISHOP_OFFSET] = WHITE_BISHOP_STARTING_POS;
     position[WHITE_KNIGHT_OFFSET] = WHITE_KNIGHT_STARTING_POS;
@@ -334,11 +330,10 @@ TEST(GenerateMovesTest, BlackBishopMovesTests) {
 
     short current_player = 1;
 
-    pos64[BOARDS_GENERATED * BOARD_SIZE] generatedMoves;
+    pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
     // when
-    generate_moves(position, generatedMoves
-                current_player);
+    generate_moves(position, generatedMoves, current_player == WHITE);
     int generated_moves_count = 0;
     int generated_attacks_count = 0;
     for(int x = 0; x < BOARDS_GENERATED; x++)
@@ -357,7 +352,7 @@ TEST(GenerateMovesTest, BlackBishopMovesTests) {
 
 TEST(GenerateMovesTest, WhiteBishopMovesTests) {
     // given
-    pos64[BOARD_SIZE] position;
+    pos64 position[BOARD_SIZE];
     position[WHITE_PAWN_OFFSET] = 0;
     position[WHITE_BISHOP_OFFSET] = 68719476736;
     position[WHITE_KNIGHT_OFFSET] = 0;
@@ -374,11 +369,10 @@ TEST(GenerateMovesTest, WhiteBishopMovesTests) {
 
     short current_player = 0;
 
-    pos64[BOARDS_GENERATED * BOARD_SIZE] generatedMoves;
+    pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
     // when
-    generate_moves(position, generatedMoves
-                current_player);
+    generate_moves(position, generatedMoves, current_player == WHITE);
     int generated_moves_count = 0;
     int generated_attacks_count = 0;
     for(int x = 0; x < BOARDS_GENERATED; x++)
