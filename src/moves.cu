@@ -115,8 +115,8 @@ __host__ __device__ void generate_moves(pos64 *starting_boards, pos64 * generate
     if (isWhite) { 
 
         //when on base position try move 2 forward
-        moves = noOne(noOne(startingOwnPieces[PAWN_OFFSET] & WHITE_PAWN_STARTING_POS));
-        occupied = (moves & allPieces);
+        moves = noOne(noOne((startingOwnPieces[PAWN_OFFSET] & WHITE_PAWN_STARTING_POS)));
+        occupied = ((moves & allPieces) | (moves & noOne(allPieces)));
         moves = (moves ^ occupied); 
         while(moves != 0 && generatedMoves < BOARDS_GENERATED) {
             copyPosition(starting_boards, generated_boards_space + currentBoardOffset);
@@ -181,7 +181,7 @@ __host__ __device__ void generate_moves(pos64 *starting_boards, pos64 * generate
 
         //when on base position try move 2 forward
         moves = soOne(soOne(startingOwnPieces[PAWN_OFFSET] & BLACk_PAWN_STARTING_POS));
-        occupied = (moves & allPieces);
+        occupied = ((moves & allPieces) | (moves & soOne(allPieces)));
         moves = (moves ^ occupied); 
         while(moves != 0 && generatedMoves < BOARDS_GENERATED) {
             copyPosition(starting_boards, generated_boards_space + currentBoardOffset);
