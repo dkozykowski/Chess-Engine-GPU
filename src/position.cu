@@ -34,7 +34,7 @@ void print_position(const pos64& white_pawns,
             else if ((black_kings & pos) != 0) printable_sign = 'K';
 
             if (column == 0) 
-                printf("%d| %c ", 8 - row, printable_sign); 
+                printf("%d| %c ", row + 1, printable_sign); 
             else 
                 printf("| %c ", printable_sign); 
 

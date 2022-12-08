@@ -104,9 +104,9 @@ void move(std::istringstream & is, short & current_player, int & move_num) {
     }
 
     int from_col = move_token[0] >= 'a' ? move_token[0] - 'a' : move_token[0] - 'A';
-    int from_row = '8' - move_token[1];
+    int from_row = move_token[1] - '1';
     int to_col = move_token[2] >= 'a' ? move_token[2] - 'a' : move_token[2] - 'A';
-    int to_row = '8' - move_token[3];
+    int to_row = move_token[3] - '1';
     
     if (from_col < 0 || from_row < 0 || to_col < 0 || to_row < 0 ||
         8 <= from_col || 8 <= from_row || 8 <= to_col || 8 <= to_row) {
@@ -203,9 +203,9 @@ std::string get_move_string(pos64 current_pos, pos64 new_pos) {
     int to_pos = _log2(to);
     std::string result = "____";
     result[0] = from_pos % 8 + 'a';
-    result[1] = '8' - from_pos / 8;
+    result[1] = from_pos / 8 + '1';
     result[2] = to_pos % 8 + 'a';
-    result[3] = '8' - to_pos / 8;
+    result[3] = to_pos / 8 + '1';
     return result;
 }
 
