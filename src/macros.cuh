@@ -18,11 +18,6 @@ typedef unsigned long long int pos64;
 
 #define THREADS 256
 #define BLOCKS 60000
-#define MAX_BLOCKS_COUNT 2147483647
-
-#define DEVICES 10
-
-#define MAX_BOARDS_SIMULTANEOUSLY THREADS * MAX_BLOCKS_COUNT
 #define MAX_BOARDS_IN_MEMORY 7e7
 #define FIRST_STAGE_DEPTH 1
 #define MAX_DEPTH 5

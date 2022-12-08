@@ -4,6 +4,8 @@
 #include "macros.cuh"
 #include "evaluate.cuh"
 #include "moves.cuh"
+#include "vector"
+#include "thread"
 
 #define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 
@@ -54,6 +56,7 @@ void _init_sizes_tables(int* level_sizes, int * subtree_sizes) {
 }
 
 void init() {
+    cudaSetDevice(0);
     h_level_sizes = new int[MAX_DEPTH + 10];
     h_subtree_sizes = new int[MAX_DEPTH + 10];
     CHECK_ALLOC(cudaMalloc(&last, sizeof(int)));
@@ -64,8 +67,18 @@ void init() {
 void terminate() {
     delete[] h_level_sizes;
     delete[] h_subtree_sizes;
+    cudaSetDevice(0);
     cudaFree(last);
 }
+
+void copy_from_gpu_to_cpu(void * device_source, void * host_destination, int size) {
+    gpuErrchk(cudaMemcpy(host_destination, device_source, size, cudaMemcpyDeviceToHost));
+}
+
+void copy_from_cpu_to_gpu(void * host_source, void * device_destination, int size) {
+    gpuErrchk(cudaMemcpy(device_destination, host_source, size, cudaMemcpyHostToDevice));
+}
+
 __global__ void generate_moves_for_boards(pos64 * boards,
                 bool isWhite,
                 int boards_count) {
@@ -116,102 +129,134 @@ __global__ void evaluate_boards(pos64 * boards,
 }
 
 void search(const short& current_player,
-            const int& move_num,
             pos64 *position) {
     
-    pos64 *firstStageBoards, *secStageBoards;
-    int* firstStageResults, *secStageResult;
+    pos64 *firstStageBoards;
+    int* firstStageResults;
     int firstStageTotalBoardsCount  = h_subtree_sizes[FIRST_STAGE_DEPTH];
     int secStageTotalBoardsCount = h_subtree_sizes[MAX_DEPTH - FIRST_STAGE_DEPTH];
     CHECK_ALLOC(cudaMalloc(&firstStageBoards, sizeof(pos64) * BOARD_SIZE * firstStageTotalBoardsCount));
     CHECK_ALLOC(cudaMalloc(&firstStageResults, sizeof(int) * firstStageTotalBoardsCount));
-    CHECK_ALLOC(cudaMalloc(&secStageBoards, sizeof(pos64) * BOARD_SIZE * secStageTotalBoardsCount));
-    CHECK_ALLOC(cudaMalloc(&secStageResult, sizeof(int) * secStageTotalBoardsCount));
+
+    pos64 *temp_firstStageBoards;
+    int* temp_firstStageResults;
+    try {
+        temp_firstStageBoards = new pos64[BOARD_SIZE * firstStageTotalBoardsCount];
+        temp_firstStageResults = new int[firstStageTotalBoardsCount];
+    } catch (std::bad_alloc&) {
+        ERR("Operator new");
+    }
 
     gpuErrchk(cudaMemcpy(firstStageBoards, position, BOARD_SIZE * sizeof(pos64), cudaMemcpyHostToDevice));
 
     // generating moves in first stage
     DBG(printf("Stage 1 - generating moves\n"));
     
-    pos64* firstBoardAddress;
     bool isWhite = current_player == WHITE;
+    pos64 *firstBoardAddress = firstStageBoards;
     for (int i = 0; i < FIRST_STAGE_DEPTH; i++) {
-        if(i == 0) {
-            firstBoardAddress = firstStageBoards;
-        }
-        else {
-            firstBoardAddress = firstStageBoards + (h_subtree_sizes[i - 1] * BOARD_SIZE);
-        } 
-        generate_moves_for_boards<<<BLOCKS, THREADS>>>(firstStageBoards, isWhite, h_level_sizes[i]);
+        generate_moves_for_boards<<<BLOCKS, THREADS>>>(firstBoardAddress, isWhite, h_level_sizes[i]);
         gpuErrchk(cudaDeviceSynchronize());
         gpuErrchk(cudaPeekAtLastError());
+        firstBoardAddress = firstStageBoards + (h_subtree_sizes[i] * BOARD_SIZE);
         isWhite = !isWhite;
     }
     DBG(printf("Stage finished successfully\n"));
 
     // second stage
-    pos64 * basicBoardAddres = firstStageBoards + (h_subtree_sizes[FIRST_STAGE_DEPTH - 1] * BOARD_SIZE); 
-    int *basicResultAddress = firstStageResults + h_subtree_sizes[FIRST_STAGE_DEPTH - 1];
-    for (int o = 0; o < h_level_sizes[FIRST_STAGE_DEPTH]; o++) {        
-        gpuErrchk(cudaMemcpy(secStageBoards, basicBoardAddres + (o * BOARD_SIZE), sizeof(pos64) * BOARD_SIZE, cudaMemcpyDeviceToDevice));
 
-        DBG(printf("Stage 2 - generating moves\n"));
-        //generating moves
-        bool isWhiteTemp = isWhite;
-        for (int i = 0; i < MAX_DEPTH - FIRST_STAGE_DEPTH; i++) {
-            if(i == 0) {
+    // copying data
+    copy_from_gpu_to_cpu(firstStageBoards, temp_firstStageBoards, sizeof(pos64) * BOARD_SIZE * firstStageTotalBoardsCount);
+    copy_from_gpu_to_cpu(firstStageResults, temp_firstStageResults, sizeof(int) * firstStageTotalBoardsCount);
+
+    cudaFree(firstStageBoards);
+    cudaFree(firstStageResults);
+
+    std::vector<std::thread> threads;
+    int devices_count;
+    cudaGetDeviceCount(&devices_count);
+
+    DBG(printf("Stage two started\n"));
+    for (int j = 0; j < devices_count; j++) {
+        threads.push_back (std::thread ([&, j, secStageTotalBoardsCount, isWhite, devices_count] () {
+            gpuErrchk(cudaSetDevice(j));
+
+            pos64* firstBoardAddress;
+            pos64 *secStageBoards;
+            int *secStageResult;
+            int * last;
+            CHECK_ALLOC(cudaMalloc(&last, sizeof(int)));
+            CHECK_ALLOC(cudaMalloc(&secStageBoards, sizeof(pos64) * BOARD_SIZE * secStageTotalBoardsCount));
+            CHECK_ALLOC(cudaMalloc(&secStageResult, sizeof(int) * secStageTotalBoardsCount));
+
+            pos64 * basicBoardAddres = temp_firstStageBoards + (h_subtree_sizes[FIRST_STAGE_DEPTH - 1] * BOARD_SIZE); 
+            int *basicResultAddress = temp_firstStageResults + h_subtree_sizes[FIRST_STAGE_DEPTH - 1];
+
+            for (int o = j; o < h_level_sizes[FIRST_STAGE_DEPTH]; o += devices_count) {
+                copy_from_cpu_to_gpu(basicBoardAddres + (o * BOARD_SIZE), secStageBoards, sizeof(pos64) * BOARD_SIZE);
+                
+                //generating moves
+                bool isWhiteTemp = isWhite;
                 firstBoardAddress = secStageBoards;
-            }
-            else
-            {
-                firstBoardAddress = secStageBoards + (h_subtree_sizes[i - 1] * BOARD_SIZE);
-            }
-            generate_moves_for_boards<<<BLOCKS, THREADS>>>(firstBoardAddress, isWhiteTemp, h_level_sizes[i]);
-            gpuErrchk(cudaDeviceSynchronize());
-            gpuErrchk(cudaPeekAtLastError());
-            isWhiteTemp = !isWhiteTemp;
-        }
-        DBG(printf("Stage finished successfully\n"));
+                for (int i = 0; i < MAX_DEPTH - FIRST_STAGE_DEPTH; i++) {
+                    generate_moves_for_boards<<<BLOCKS, THREADS>>>(firstBoardAddress, isWhiteTemp, h_level_sizes[i]);
+                    gpuErrchk(cudaDeviceSynchronize());
+                    gpuErrchk(cudaPeekAtLastError());
+                    isWhiteTemp = !isWhiteTemp;
+                    firstBoardAddress = secStageBoards + (h_subtree_sizes[i] * BOARD_SIZE);
+                }
 
-        DBG(printf("Stage 2 - evaluating\n"));
-        // evaluating
+                // evaluating
+                pos64 *lowestLevelAdress = secStageBoards + (h_subtree_sizes[MAX_DEPTH - FIRST_STAGE_DEPTH - 1] * BOARD_SIZE);
+                evaluate_boards<<<BLOCKS, THREADS>>>(lowestLevelAdress, h_level_sizes[MAX_DEPTH - FIRST_STAGE_DEPTH], secStageResult + h_subtree_sizes[MAX_DEPTH - FIRST_STAGE_DEPTH - 1]);
+                gpuErrchk(cudaDeviceSynchronize());
+                gpuErrchk(cudaPeekAtLastError());
+                
+                int *firstResultAddress;
+                for (int i = MAX_DEPTH - FIRST_STAGE_DEPTH - 1; i >= 0 ; i--) {
+                    if(i == 0) {
+                        firstResultAddress = secStageResult;
+                    }
+                    else {
+                        firstResultAddress = secStageResult + h_subtree_sizes[i - 1];
+                    }
+                    gather_results_for_boards<<<BLOCKS, THREADS>>>(firstResultAddress, h_level_sizes[i], !isWhiteTemp, last);
+                    gpuErrchk(cudaDeviceSynchronize());
+                    gpuErrchk(cudaPeekAtLastError());   
+                    isWhiteTemp = !isWhiteTemp;
+                }
 
-        pos64 *lowestLevelAdress = secStageBoards + (h_subtree_sizes[MAX_DEPTH - FIRST_STAGE_DEPTH - 1] * BOARD_SIZE);
-        evaluate_boards<<<BLOCKS, THREADS>>>(lowestLevelAdress, h_level_sizes[MAX_DEPTH - FIRST_STAGE_DEPTH], secStageResult + h_subtree_sizes[MAX_DEPTH - FIRST_STAGE_DEPTH - 1]);
-        gpuErrchk(cudaDeviceSynchronize());
-        gpuErrchk(cudaPeekAtLastError());
-        DBG(printf("Stage finished successfully\n"));
-
-        DBG(printf("Stage 2 - gathering results\n"));
-        
-        int *firstResultAddress;
-        for (int i = MAX_DEPTH - FIRST_STAGE_DEPTH - 1; i >= 0 ; i--) {
-            if(i == 0) {
-                firstResultAddress = secStageResult;
+                copy_from_gpu_to_cpu(secStageResult, basicResultAddress +  o, sizeof(int));
             }
-            else {
-                firstResultAddress = secStageResult + h_level_sizes[i - 1];
-            }
-            gather_results_for_boards<<<BLOCKS, THREADS>>>(firstResultAddress, h_level_sizes[i], !isWhiteTemp , last);
-            gpuErrchk(cudaDeviceSynchronize());
-            gpuErrchk(cudaPeekAtLastError());   
-            isWhiteTemp = !isWhiteTemp;
-        }
-        DBG(printf("Stage finished successfully\n"));
-
-        gpuErrchk(cudaMemcpy(basicResultAddress +  o, secStageResult, sizeof(int), cudaMemcpyDeviceToDevice));
+            cudaFree(secStageBoards);
+            cudaFree(secStageResult);
+            cudaFree(last);
+        }));
     }
+    for (int j = 0; j < devices_count; j++) {
+        threads[j].join();
+    }
+    cudaSetDevice(0);
 
     DBG(printf("Stage 1 - gathering results\n"));
+    CHECK_ALLOC(cudaMalloc(&firstStageBoards, sizeof(pos64) * BOARD_SIZE * firstStageTotalBoardsCount));
+    CHECK_ALLOC(cudaMalloc(&firstStageResults, sizeof(int) * firstStageTotalBoardsCount));
+
+    copy_from_cpu_to_gpu(temp_firstStageBoards, firstStageBoards, sizeof(pos64) * BOARD_SIZE * firstStageTotalBoardsCount);
+    copy_from_cpu_to_gpu(temp_firstStageResults, firstStageResults, sizeof(int) * firstStageTotalBoardsCount);
+
+    delete[] temp_firstStageBoards;
+    delete[] temp_firstStageResults;
+
     // acquiring results for first stage
-    int *firstResultAddress;
+    int *firstResultAddress = firstStageResults;
      for (int i = FIRST_STAGE_DEPTH - 1; i >= 0; i--) {
         if(i == 0) {
-                firstResultAddress = firstStageResults;
-            }
-            else {
-                firstResultAddress = firstStageResults + h_subtree_sizes[i - 1];
-            }
+            firstResultAddress = firstStageResults;
+        }
+        else {
+            firstResultAddress = firstResultAddress + h_subtree_sizes[i - 1];
+        }
         gather_results_for_boards<<<BLOCKS, THREADS>>>(firstResultAddress, h_subtree_sizes[i], !isWhite, last);
         gpuErrchk(cudaDeviceSynchronize());
         gpuErrchk(cudaPeekAtLastError());
@@ -224,7 +269,5 @@ void search(const short& current_player,
     gpuErrchk(cudaMemcpy(position, firstStageBoards + BOARD_SIZE + (bestMoveNr * BOARD_SIZE), sizeof(pos64) * BOARD_SIZE, cudaMemcpyDeviceToHost));
 
     cudaFree(firstStageBoards);
-    cudaFree(secStageBoards);
     cudaFree(firstStageResults);
-    cudaFree(secStageResult);
 }
