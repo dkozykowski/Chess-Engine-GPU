@@ -16,11 +16,15 @@ typedef unsigned long long int pos64;
             fprintf(stderr,"%s:%d\n",__FILE__,__LINE__),\
             exit(EXIT_FAILURE))
 
-#define THREADS 256
-#define BLOCKS 60000
-#define MAX_BOARDS_IN_MEMORY 7e7
+#define MAX_THREADS 256
+#define MAX_BLOCKS 60000
 #define FIRST_STAGE_DEPTH 1
-#define MAX_DEPTH 5
+
+#define MAX_BOARD_COMPUTED_FOR_SECOUND_STAGE 1000
+#define MAX_POSSIBLE_DEPTH 2
+
+#define MAX_DEPTH 10
+#define MAX_BOARDS_GENERATED 100
 #define BOARDS_GENERATED 40
 
 #define INF 1e6
