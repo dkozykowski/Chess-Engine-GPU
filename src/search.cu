@@ -149,7 +149,7 @@ int prepareMemory(pos64 **boards, unsigned int **offsets, unsigned int **level_s
     cudaMemGetInfo(&free, &total);
 
     int maxBoardCount = free / sizeOfOneBoard;
-    printf("max boards: %d\n", maxBoardCount);
+    DBG(printf("max boards: %d\n", maxBoardCount));
 
     gpuErrchk(cudaMalloc(boards,  sizeof(pos64) * BOARD_SIZE * maxBoardCount));
     gpuErrchk(cudaMalloc(offsets, sizeof(unsigned int) * maxBoardCount));
@@ -182,7 +182,7 @@ int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets, unsigned int 
         DBG(printf("calculate offsets offset: %d\n", offset));
         scan(boardsOffsets + offset, runningBoards, (unsigned int*)(boards + (offset + runningBoards) * BOARD_SIZE), &level_sizes[i + 1]); // since boards are not yet created I use the space there as a temp table
 
-        printf("boardCount on depth %d, %u\n", i, level_sizes[i + 1]);
+        DBG(printf("boardCount on depth %d, %u\n", i, level_sizes[i + 1]));
 
         if((isFirstStage && level_sizes[i + 1] > MAX_BOARD_COMPUTED_IN_SECOUND_STAGE) || (!isFirstStage && runningBoards + offset + level_sizes[i + 1] > maxBoardsCount)) {
             *depthFound = i;
@@ -227,16 +227,14 @@ void search(const short& current_player,
     
     gpuErrchk(cudaMemcpy(boards, position, sizeof(pos64) * BOARD_SIZE, cudaMemcpyHostToDevice));
 
-    int depthFound;
+    int firstStageDepth;
     bool isWhite = current_player == WHITE;
-    int offset = runBoardGeneration(boards, boardsOffsets, level_sizes, &depthFound, &isWhite, totalBoardsCount, true);
-
-    DBG(printf("reached depth %d\n", depthFound));
+    int offset = runBoardGeneration(boards, boardsOffsets, level_sizes, &firstStageDepth, &isWhite, totalBoardsCount, true);
     // second stage
 
     // copying data
-    int totalBoardCountInFirstStage = offset + level_sizes[depthFound];
-    pos64 *firstStageBoards = new pos64[totalBoardCountInFirstStage];
+    int totalBoardCountInFirstStage = offset + level_sizes[firstStageDepth];
+    pos64 *firstStageBoards = new pos64[totalBoardCountInFirstStage * BOARD_SIZE];
     int *firstStageOffsets = new int[totalBoardCountInFirstStage];
 
     gpuErrchk(cudaMemcpy(firstStageBoards, boards, sizeof(pos64) * BOARD_SIZE * totalBoardCountInFirstStage, cudaMemcpyDeviceToHost));
@@ -250,9 +248,7 @@ void search(const short& current_player,
     int devices_count;
     cudaGetDeviceCount(&devices_count);
 
-    int boardsToCalaculateInSecStage = level_sizes[depthFound];
-
-    printf("depth found: %d, totalBoardsCount: %d, boardsToCalculateInNextStage %d, offset: %d\n", depthFound, totalBoardCountInFirstStage, boardsToCalaculateInSecStage, offset);
+    int boardsToCalaculateInSecStage = level_sizes[firstStageDepth];
 
     DBG(printf("Stage two started\n"));
     for (int j = 0; j < devices_count; j++) {
@@ -268,14 +264,17 @@ void search(const short& current_player,
             pos64 *baseBoardsAddress = firstStageBoards + offset * BOARD_SIZE;
             int *baseOffsetsAddress = firstStageOffsets + offset;
             for (int o = j; o < boardsToCalaculateInSecStage; o += devices_count) {
+                gpuErrchk(cudaMemset(secStageOffsets, 0, sizeof(int) * maxBoards));
+                gpuErrchk(cudaMemset(secStageBoards, 0, sizeof(pos64) * BOARD_SIZE * maxBoards));
                 gpuErrchk(cudaMemcpy(secStageBoards, baseBoardsAddress + (o * BOARD_SIZE), sizeof(pos64) * BOARD_SIZE, cudaMemcpyHostToDevice));
+                
                 int depthFound;
                 bool isWhiteTemp = isWhite;
                 int tempOffset = runBoardGeneration(secStageBoards, secStageOffsets, sec_stage_level_sizes, &depthFound, &isWhiteTemp, maxBoards, false);
-                printf("offset %d, depthFound: %d\n", tempOffset, depthFound);
+                DBG(printf("offset %d, depthFound: %d\n", tempOffset, depthFound));
                 // evaluating
 
-                printf("count of evaluation boards: %u\n", sec_stage_level_sizes[depthFound]);
+                DBG(printf("count of evaluation boards: %u\n", sec_stage_level_sizes[depthFound]));
                 evaluate_boards<<<getBlocksCount2d(sec_stage_level_sizes[depthFound]), MAX_THREADS>>>(boards + tempOffset * BOARD_SIZE, sec_stage_level_sizes[depthFound], (int*)(boardsOffsets + tempOffset)); // since last level doesnt use offsets board i use it for keeping evaluation            
                 gpuErrchk(cudaDeviceSynchronize());
                 gpuErrchk(cudaPeekAtLastError());
@@ -306,7 +305,7 @@ void search(const short& current_player,
     delete[] firstStageOffsets;
 
     // acquiring results for first stage
-    gatherResults(boards, boardsOffsets, level_sizes, depthFound, last, offset, !isWhite);
+    gatherResults(boards, boardsOffsets, level_sizes, firstStageDepth, last, offset, !isWhite);
 
     int bestMoveNr;
     gpuErrchk(cudaMemcpy(&bestMoveNr, last, sizeof(int), cudaMemcpyDeviceToHost));

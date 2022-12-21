@@ -90,7 +90,6 @@ void scan(unsigned int* input, unsigned int n, unsigned int *sums, unsigned int 
   if(n > (ELEMENTS_PER_BLOCK)) 
   {
     unsigned int blockCount = getBlockCount(n); 
-    printf("blocks: %d \n", blockCount);
     first_stage_scan<<<blockCount, THREADS_IN_BLOCK, SHARED_MEMORY_SIZE>>>(input, ELEMENTS_PER_BLOCK, sums, ELEMENTS_PER_BLOCK);
     gpuErrchk(cudaDeviceSynchronize());
     gpuErrchk(cudaPeekAtLastError());
