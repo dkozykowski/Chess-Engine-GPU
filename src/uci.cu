@@ -222,7 +222,7 @@ void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, po
                 pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings, short current_player) 
 {
     pos64 *position = new pos64[12];
-    pos64 *generatedBoards = new pos64[BOARDS_GENERATED * BOARD_SIZE];
+    pos64 *generatedBoards = new pos64[255 * BOARD_SIZE];
 
     position[WHITE_PAWN_OFFSET] = white_pawns;
     position[WHITE_BISHOP_OFFSET] = white_bishops;
@@ -239,7 +239,7 @@ void print_moves(pos64 white_pawns, pos64 white_bishops, pos64 white_knights, po
 
     generate_moves(position, generatedBoards, current_player == WHITE);
     std::string any;
-    for(int x = 0; x < BOARDS_GENERATED; x++)
+    for(int x = 0; x < 255; x++)
     {
         if (((generatedBoards + (x * BOARD_SIZE))[BLACK_KING_OFFSET] | (generatedBoards + (x * BOARD_SIZE))[WHITE_KING_OFFSET]) == 0) break;
         print_position((generatedBoards + (x * BOARD_SIZE))[WHITE_PAWN_OFFSET], (generatedBoards + (x * BOARD_SIZE))[WHITE_BISHOP_OFFSET], (generatedBoards + (x * BOARD_SIZE))[WHITE_KNIGHT_OFFSET],
