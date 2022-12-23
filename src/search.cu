@@ -148,7 +148,7 @@ int prepareMemory(pos64 **boards, unsigned int **offsets, unsigned int **level_s
     size_t total,free;
     cudaMemGetInfo(&free, &total);
 
-    int maxBoardCount = free / sizeOfOneBoard;
+    int maxBoardCount = free / (sizeOfOneBoard + 1);
     DBG(printf("max boards: %d\n", maxBoardCount));
 
     gpuErrchk(cudaMalloc(boards,  sizeof(pos64) * BOARD_SIZE * maxBoardCount));
