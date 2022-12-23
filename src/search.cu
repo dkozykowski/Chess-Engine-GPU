@@ -53,20 +53,25 @@ void terminate() {
     cudaFree(last);
 }
 
-void setThreadAndBlocksCount(int * threads, int * blocks, int boardCount)
+dim3 getBlocksCount2d(int boards) {
+    return dim3(MAX_BLOCKS_PER_DIMENSION, boards % MAX_BLOCKS_PER_DIMENSION == 0 ? boards / MAX_BLOCKS_PER_DIMENSION : boards / MAX_BLOCKS_PER_DIMENSION + 1);
+}
+
+void setThreadAndBlocksCount(int * threads, dim3 * blocks, int boardCount)
 {
     if(boardCount <= MAX_THREADS) {
         *threads = boardCount;
-        *blocks = 1;
+        *blocks = dim3(1);
     }
-    else {
+    else if((boardCount / MAX_THREADS) + 1 < MAX_BLOCKS_PER_DIMENSION){
         *threads = MAX_THREADS;
-        *blocks = (boardCount / MAX_THREADS) + 1;
+        *blocks = dim3((boardCount / MAX_THREADS) + 1);
     }
-}
-
-dim3 getBlocksCount2d(int boards) {
-    return dim3(MAX_BLOCKS_PER_DIMENSION, boards % MAX_BLOCKS_PER_DIMENSION == 0 ? boards / MAX_BLOCKS_PER_DIMENSION : boards / MAX_BLOCKS_PER_DIMENSION + 1);
+    else
+    {
+        *threads = MAX_THREADS;
+        *blocks = getBlocksCount2d(boardCount); 
+    }
 }
 
 __global__ void generate_moves_for_boards(pos64 * boards, 
@@ -163,7 +168,8 @@ int prepareMemory(pos64 **boards, unsigned int **offsets, unsigned int **level_s
 
 int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets, unsigned int *level_sizes, int *depthFound, bool *isWhite, int maxBoardsCount, bool isFirstStage) {
     int runningBoards, boardOffset = 0;
-    int threadCount, blockCount;
+    int threadCount;
+    dim3 blockCount;
     int offset = 0;
     *depthFound = MAX_POSSIBLE_DEPTH;
     for(int i = 0; i < MAX_POSSIBLE_DEPTH; i++) 
@@ -175,6 +181,7 @@ int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets, unsigned int 
         // first stage - check how many boards will be generated for each board
         setThreadAndBlocksCount(&threadCount, &blockCount, runningBoards);
         pre_calculate_boards_count<<<blockCount, threadCount>>>(boards + offset * BOARD_SIZE, boardsOffsets + offset, isWhite, runningBoards);
+
         gpuErrchk(cudaDeviceSynchronize());
         gpuErrchk(cudaPeekAtLastError());
 
@@ -202,7 +209,8 @@ int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets, unsigned int 
 }
 
 void gatherResults(pos64 *boards, unsigned int *boardsOffsets, unsigned int *level_sizes, int depthFound, int* localLast, int offsetToLastLevel, bool maximizing) {
-    int threadCount, blockCount, runningBoards;
+    int threadCount, runningBoards;
+    dim3 blockCount;
     int offset = offsetToLastLevel;
 
     for (int i = depthFound - 1; i >= 0; i--) {
