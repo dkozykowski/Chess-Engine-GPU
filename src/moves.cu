@@ -83,18 +83,16 @@ __host__ __device__ bool isEmpty(pos64 *boards) {
 {
     int generatedMoves = 0;
 
-    pos64 *startingOwnPieces, *startingEnemyPieces;
+    pos64 *startingOwnPieces;
     pos64 allPieces =  (starting_boards[WHITE_PAWN_OFFSET] | starting_boards[WHITE_BISHOP_OFFSET] | starting_boards[WHITE_KNIGHT_OFFSET] | starting_boards[WHITE_ROOK_OFFSET] | starting_boards[WHITE_QUEEN_OFFSET] | starting_boards[WHITE_KING_OFFSET] |
         starting_boards[BLACK_PAWN_OFFSET] | starting_boards[BLACK_BISHOP_OFFSET] | starting_boards[BLACK_KNIGHT_OFFSET] | starting_boards[BLACK_ROOK_OFFSET] | starting_boards[BLACK_QUEEN_OFFSET] | starting_boards[BLACK_KING_OFFSET]);
     pos64 enemyPieces, moves, occupied, singleMove;
 
     if(isWhite) {
         startingOwnPieces = starting_boards + WHITE_PAWN_OFFSET;
-        startingEnemyPieces = starting_boards + BLACK_PAWN_OFFSET;
         enemyPieces = (starting_boards[BLACK_PAWN_OFFSET] | starting_boards[BLACK_BISHOP_OFFSET] | starting_boards[BLACK_KNIGHT_OFFSET] | starting_boards[BLACK_ROOK_OFFSET] | starting_boards[BLACK_QUEEN_OFFSET] | starting_boards[BLACK_KING_OFFSET]);
     } else {
         startingOwnPieces = starting_boards + BLACK_PAWN_OFFSET;
-        startingEnemyPieces = starting_boards + WHITE_PAWN_OFFSET;
         enemyPieces = (starting_boards[WHITE_PAWN_OFFSET] | starting_boards[WHITE_BISHOP_OFFSET] | starting_boards[WHITE_KNIGHT_OFFSET] | starting_boards[WHITE_ROOK_OFFSET] | starting_boards[WHITE_QUEEN_OFFSET] | starting_boards[WHITE_KING_OFFSET]);
     }
 
