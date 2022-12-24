@@ -83,7 +83,7 @@ __host__ __device__ bool isEmpty(pos64 *boards) {
 {
     int generatedMoves = 0;
 
-    pos64 *startingOwnPieces, *startingEnemyPieces;
+    pos64 *startingOwnPieces;
     pos64 allPieces =  (starting_boards[WHITE_PAWN_OFFSET] | starting_boards[WHITE_BISHOP_OFFSET] | starting_boards[WHITE_KNIGHT_OFFSET] | starting_boards[WHITE_ROOK_OFFSET] | starting_boards[WHITE_QUEEN_OFFSET] | starting_boards[WHITE_KING_OFFSET] |
         starting_boards[BLACK_PAWN_OFFSET] | starting_boards[BLACK_BISHOP_OFFSET] | starting_boards[BLACK_KNIGHT_OFFSET] | starting_boards[BLACK_ROOK_OFFSET] | starting_boards[BLACK_QUEEN_OFFSET] | starting_boards[BLACK_KING_OFFSET]);
     pos64 enemyPieces, moves, occupied, singleMove;
@@ -149,7 +149,7 @@ __host__ __device__ bool isEmpty(pos64 *boards) {
 
 
     //knight moves
-    pos64 piece, attacks;
+    pos64 piece, attacks = 0;
     pos64 movingKnights = startingOwnPieces[KNIGHT_OFFSET];
     while(movingKnights != 0){
         piece = getLeastSignificantBit(movingKnights);

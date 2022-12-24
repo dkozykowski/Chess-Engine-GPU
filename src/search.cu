@@ -167,7 +167,7 @@ int prepareMemory(pos64 **boards, unsigned int **offsets, unsigned int **level_s
 }
 
 int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets, unsigned int *level_sizes, int *depthFound, bool *isWhite, int maxBoardsCount, bool isFirstStage) {
-    int runningBoards, boardOffset = 0;
+    int runningBoards;
     int threadCount;
     dim3 blockCount;
     int offset = 0;
