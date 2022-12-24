@@ -149,7 +149,7 @@ __host__ __device__ bool isEmpty(pos64 *boards) {
 
 
     //knight moves
-    pos64 piece, attacks;
+    pos64 piece;
     pos64 movingKnights = startingOwnPieces[KNIGHT_OFFSET];
     while(movingKnights != 0){
         piece = getLeastSignificantBit(movingKnights);
@@ -168,7 +168,7 @@ __host__ __device__ bool isEmpty(pos64 *boards) {
     moves = noOne(piece) | soOne(piece) | westOne(piece) | eastOne(piece) | noEaOne(piece) | noWeOne(piece) | soEaOne(piece) | soWeOne(piece);
     occupied = moves & (allPieces ^ enemyPieces);
     moves = moves ^ occupied;
-    generatedMoves += __popcll(attacks);
+    generatedMoves += __popcll(moves);
 
     // rooks moves
     pos64 movingRooks = startingOwnPieces[ROOK_OFFSET];
