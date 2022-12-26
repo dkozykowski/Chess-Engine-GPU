@@ -1,5 +1,5 @@
-#include "macros.cuh"
 #include "evaluate.cuh"
+#include "macros.cuh"
 
 // piece_square tables
 __device__ int mgPawnTable[64] = {
@@ -134,18 +134,13 @@ __device__ int egKingTable[64] = {
     2947, 2966, 2979, 2989, 2972, 2986, 2976, 2957
 };
 
-__device__ int evaluatePosition(const pos64& white_pawns,
-                      const pos64& white_bishops,
-                      const pos64& white_knights,
-                      const pos64& white_rooks,
-                      const pos64& white_queens,
-                      const pos64& white_kings,
-                      const pos64& black_pawns,
-                      const pos64& black_bishops,
-                      const pos64& black_knights,
-                      const pos64& black_rooks,
-                      const pos64& black_queens,
-                      const pos64& black_kings) {
+__device__ int evaluatePosition(
+    const pos64& white_pawns, const pos64& white_bishops,
+    const pos64& white_knights, const pos64& white_rooks,
+    const pos64& white_queens, const pos64& white_kings,
+    const pos64& black_pawns, const pos64& black_bishops,
+    const pos64& black_knights, const pos64& black_rooks,
+    const pos64& black_queens, const pos64& black_kings) {
     int gamePhase = 0;
     int midgameScore = 0;
     int endgameScore = 0;

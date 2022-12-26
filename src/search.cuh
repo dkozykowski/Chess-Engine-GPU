@@ -7,7 +7,6 @@ void init();
 
 void terminate();
 
-void search(const short& current_player,
-            pos64 *position);
+void search(const short& current_player, pos64* position);
 
 #endif

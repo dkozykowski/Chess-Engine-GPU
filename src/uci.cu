@@ -3,12 +3,12 @@
 #include <sstream>
 #include <string>
 
-#include "macros.cuh"
-#include "uci.cuh"
-#include "position.cuh"
 #include "evaluate.cuh"
-#include "search.cuh"
+#include "macros.cuh"
 #include "moves.cuh"
+#include "position.cuh"
+#include "search.cuh"
+#include "uci.cuh"
 
 namespace UCI {
 
@@ -25,13 +25,15 @@ pos64 blackRooks;
 pos64 blackQueens;
 pos64 blackKings;
 
-void newgame(short & currentPlayer, int & moveNum);
-void move(std::istringstream & is, short & currentPlayer, int & moveNum);
+void newgame(short &currentPlayer, int &moveNum);
+void move(std::istringstream &is, short &currentPlayer, int &moveNum);
 void printGame(short currentPlayer, int moveNum);
 void printEval();
-void go(short & currentPlayer, int & moveNum);
-void printMoves(pos64 whitePawns, pos64 whiteBishops, pos64 whiteKnights, pos64 whiteRooks, pos64 whiteQueens, pos64 whiteKings,
-                pos64 blackPawns, pos64 blackBishops, pos64 blackKnights, pos64 blackRooks, pos64 blackQueens, pos64 blackKings, 
+void go(short &currentPlayer, int &moveNum);
+void printMoves(pos64 whitePawns, pos64 whiteBishops, pos64 whiteKnights,
+                pos64 whiteRooks, pos64 whiteQueens, pos64 whiteKings,
+                pos64 blackPawns, pos64 blackBishops, pos64 blackKnights,
+                pos64 blackRooks, pos64 blackQueens, pos64 blackKings,
                 short currentPlayer);
 std::string getMoveString(pos64 currentPos, pos64 newPos);
 
@@ -46,28 +48,37 @@ void loop() {
     std::string token, cmd;
 
     do {
-        if(!std::getline(std::cin, cmd)) break;
+        if (!std::getline(std::cin, cmd)) break;
 
         std::istringstream is(cmd);
 
-        token.clear(); // Avoid a stale if getline() returns empty or blank line
+        token
+            .clear();  // Avoid a stale if getline() returns empty or blank line
         is >> std::skipws >> token;
 
-        if (token == "exit" || 
-            token == "quit" ||  
-            token == "stop" || 
-            token == "q")               break;
-        else if (token == "ucinewgame") newgame(currentPlayer, moveNum);
-        else if (token == "d")          printGame(currentPlayer, moveNum);
-        else if (token == "flip")       
-            flipPosition(whitePawns, whiteBishops, whiteKnights, whiteRooks, whiteQueens, whiteKings, 
-                          blackPawns, blackBishops, blackKnights, blackRooks, blackQueens, blackKings);
-        else if (token == "move")       move(is, currentPlayer, moveNum);
-        else if (token == "go")         go(currentPlayer, moveNum);
+        if (token == "exit" || token == "quit" || token == "stop" ||
+            token == "q")
+            break;
+        else if (token == "ucinewgame")
+            newgame(currentPlayer, moveNum);
+        else if (token == "d")
+            printGame(currentPlayer, moveNum);
+        else if (token == "flip")
+            flipPosition(whitePawns, whiteBishops, whiteKnights, whiteRooks,
+                         whiteQueens, whiteKings, blackPawns, blackBishops,
+                         blackKnights, blackRooks, blackQueens, blackKings);
+        else if (token == "move")
+            move(is, currentPlayer, moveNum);
+        else if (token == "go")
+            go(currentPlayer, moveNum);
         // else if (token == "bench")      bench(pos, is, states);
-        else if (token == "eval")       printEval();
-        else if (token == "moves")      printMoves(whitePawns, whiteBishops, whiteKnights, whiteRooks, whiteQueens, whiteKings, 
-                          blackPawns, blackBishops, blackKnights, blackRooks, blackQueens, blackKings, currentPlayer);
+        else if (token == "eval")
+            printEval();
+        else if (token == "moves")
+            printMoves(whitePawns, whiteBishops, whiteKnights, whiteRooks,
+                       whiteQueens, whiteKings, blackPawns, blackBishops,
+                       blackKnights, blackRooks, blackQueens, blackKings,
+                       currentPlayer);
         else
             std::cout << "Unknown command: " << cmd << std::endl;
     } while (true);
@@ -75,7 +86,7 @@ void loop() {
     terminate();
 }
 
-void newgame(short & currentPlayer, int & moveNum) {
+void newgame(short &currentPlayer, int &moveNum) {
     whitePawns = WHITE_PAWN_STARTING_POS;
     whiteBishops = WHITE_BISHOP_STARTING_POS;
     whiteKnights = WHITE_KNIGHT_STARTING_POS;
@@ -94,7 +105,7 @@ void newgame(short & currentPlayer, int & moveNum) {
     moveNum = 0;
 }
 
-void move(std::istringstream & is, short & currentPlayer, int & moveNum) {
+void move(std::istringstream &is, short &currentPlayer, int &moveNum) {
     std::string moveToken;
     is >> std::skipws >> moveToken;
 
@@ -108,16 +119,17 @@ void move(std::istringstream & is, short & currentPlayer, int & moveNum) {
     int fromRow = moveToken[1] - '1';
     int toCol = moveToken[2] >= 'a' ? moveToken[2] - 'a' : moveToken[2] - 'A';
     int toRow = moveToken[3] - '1';
-    
-    if (fromCol < 0 || fromRow < 0 || toCol < 0 || toRow < 0 ||
-        8 <= fromCol || 8 <= fromRow || 8 <= toCol || 8 <= toRow) {
+
+    if (fromCol < 0 || fromRow < 0 || toCol < 0 || toRow < 0 || 8 <= fromCol ||
+        8 <= fromRow || 8 <= toCol || 8 <= toRow) {
         printf("Invalid move\n");
         return;
     }
 
-    moveChess(fromCol, fromRow, toCol, toRow, currentPlayer,
-               whitePawns, whiteBishops, whiteKnights, whiteRooks, whiteQueens, whiteKings, 
-               blackPawns, blackBishops, blackKnights, blackRooks, blackQueens, blackKings);
+    moveChess(fromCol, fromRow, toCol, toRow, currentPlayer, whitePawns,
+              whiteBishops, whiteKnights, whiteRooks, whiteQueens, whiteKings,
+              blackPawns, blackBishops, blackKnights, blackRooks, blackQueens,
+              blackKings);
     moveNum++;
     currentPlayer ^= 1;
 }
@@ -125,32 +137,37 @@ void move(std::istringstream & is, short & currentPlayer, int & moveNum) {
 void printGame(short currentPlayer, int moveNum) {
     printf("Move number %d\n", moveNum);
     printf("Current player - %s\n", currentPlayer == WHITE ? "White" : "Black");
-    printPosition(whitePawns, whiteBishops, whiteKnights, whiteRooks, whiteQueens, whiteKings, 
-                   blackPawns, blackBishops, blackKnights, blackRooks, blackQueens, blackKings);
+    printPosition(whitePawns, whiteBishops, whiteKnights, whiteRooks,
+                  whiteQueens, whiteKings, blackPawns, blackBishops,
+                  blackKnights, blackRooks, blackQueens, blackKings);
 }
 
-__global__ void eval(int * result,
-                pos64 whitePawns, pos64 whiteBishops, pos64 whiteKnights, pos64 whiteRooks, pos64 whiteQueens, pos64 whiteKings,
-                pos64 blackPawns, pos64 blackBishops, pos64 blackKnights, pos64 blackRooks, pos64 blackQueens, pos64 blackKings) {
-    *result = evaluatePosition(whitePawns, whiteBishops, whiteKnights, whiteRooks, whiteQueens, whiteKings, 
-                          blackPawns, blackBishops, blackKnights, blackRooks, blackQueens, blackKings);
+__global__ void eval(int *result, pos64 whitePawns, pos64 whiteBishops,
+                     pos64 whiteKnights, pos64 whiteRooks, pos64 whiteQueens,
+                     pos64 whiteKings, pos64 blackPawns, pos64 blackBishops,
+                     pos64 blackKnights, pos64 blackRooks, pos64 blackQueens,
+                     pos64 blackKings) {
+    *result =
+        evaluatePosition(whitePawns, whiteBishops, whiteKnights, whiteRooks,
+                         whiteQueens, whiteKings, blackPawns, blackBishops,
+                         blackKnights, blackRooks, blackQueens, blackKings);
 }
 
 void printEval() {
-    int * dResult, * hResult;
+    int *dResult, *hResult;
     hResult = new int;
     cudaMalloc(&dResult, sizeof(int));
-    eval<<<1, 1>>>(dResult, whitePawns, whiteBishops, whiteKnights, whiteRooks, whiteQueens, whiteKings, 
-                          blackPawns, blackBishops, blackKnights, blackRooks, blackQueens, blackKings);
+    eval<<<1, 1>>>(dResult, whitePawns, whiteBishops, whiteKnights, whiteRooks,
+                   whiteQueens, whiteKings, blackPawns, blackBishops,
+                   blackKnights, blackRooks, blackQueens, blackKings);
     cudaMemcpy(hResult, dResult, sizeof(int), cudaMemcpyDeviceToHost);
     printf("Current evaluation from white side: %d\n", *hResult);
     delete hResult;
     cudaFree(dResult);
 }
 
-void go(short & currentPlayer, int & moveNum) {
-
-    pos64 * position = new pos64[12];
+void go(short &currentPlayer, int &moveNum) {
+    pos64 *position = new pos64[12];
     position[WHITE_PAWN_OFFSET] = whitePawns;
     position[WHITE_BISHOP_OFFSET] = whiteBishops;
     position[WHITE_KNIGHT_OFFSET] = whiteKnights;
@@ -163,7 +180,7 @@ void go(short & currentPlayer, int & moveNum) {
     position[BLACK_ROOK_OFFSET] = blackRooks;
     position[BLACK_QUEEN_OFFSET] = blackQueens;
     position[BLACK_KING_OFFSET] = blackKings;
-    
+
     search(currentPlayer, position);
 
     pos64 new_whitePawns = position[WHITE_PAWN_OFFSET];
@@ -179,19 +196,22 @@ void go(short & currentPlayer, int & moveNum) {
     pos64 new_blackQueens = position[BLACK_QUEEN_OFFSET];
     pos64 new_blackKings = position[BLACK_KING_OFFSET];
 
-    DBG2(printPosition(
-        new_whitePawns, new_whiteBishops, new_whiteKnights, new_whiteRooks, new_whiteQueens, new_whiteKings, 
-        new_blackPawns, new_blackBishops, new_blackKnights, new_blackRooks, new_blackQueens, new_blackKings
-    ));
+    DBG2(printPosition(new_whitePawns, new_whiteBishops, new_whiteKnights,
+                       new_whiteRooks, new_whiteQueens, new_whiteKings,
+                       new_blackPawns, new_blackBishops, new_blackKnights,
+                       new_blackRooks, new_blackQueens, new_blackKings));
 
     if (currentPlayer == WHITE) {
-        pos64 currentPos = whitePawns | whiteBishops | whiteKnights | whiteRooks | whiteQueens | whiteKings;
-        pos64 newPos = new_whitePawns | new_whiteBishops | new_whiteKnights | new_whiteRooks | new_whiteQueens | new_whiteKings;
+        pos64 currentPos = whitePawns | whiteBishops | whiteKnights |
+                           whiteRooks | whiteQueens | whiteKings;
+        pos64 newPos = new_whitePawns | new_whiteBishops | new_whiteKnights |
+                       new_whiteRooks | new_whiteQueens | new_whiteKings;
         std::cout << getMoveString(currentPos, newPos) << "\n";
-    }
-    else if (currentPlayer == BLACK) {
-        pos64 currentPos = blackPawns | blackBishops | blackKnights | blackRooks | blackQueens | blackKings;
-        pos64 newPos = new_blackPawns | new_blackBishops | new_blackKnights | new_blackRooks | new_blackQueens | new_blackKings;
+    } else if (currentPlayer == BLACK) {
+        pos64 currentPos = blackPawns | blackBishops | blackKnights |
+                           blackRooks | blackQueens | blackKings;
+        pos64 newPos = new_blackPawns | new_blackBishops | new_blackKnights |
+                       new_blackRooks | new_blackQueens | new_blackKings;
         std::cout << getMoveString(currentPos, newPos) << "\n";
     }
 }
@@ -210,7 +230,7 @@ std::string getMoveString(pos64 currentPos, pos64 newPos) {
     return result;
 }
 
-int _log2(pos64 x) { // asserting x is a power of two
+int _log2(pos64 x) {  // asserting x is a power of two
     for (int i = 0; i < x; i++) {
         if ((x & (((pos64)1) << i)) != 0) {
             return i;
@@ -219,9 +239,11 @@ int _log2(pos64 x) { // asserting x is a power of two
     return 0;
 }
 
-void printMoves(pos64 whitePawns, pos64 whiteBishops, pos64 whiteKnights, pos64 whiteRooks, pos64 whiteQueens, pos64 whiteKings,
-                pos64 blackPawns, pos64 blackBishops, pos64 blackKnights, pos64 blackRooks, pos64 blackQueens, pos64 blackKings, short currentPlayer) 
-{
+void printMoves(pos64 whitePawns, pos64 whiteBishops, pos64 whiteKnights,
+                pos64 whiteRooks, pos64 whiteQueens, pos64 whiteKings,
+                pos64 blackPawns, pos64 blackBishops, pos64 blackKnights,
+                pos64 blackRooks, pos64 blackQueens, pos64 blackKings,
+                short currentPlayer) {
     pos64 *position = new pos64[12];
     pos64 *generatedBoards = new pos64[255 * BOARD_SIZE];
 
@@ -240,20 +262,28 @@ void printMoves(pos64 whitePawns, pos64 whiteBishops, pos64 whiteKnights, pos64 
 
     generateMoves(position, generatedBoards, currentPlayer == WHITE);
     std::string any;
-    for(int x = 0; x < 255; x++)
-    {
-        if (((generatedBoards + (x * BOARD_SIZE))[BLACK_KING_OFFSET] | (generatedBoards + (x * BOARD_SIZE))[WHITE_KING_OFFSET]) == 0) break;
-        printPosition((generatedBoards + (x * BOARD_SIZE))[WHITE_PAWN_OFFSET], (generatedBoards + (x * BOARD_SIZE))[WHITE_BISHOP_OFFSET], (generatedBoards + (x * BOARD_SIZE))[WHITE_KNIGHT_OFFSET],
-         (generatedBoards + (x * BOARD_SIZE))[WHITE_ROOK_OFFSET], (generatedBoards + (x * BOARD_SIZE))[WHITE_QUEEN_OFFSET], (generatedBoards + (x * BOARD_SIZE))[WHITE_KING_OFFSET], 
-        (generatedBoards + (x * BOARD_SIZE))[BLACK_PAWN_OFFSET], (generatedBoards + (x * BOARD_SIZE))[BLACK_BISHOP_OFFSET], (generatedBoards + (x * BOARD_SIZE))[BLACK_KNIGHT_OFFSET],
-         (generatedBoards + (x * BOARD_SIZE))[BLACK_ROOK_OFFSET], (generatedBoards + (x * BOARD_SIZE))[BLACK_QUEEN_OFFSET], (generatedBoards + (x * BOARD_SIZE))[BLACK_KING_OFFSET]);
-        
-        std::getline(std::cin, any);
-        if(any == "q")
+    for (int x = 0; x < 255; x++) {
+        if (((generatedBoards + (x * BOARD_SIZE))[BLACK_KING_OFFSET] |
+             (generatedBoards + (x * BOARD_SIZE))[WHITE_KING_OFFSET]) == 0)
             break;
+        printPosition((generatedBoards + (x * BOARD_SIZE))[WHITE_PAWN_OFFSET],
+                      (generatedBoards + (x * BOARD_SIZE))[WHITE_BISHOP_OFFSET],
+                      (generatedBoards + (x * BOARD_SIZE))[WHITE_KNIGHT_OFFSET],
+                      (generatedBoards + (x * BOARD_SIZE))[WHITE_ROOK_OFFSET],
+                      (generatedBoards + (x * BOARD_SIZE))[WHITE_QUEEN_OFFSET],
+                      (generatedBoards + (x * BOARD_SIZE))[WHITE_KING_OFFSET],
+                      (generatedBoards + (x * BOARD_SIZE))[BLACK_PAWN_OFFSET],
+                      (generatedBoards + (x * BOARD_SIZE))[BLACK_BISHOP_OFFSET],
+                      (generatedBoards + (x * BOARD_SIZE))[BLACK_KNIGHT_OFFSET],
+                      (generatedBoards + (x * BOARD_SIZE))[BLACK_ROOK_OFFSET],
+                      (generatedBoards + (x * BOARD_SIZE))[BLACK_QUEEN_OFFSET],
+                      (generatedBoards + (x * BOARD_SIZE))[BLACK_KING_OFFSET]);
+
+        std::getline(std::cin, any);
+        if (any == "q") break;
     }
 
     free(position);
     free(generatedBoards);
 }
-} // namespace UCI
+}  // namespace UCI
