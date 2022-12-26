@@ -23,7 +23,7 @@ unsigned int closestPowerOf2(unsigned int value)
   return power;
 }
 
-__global__ void first_stage_scan(unsigned int *input, unsigned int n, unsigned int *sums, unsigned int closestPower)
+__global__ void firstStageScan(unsigned int *input, unsigned int n, unsigned int *sums, unsigned int closestPower)
 {
   extern __shared__ int temp[];
   int tid = threadIdx.x;
@@ -90,7 +90,7 @@ void scan(unsigned int* input, unsigned int n, unsigned int *sums, unsigned int 
   if(n > (ELEMENTS_PER_BLOCK)) 
   {
     unsigned int blockCount = getBlockCount(n); 
-    first_stage_scan<<<blockCount, THREADS_IN_BLOCK, SHARED_MEMORY_SIZE>>>(input, ELEMENTS_PER_BLOCK, sums, ELEMENTS_PER_BLOCK);
+    firstStageScan<<<blockCount, THREADS_IN_BLOCK, SHARED_MEMORY_SIZE>>>(input, ELEMENTS_PER_BLOCK, sums, ELEMENTS_PER_BLOCK);
     gpuErrchk(cudaDeviceSynchronize());
     gpuErrchk(cudaPeekAtLastError());
     if(blockCount > (ELEMENTS_PER_BLOCK))
@@ -98,12 +98,12 @@ void scan(unsigned int* input, unsigned int n, unsigned int *sums, unsigned int 
         unsigned int offset = closestPowerOf2(blockCount);
         unsigned int newBlockCount = getBlockCount(blockCount);
     
-        first_stage_scan<<<newBlockCount, THREADS_IN_BLOCK, sizeof(int) * ELEMENTS_PER_BLOCK>>>(sums, ELEMENTS_PER_BLOCK, sums + offset, ELEMENTS_PER_BLOCK);
+        firstStageScan<<<newBlockCount, THREADS_IN_BLOCK, sizeof(int) * ELEMENTS_PER_BLOCK>>>(sums, ELEMENTS_PER_BLOCK, sums + offset, ELEMENTS_PER_BLOCK);
         gpuErrchk(cudaDeviceSynchronize());
         gpuErrchk(cudaPeekAtLastError());
         
         int powOf2 = closestPowerOf2(newBlockCount);
-        first_stage_scan<<<1, (powOf2 + 1) /2, sizeof(int) * ELEMENTS_PER_BLOCK>>>(sums + offset, newBlockCount, totalSum, powOf2);
+        firstStageScan<<<1, (powOf2 + 1) /2, sizeof(int) * ELEMENTS_PER_BLOCK>>>(sums + offset, newBlockCount, totalSum, powOf2);
         gpuErrchk(cudaDeviceSynchronize());
         gpuErrchk(cudaPeekAtLastError()); 
         
@@ -114,7 +114,7 @@ void scan(unsigned int* input, unsigned int n, unsigned int *sums, unsigned int 
     else
     {
       int powOf2 = closestPowerOf2(blockCount);
-      first_stage_scan<<<1, (powOf2 + 1) / 2, sizeof(int) * ELEMENTS_PER_BLOCK>>>(sums, blockCount, totalSum, powOf2);
+      firstStageScan<<<1, (powOf2 + 1) / 2, sizeof(int) * ELEMENTS_PER_BLOCK>>>(sums, blockCount, totalSum, powOf2);
       gpuErrchk(cudaDeviceSynchronize());
       gpuErrchk(cudaPeekAtLastError());
     }
@@ -124,7 +124,7 @@ void scan(unsigned int* input, unsigned int n, unsigned int *sums, unsigned int 
   }
   else
   {
-    first_stage_scan<<<1, (closestPowerOf2(n) + 1) / 2, sizeof(int) * ELEMENTS_PER_BLOCK>>>(input, n, totalSum, closestPowerOf2(n));
+    firstStageScan<<<1, (closestPowerOf2(n) + 1) / 2, sizeof(int) * ELEMENTS_PER_BLOCK>>>(input, n, totalSum, closestPowerOf2(n));
     gpuErrchk(cudaDeviceSynchronize());
     gpuErrchk(cudaPeekAtLastError());
   }
