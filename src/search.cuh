@@ -11,6 +11,6 @@ void terminate();
 
 void findBestMove(const short& current_player, pos64* position);
 
-} // namespace SEARCH
+}  // namespace SEARCH
 
-#endif // #ifndef SEARCH_H_INCLUDED 
+#endif  // #ifndef SEARCH_H_INCLUDED

@@ -187,10 +187,11 @@ int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets,
         // secound stage - find boardsOffsets for each board to put their kids
         // there
         DBG(printf("calculate offsets offset: %d\n", offset));
-        SCAN::scan(boardsOffsets + offset, runningBoards,
-             (unsigned int *)(boards + (offset + runningBoards) * BOARD_SIZE),
-             &levelSizes[i + 1]);  // since boards are not yet created I use the
-                                   // space there as a temp table
+        SCAN::scan(
+            boardsOffsets + offset, runningBoards,
+            (unsigned int *)(boards + (offset + runningBoards) * BOARD_SIZE),
+            &levelSizes[i + 1]);  // since boards are not yet created I use the
+                                  // space there as a temp table
 
         DBG(printf("boardCount on depth %d, %u\n", i, levelSizes[i + 1]));
 
@@ -410,4 +411,4 @@ void findBestMove(const short &currentPlayer, pos64 *position) {
     cudaFree(boards);
     cudaFree(boardsOffsets);
 }
-} // namespace SEARCH
+}  // namespace SEARCH

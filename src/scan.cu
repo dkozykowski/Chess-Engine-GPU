@@ -1,4 +1,5 @@
 #include <algorithm>
+
 #include "macros.cuh"
 
 namespace SCAN {
@@ -116,4 +117,4 @@ void scan(unsigned int *input, unsigned int n, unsigned int *sums,
         gpuErrchk(cudaPeekAtLastError());
     }
 }
-} // namespace SCAN
+}  // namespace SCAN

@@ -12,10 +12,10 @@ __global__ void eval(int* result, pos64 whitePawns, pos64 whiteBishops,
                      pos64 whiteKings, pos64 blackPawns, pos64 blackBishops,
                      pos64 blackKnights, pos64 blackRooks, pos64 blackQueens,
                      pos64 blackKings) {
-    *result =
-        EVALUATION::evaluatePosition(whitePawns, whiteBishops, whiteKnights, whiteRooks,
-                         whiteQueens, whiteKings, blackPawns, blackBishops,
-                         blackKnights, blackRooks, blackQueens, blackKings);
+    *result = EVALUATION::evaluatePosition(
+        whitePawns, whiteBishops, whiteKnights, whiteRooks, whiteQueens,
+        whiteKings, blackPawns, blackBishops, blackKnights, blackRooks,
+        blackQueens, blackKings);
 }
 
 void initBasePosition(pos64* board) {

@@ -15,6 +15,6 @@ __device__ int evaluatePosition(
     const pos64& blackBishops, const pos64& blackKnights,
     const pos64& blackRooks, const pos64& blackQueens, const pos64& blackKings);
 
-} // namespace EVALUATION
+}  // namespace EVALUATION
 
-#endif // #ifndef EVALUATE_H_INCLUDED
+#endif  // #ifndef EVALUATE_H_INCLUDED

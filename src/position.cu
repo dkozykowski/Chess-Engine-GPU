@@ -138,4 +138,4 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
         }
     }
 }
-} // namespace POSITION
+}  // namespace POSITION

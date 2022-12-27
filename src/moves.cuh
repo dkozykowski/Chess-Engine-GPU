@@ -11,6 +11,6 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
 
 __device__ int precountMoves(pos64 *startingBoards, bool isWhite);
 
-} // namespace MOVES 
+}  // namespace MOVES
 
-#endif // #ifndef MOVES_H_INCLUDED
+#endif  // #ifndef MOVES_H_INCLUDED
