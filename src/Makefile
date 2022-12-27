@@ -1,4 +1,4 @@
-engine: main.o uci.o position.o evaluate.o search.o moves.o scan.o
+engine: main.o uci.o position.o evaluate.o search.o moves.o scan.o macros.o
 	nvcc -o engine main.o uci.o position.o evaluate.o search.o moves.o scan.o -std=c++11
 
 main.o: main.cu
@@ -21,6 +21,9 @@ moves.o: moves.cu moves.cuh
 
 scan.o: ../src/scan.cu ../src/scan.cuh
 	nvcc -o scan.o -c scan.cu -dc -std=c++11
+
+macros.o: ../src/macros.cu ../src/macros.cuh
+	nvcc -o macros.o -c macros.cu -dc --std=c++11
 
 .PHONY: clean
 
