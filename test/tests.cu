@@ -5,6 +5,8 @@
 #include "../src/moves.cuh"
 #include "../src/search.cuh"
 
+#define BOARDS_GENERATED 255
+
 __global__ void eval(int* result, pos64 whitePawns, pos64 whiteBishops,
                      pos64 whiteKnights, pos64 whiteRooks, pos64 whiteQueens,
                      pos64 whiteKings, pos64 blackPawns, pos64 blackBishops,
@@ -101,6 +103,10 @@ TEST(GenerateMovesTest, StartPositionMovesSearch) {
     short currentPlayer = 0;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
+
+    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
+    }
 
     // when
     generateMoves(position, generatedMoves, currentPlayer == WHITE);
@@ -209,6 +215,10 @@ TEST(GenerateMovesTest, BlackKnightMovesTests) {
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
+    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
+    }
+
     // when
     generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
@@ -246,6 +256,10 @@ TEST(GenerateMovesTest, WhiteKnightMovesTests) {
     short currentPlayer = 0;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
+
+    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
+    }
 
     // when
     generateMoves(position, generatedMoves, currentPlayer == WHITE);
@@ -285,6 +299,10 @@ TEST(GenerateMovesTest, BlackRookMovesTests) {
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
+    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
+    }
+
     // when
     generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
@@ -323,6 +341,10 @@ TEST(GenerateMovesTest, WhiteRookMovesTests) {
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
+    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
+    }
+
     // when
     generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
@@ -360,6 +382,10 @@ TEST(GenerateMovesTest, BlackBishopMovesTests) {
     short currentPlayer = 1;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
+    
+    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
+    }
 
     // when
     generateMoves(position, generatedMoves, currentPlayer == WHITE);
@@ -399,6 +425,10 @@ TEST(GenerateMovesTest, WhiteBishopMovesTests) {
     short currentPlayer = 0;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
+    
+    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
+    }
 
     // when
     generateMoves(position, generatedMoves, currentPlayer == WHITE);
@@ -438,6 +468,10 @@ TEST(GenerateMovesTest, BlackQueenMovesTests) {
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
+    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
+    }
+
     // when
     generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
@@ -476,6 +510,10 @@ TEST(GenerateMovesTest, WhiteQueenMovesTests) {
     short currentPlayer = 0;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
+
+    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
+    }
 
     // when
     generateMoves(position, generatedMoves, currentPlayer == WHITE);
