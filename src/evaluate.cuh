@@ -6,7 +6,7 @@
 // implementation of PeSTO's evaluation function
 // source: https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
 
-namespace EVALUATE {
+namespace EVALUATION {
 
 __device__ int evaluatePosition(
     const pos64& whitePawns, const pos64& whiteBishops,
@@ -15,6 +15,6 @@ __device__ int evaluatePosition(
     const pos64& blackBishops, const pos64& blackKnights,
     const pos64& blackRooks, const pos64& blackQueens, const pos64& blackKings);
 
-} // namespace EVALUATE
+} // namespace EVALUATION
 
 #endif // #ifndef EVALUATE_H_INCLUDED
