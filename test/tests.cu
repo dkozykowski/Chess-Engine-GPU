@@ -13,7 +13,7 @@ __global__ void eval(int* result, pos64 whitePawns, pos64 whiteBishops,
                      pos64 blackKnights, pos64 blackRooks, pos64 blackQueens,
                      pos64 blackKings) {
     *result =
-        evaluatePosition(whitePawns, whiteBishops, whiteKnights, whiteRooks,
+        EVALUATION::evaluatePosition(whitePawns, whiteBishops, whiteKnights, whiteRooks,
                          whiteQueens, whiteKings, blackPawns, blackBishops,
                          blackKnights, blackRooks, blackQueens, blackKings);
 }
@@ -108,7 +108,7 @@ TEST(GenerateMovesTest, StartPositionMovesSearch) {
     }
 
     // when
-    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    MOVES::generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
     for (int x = 0; x < BOARDS_GENERATED; x++) {
         if (((generatedMoves + x * BOARD_SIZE)[BLACK_KING_OFFSET] |
@@ -128,9 +128,9 @@ TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForWhite) {
 
     short currentPlayer = 0;
     // when
-    init();
-    findBestMove(currentPlayer, position);
-    terminate();
+    SEARCH::init();
+    SEARCH::findBestMove(currentPlayer, position);
+    SEARCH::terminate();
 
     pos64 basePosition[BOARD_SIZE];
     initBasePosition(basePosition);
@@ -164,9 +164,9 @@ TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForBlack) {
 
     short currentPlayer = 1;
     // when
-    init();
-    findBestMove(currentPlayer, position);
-    terminate();
+    SEARCH::init();
+    SEARCH::findBestMove(currentPlayer, position);
+    SEARCH::terminate();
 
     pos64 basePosition[BOARD_SIZE];
     initBasePosition(basePosition);
@@ -219,7 +219,7 @@ TEST(GenerateMovesTest, BlackKnightMovesTests) {
     }
 
     // when
-    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    MOVES::generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
     int generatedAttacksCount = 0;
     for (int x = 0; x < BOARDS_GENERATED; x++) {
@@ -261,7 +261,7 @@ TEST(GenerateMovesTest, WhiteKnightMovesTests) {
     }
 
     // when
-    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    MOVES::generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
     int generatedAttacksCount = 0;
     for (int x = 0; x < BOARDS_GENERATED; x++) {
@@ -303,7 +303,7 @@ TEST(GenerateMovesTest, BlackRookMovesTests) {
     }
 
     // when
-    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    MOVES::generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
     int generatedAttacksCount = 0;
     for (int x = 0; x < BOARDS_GENERATED; x++) {
@@ -345,7 +345,7 @@ TEST(GenerateMovesTest, WhiteRookMovesTests) {
     }
 
     // when
-    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    MOVES::generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
     int generatedAttacksCount = 0;
     for (int x = 0; x < BOARDS_GENERATED; x++) {
@@ -387,7 +387,7 @@ TEST(GenerateMovesTest, BlackBishopMovesTests) {
     }
 
     // when
-    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    MOVES::generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
     int generatedAttacksCount = 0;
     for (int x = 0; x < BOARDS_GENERATED; x++) {
@@ -430,7 +430,7 @@ TEST(GenerateMovesTest, WhiteBishopMovesTests) {
     }
 
     // when
-    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    MOVES::generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
     int generatedAttacksCount = 0;
     for (int x = 0; x < BOARDS_GENERATED; x++) {
@@ -472,7 +472,7 @@ TEST(GenerateMovesTest, BlackQueenMovesTests) {
     }
 
     // when
-    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    MOVES::generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
     int generatedAttacksCount = 0;
     for (int x = 0; x < BOARDS_GENERATED; x++) {
@@ -515,7 +515,7 @@ TEST(GenerateMovesTest, WhiteQueenMovesTests) {
     }
 
     // when
-    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    MOVES::generateMoves(position, generatedMoves, currentPlayer == WHITE);
     int generatedMovesCount = 0;
     int generatedAttacksCount = 0;
     for (int x = 0; x < BOARDS_GENERATED; x++) {
