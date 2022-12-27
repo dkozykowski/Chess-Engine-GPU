@@ -5,6 +5,6 @@ namespace UCI {
 
 void loop();
 
-} // namespace UCI
+}  // namespace UCI
 
-#endif // #ifndef UCI_H_INCLUDED
+#endif  // #ifndef UCI_H_INCLUDED

@@ -3,20 +3,14 @@
 
 #include "macros.cuh"
 
-// implementation of PeSTO's evaluation function 
+// implementation of PeSTO's evaluation function
 // source: https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
 
-__device__ int  evaluate_position(const pos64& white_pawns,
-                       const pos64& white_bishops,
-                       const pos64& white_knights,
-                       const pos64& white_rooks,
-                       const pos64& white_queens,
-                       const pos64& white_kings,
-                       const pos64& black_pawns,
-                       const pos64& black_bishops,
-                       const pos64& black_knights,
-                       const pos64& black_rooks,
-                       const pos64& black_queens,
-                       const pos64& black_kings);
+__device__ int evaluatePosition(
+    const pos64& whitePawns, const pos64& whiteBishops,
+    const pos64& whiteKnights, const pos64& whiteRooks,
+    const pos64& whiteQueens, const pos64& whiteKings, const pos64& blackPawns,
+    const pos64& blackBishops, const pos64& blackKnights,
+    const pos64& blackRooks, const pos64& blackQueens, const pos64& blackKings);
 
 #endif

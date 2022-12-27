@@ -1,8 +1,8 @@
-#include "macros.cuh"
 #include "evaluate.cuh"
+#include "macros.cuh"
 
 // piece_square tables
-__device__ int mg_pawn_table[64] = {
+__device__ int mgPawnTable[64] = {
      82,  82,  82,  82,  82,  82,  82, 82, 
     180, 216, 143, 177, 150, 208, 116, 71, 
      76,  89, 108, 113, 147, 138, 107, 62, 
@@ -13,7 +13,7 @@ __device__ int mg_pawn_table[64] = {
      82,  82,  82,  82,  82,  82,  82, 82
 };
 
-__device__ int eg_pawn_table[64] = {
+__device__ int egPawnTable[64] = {
      94,  94,  94, 94,  94,  94,  94,  94, 
     272, 267, 252, 228, 241, 226, 259, 281, 
     188, 194, 179, 161, 150, 147, 176, 178, 
@@ -24,7 +24,7 @@ __device__ int eg_pawn_table[64] = {
      94,  94,  94,  94,  94,  94,  94,  94
 };
 
-__device__ int mg_knight_table[64] = {
+__device__ int mgKnightTable[64] = {
     170, 248, 303, 288, 398, 240, 322, 230, 
     264, 296, 409, 373, 360, 399, 344, 320, 
     290, 397, 374, 402, 421, 466, 410, 381, 
@@ -35,7 +35,7 @@ __device__ int mg_knight_table[64] = {
     232, 316, 279, 304, 320, 309, 318, 314
 };
 
-__device__ int eg_knight_table[64] = {
+__device__ int egKnightTable[64] = {
     223, 243, 268, 253, 250, 254, 218, 182, 
     256, 273, 256, 279, 272, 256, 257, 229, 
     257, 261, 291, 290, 280, 272, 262, 240, 
@@ -46,7 +46,7 @@ __device__ int eg_knight_table[64] = {
     252, 230, 258, 266, 259, 263, 231, 217
 };
 
-__device__ int mg_bishop_table[64] = {
+__device__ int mgBishopTable[64] = {
     336, 369, 283, 328, 340, 323, 372, 357, 
     339, 381, 347, 352, 395, 424, 383, 318, 
     349, 402, 408, 405, 400, 415, 402, 363, 
@@ -57,7 +57,7 @@ __device__ int mg_bishop_table[64] = {
     332, 362, 351, 344, 352, 353, 326, 344
 };
 
-__device__ int eg_bishop_table[64] = {
+__device__ int egBishopTable[64] = {
     283, 276, 286, 289, 290, 288, 280, 273, 
     289, 293, 304, 285, 294, 284, 293, 283, 
     299, 289, 297, 296, 295, 303, 297, 301, 
@@ -68,7 +68,7 @@ __device__ int eg_bishop_table[64] = {
     274, 288, 274, 292, 288, 281, 292, 280
 };
 
-__device__ int mg_rook_table[64] = {
+__device__ int mgRookTable[64] = {
     509, 519, 509, 528, 540, 486, 508, 520, 
     504, 509, 535, 539, 557, 544, 503, 521, 
     472, 496, 503, 513, 494, 522, 538, 493, 
@@ -79,7 +79,7 @@ __device__ int mg_rook_table[64] = {
     458, 464, 478, 494, 493, 484, 440, 451
 };
 
-__device__ int eg_rook_table[64] = {
+__device__ int egRookTable[64] = {
     525, 522, 530, 527, 524, 524, 520, 517, 
     523, 525, 525, 523, 509, 515, 520, 515, 
     519, 519, 519, 517, 516, 509, 507, 509, 
@@ -90,7 +90,7 @@ __device__ int eg_rook_table[64] = {
     503, 514, 515, 511, 507, 499, 516, 492
 };
 
-__device__ int mg_queen_table[64] = {
+__device__ int mgQueenTable[64] = {
      997, 1025, 1054, 1037, 1084, 1069, 1068, 1070, 
     1001,  986, 1020, 1026, 1009, 1082, 1053, 1079, 
     1012, 1008, 1032, 1033, 1054, 1081, 1072, 1082,
@@ -101,7 +101,7 @@ __device__ int mg_queen_table[64] = {
     1024, 1007, 1016, 1035, 1010, 1000,  994,  975
 };
 
-__device__ int eg_queen_table[64] = {
+__device__ int egQueenTable[64] = {
     927, 958, 958, 963, 963, 955, 946, 956, 
     919, 956, 968, 977, 994, 961, 966, 936, 
     916, 942, 945, 985, 983, 971, 955, 945, 
@@ -112,7 +112,7 @@ __device__ int eg_queen_table[64] = {
     903, 908, 914, 893, 931, 904, 916, 895
 };
 
-__device__ int mg_king_table[64] = {
+__device__ int mgKingTable[64] = {
     2935, 3023, 3016, 2985, 2944, 2966, 3002, 3013, 
     3029, 2999, 2980, 2993, 2992, 2996, 2962, 2971, 
     2991, 3024, 3002, 2984, 2980, 3006, 3022, 2978, 
@@ -123,7 +123,7 @@ __device__ int mg_king_table[64] = {
     2985, 3036, 3012, 2946, 3008, 2972, 3024, 3014
 };
 
-__device__ int eg_king_table[64] = {
+__device__ int egKingTable[64] = {
     2926, 2965, 2982, 2982, 2989, 3015, 3004, 2983, 
     2988, 3017, 3014, 3017, 3017, 3038, 3023, 3011, 
     3010, 3017, 3023, 3015, 3020, 3045, 3044, 3013, 
@@ -134,85 +134,80 @@ __device__ int eg_king_table[64] = {
     2947, 2966, 2979, 2989, 2972, 2986, 2976, 2957
 };
 
-__device__ int evaluate_position(const pos64& white_pawns,
-                      const pos64& white_bishops,
-                      const pos64& white_knights,
-                      const pos64& white_rooks,
-                      const pos64& white_queens,
-                      const pos64& white_kings,
-                      const pos64& black_pawns,
-                      const pos64& black_bishops,
-                      const pos64& black_knights,
-                      const pos64& black_rooks,
-                      const pos64& black_queens,
-                      const pos64& black_kings) {
-    int game_phase = 0;
-    int midgame_score = 0;
-    int endgame_score = 0;
+__device__ int evaluatePosition(
+    const pos64& whitePawns, const pos64& whiteBishops,
+    const pos64& whiteKnights, const pos64& whiteRooks,
+    const pos64& whiteQueens, const pos64& whiteKings,
+    const pos64& blackPawns, const pos64& blackBishops,
+    const pos64& blackKnights, const pos64& blackRooks,
+    const pos64& blackQueens, const pos64& blackKings) {
+    int gamePhase = 0;
+    int midgameScore = 0;
+    int endgameScore = 0;
 
     /* evaluate each piece */
     pos64 pos = 1;
     for (int i = 0; i < 64; i++) {
-        int neg_i = i ^ 56;
-        if ((white_pawns & pos) != 0) {
-            midgame_score += mg_pawn_table[neg_i];
-            endgame_score += eg_pawn_table[neg_i];
+        int iNegated = i ^ 56;
+        if ((whitePawns & pos) != 0) {
+            midgameScore += mgPawnTable[iNegated];
+            endgameScore += egPawnTable[iNegated];
         }
-        if ((black_pawns & pos) != 0) {
-            midgame_score -= mg_pawn_table[i];
-            endgame_score -= eg_pawn_table[i];
+        if ((blackPawns & pos) != 0) {
+            midgameScore -= mgPawnTable[i];
+            endgameScore -= egPawnTable[i];
         }
-        if ((white_bishops & pos) != 0) {
-            midgame_score += mg_bishop_table[neg_i];
-            endgame_score += eg_bishop_table[neg_i];
-            game_phase += 1;
+        if ((whiteBishops & pos) != 0) {
+            midgameScore += mgBishopTable[iNegated];
+            endgameScore += egBishopTable[iNegated];
+            gamePhase += 1;
         }
-        if ((black_bishops & pos) != 0) {
-            midgame_score -= mg_bishop_table[i];
-            endgame_score -= eg_bishop_table[i];
-            game_phase += 1;
+        if ((blackBishops & pos) != 0) {
+            midgameScore -= mgBishopTable[i];
+            endgameScore -= egBishopTable[i];
+            gamePhase += 1;
         }
-        if ((white_knights & pos) != 0) {
-            midgame_score += mg_knight_table[neg_i];
-            endgame_score += eg_knight_table[neg_i];
-            game_phase += 1;
+        if ((whiteKnights & pos) != 0) {
+            midgameScore += mgKnightTable[iNegated];
+            endgameScore += egKnightTable[iNegated];
+            gamePhase += 1;
         }
-        if ((black_knights & pos) != 0) {
-            midgame_score -= mg_knight_table[i];
-            endgame_score -= eg_knight_table[i];
-            game_phase += 1;
+        if ((blackKnights & pos) != 0) {
+            midgameScore -= mgKnightTable[i];
+            endgameScore -= egKnightTable[i];
+            gamePhase += 1;
         }
-        if ((white_rooks & pos) != 0) {
-            midgame_score += mg_rook_table[neg_i];
-            endgame_score += eg_rook_table[neg_i];
-            game_phase += 2;
+        if ((whiteRooks & pos) != 0) {
+            midgameScore += mgRookTable[iNegated];
+            endgameScore += egRookTable[iNegated];
+            gamePhase += 2;
         }
-        if ((black_rooks & pos) != 0) {
-            midgame_score -= mg_rook_table[i];
-            endgame_score -= eg_rook_table[i];
-            game_phase += 2;
+        if ((blackRooks & pos) != 0) {
+            midgameScore -= mgRookTable[i];
+            endgameScore -= egRookTable[i];
+            gamePhase += 2;
         }
-        if ((white_queens & pos) != 0) {
-            midgame_score += mg_queen_table[neg_i];
-            endgame_score += eg_queen_table[neg_i];
-            game_phase += 4;
+        if ((whiteQueens & pos) != 0) {
+            midgameScore += mgQueenTable[iNegated];
+            endgameScore += egQueenTable[iNegated];
+            gamePhase += 4;
         }
-        if ((black_queens & pos) != 0) {
-            midgame_score -= mg_queen_table[i];
-            endgame_score -= eg_queen_table[i];
-            game_phase += 4;
+        if ((blackQueens & pos) != 0) {
+            midgameScore -= mgQueenTable[i];
+            endgameScore -= egQueenTable[i];
+            gamePhase += 4;
         }
-        if ((white_kings & pos) != 0) {
-            midgame_score += mg_king_table[neg_i];
-            endgame_score += eg_king_table[neg_i];
+        if ((whiteKings & pos) != 0) {
+            midgameScore += mgKingTable[iNegated];
+            endgameScore += egKingTable[iNegated];
         }
-        if ((black_kings & pos) != 0) {
-            midgame_score -= mg_king_table[i];
-            endgame_score -= eg_king_table[i];
+        if ((blackKings & pos) != 0) {
+            midgameScore -= mgKingTable[i];
+            endgameScore -= egKingTable[i];
         }
         pos <<= 1;
     }
 
-    if (game_phase > 24) game_phase = 24;
-    return (midgame_score * game_phase + endgame_score * (24 - game_phase)) / 24.0;
+    if (gamePhase > 24) gamePhase = 24;
+    return (midgameScore * gamePhase + endgameScore * (24 - gamePhase)) / 24.0;
 }

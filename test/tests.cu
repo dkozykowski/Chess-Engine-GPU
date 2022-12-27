@@ -1,18 +1,24 @@
 #include <gtest/gtest.h>
+
 #include "../src/evaluate.cuh"
-#include "../src/moves.cuh"
 #include "../src/macros.cuh"
+#include "../src/moves.cuh"
 #include "../src/search.cuh"
 
-__global__ void eval(int * result,
-                pos64 white_pawns, pos64 white_bishops, pos64 white_knights, pos64 white_rooks, pos64 white_queens, pos64 white_kings,
-                pos64 black_pawns, pos64 black_bishops, pos64 black_knights, pos64 black_rooks, pos64 black_queens, pos64 black_kings) {
-    *result = evaluate_position(white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
-                          black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings);
+#define BOARDS_GENERATED 255
+
+__global__ void eval(int* result, pos64 whitePawns, pos64 whiteBishops,
+                     pos64 whiteKnights, pos64 whiteRooks, pos64 whiteQueens,
+                     pos64 whiteKings, pos64 blackPawns, pos64 blackBishops,
+                     pos64 blackKnights, pos64 blackRooks, pos64 blackQueens,
+                     pos64 blackKings) {
+    *result =
+        evaluatePosition(whitePawns, whiteBishops, whiteKnights, whiteRooks,
+                         whiteQueens, whiteKings, blackPawns, blackBishops,
+                         blackKnights, blackRooks, blackQueens, blackKings);
 }
 
-void initBasePosition(pos64* board) 
-{
+void initBasePosition(pos64* board) {
     board[WHITE_PAWN_OFFSET] = WHITE_PAWN_STARTING_POS;
     board[WHITE_BISHOP_OFFSET] = WHITE_BISHOP_STARTING_POS;
     board[WHITE_KNIGHT_OFFSET] = WHITE_KNIGHT_STARTING_POS;
@@ -20,7 +26,7 @@ void initBasePosition(pos64* board)
     board[WHITE_QUEEN_OFFSET] = WHITE_QUEEN_STARTING_POS;
     board[WHITE_KING_OFFSET] = WHITE_KING_STARTING_POS;
 
-    board[BLACK_PAWN_OFFSET] = BLACk_PAWN_STARTING_POS;
+    board[BLACK_PAWN_OFFSET] = BLACK_PAWN_STARTING_POS;
     board[BLACK_BISHOP_OFFSET] = BLACK_BISHOP_STARTING_POS;
     board[BLACK_KNIGHT_OFFSET] = BLACK_KNIGHT_STARTING_POS;
     board[BLACK_ROOK_OFFSET] = BLACK_ROOK_STARTING_POS;
@@ -33,18 +39,23 @@ TEST(EvaluationTest, StartPositionEvaluation) {
 
     pos64 position[BOARD_SIZE];
     initBasePosition(position);
-    
+
     // when
     int result;
-    int * d_result, * h_result;
-    h_result = new int;
-    cudaMalloc(&d_result, sizeof(int));
-    eval<<<1, 1>>>(d_result, position[WHITE_PAWN_OFFSET], position[WHITE_BISHOP_OFFSET], position[WHITE_KNIGHT_OFFSET], position[WHITE_ROOK_OFFSET], position[WHITE_QUEEN_OFFSET], position[WHITE_KING_OFFSET], 
-                          position[BLACK_PAWN_OFFSET], position[BLACK_BISHOP_OFFSET], position[BLACK_KNIGHT_OFFSET], position[BLACK_ROOK_OFFSET], position[BLACK_QUEEN_OFFSET], position[BLACK_KING_OFFSET]);
-    cudaMemcpy(h_result, d_result, sizeof(int), cudaMemcpyDeviceToHost);
-    result = *h_result;
-    delete h_result;
-    cudaFree(d_result);
+    int *dResult, *hResult;
+    hResult = new int;
+    cudaMalloc(&dResult, sizeof(int));
+    eval<<<1, 1>>>(dResult, position[WHITE_PAWN_OFFSET],
+                   position[WHITE_BISHOP_OFFSET], position[WHITE_KNIGHT_OFFSET],
+                   position[WHITE_ROOK_OFFSET], position[WHITE_QUEEN_OFFSET],
+                   position[WHITE_KING_OFFSET], position[BLACK_PAWN_OFFSET],
+                   position[BLACK_BISHOP_OFFSET], position[BLACK_KNIGHT_OFFSET],
+                   position[BLACK_ROOK_OFFSET], position[BLACK_QUEEN_OFFSET],
+                   position[BLACK_KING_OFFSET]);
+    cudaMemcpy(hResult, dResult, sizeof(int), cudaMemcpyDeviceToHost);
+    result = *hResult;
+    delete hResult;
+    cudaFree(dResult);
 
     // then
     ASSERT_EQ(0, result);
@@ -52,31 +63,32 @@ TEST(EvaluationTest, StartPositionEvaluation) {
 
 TEST(EvaluationTest, EndgamePositionEvaluation) {
     // given
-    pos64 white_pawns = ((pos64) 1) << 5;
-    pos64 white_bishops = 0;
-    pos64 white_knights = 0;
-    pos64 white_rooks = 0;
-    pos64 white_queens = 0;
-    pos64 white_kings = ((pos64) 1) << 13;
+    pos64 whitePawns = ((pos64)1) << 5;
+    pos64 whiteBishops = 0;
+    pos64 whiteKnights = 0;
+    pos64 whiteRooks = 0;
+    pos64 whiteQueens = 0;
+    pos64 whiteKings = ((pos64)1) << 13;
 
-    pos64 black_pawns = ((pos64) 1) << 11 + ((pos64) 1) << 10;
-    pos64 black_bishops = 0;
-    pos64 black_knights = ((pos64) 1) << 40;
-    pos64 black_rooks = 0;
-    pos64 black_queens = ((pos64) 1) << 42;
-    pos64 black_kings = ((pos64) 1) << 55;
-    
+    pos64 blackPawns = ((pos64)1) << 11 + ((pos64)1) << 10;
+    pos64 blackBishops = 0;
+    pos64 blackKnights = ((pos64)1) << 40;
+    pos64 blackRooks = 0;
+    pos64 blackQueens = ((pos64)1) << 42;
+    pos64 blackKings = ((pos64)1) << 55;
+
     // when
     int result;
-    int * d_result, * h_result;
-    h_result = new int;
-    cudaMalloc(&d_result, sizeof(int));
-    eval<<<1, 1>>>(d_result, white_pawns, white_bishops, white_knights, white_rooks, white_queens, white_kings, 
-                          black_pawns, black_bishops, black_knights, black_rooks, black_queens, black_kings);
-    cudaMemcpy(h_result, d_result, sizeof(int), cudaMemcpyDeviceToHost);
-    result = *h_result;
-    delete h_result;
-    cudaFree(d_result);
+    int *dResult, *hResult;
+    hResult = new int;
+    cudaMalloc(&dResult, sizeof(int));
+    eval<<<1, 1>>>(dResult, whitePawns, whiteBishops, whiteKnights, whiteRooks,
+                   whiteQueens, whiteKings, blackPawns, blackBishops,
+                   blackKnights, blackRooks, blackQueens, blackKings);
+    cudaMemcpy(hResult, dResult, sizeof(int), cudaMemcpyDeviceToHost);
+    result = *hResult;
+    delete hResult;
+    cudaFree(dResult);
 
     // then
     ASSERT_EQ(-1292, result);
@@ -86,22 +98,27 @@ TEST(GenerateMovesTest, StartPositionMovesSearch) {
     // given
     pos64 position[BOARD_SIZE];
     initBasePosition(position);
-    
-    short current_player = 0;
+
+    short currentPlayer = 0;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    // when
-    generate_moves(position, generatedMoves, current_player == WHITE);
-    int generated_moves_count = 0;
-    for(int x = 0; x < BOARDS_GENERATED; x++)
-    {
-        if (((generatedMoves + x * BOARD_SIZE)[BLACK_KING_OFFSET] | (generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET]) == 0) break;
-        generated_moves_count = x + 1;
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
     }
 
-    // then 
-    ASSERT_EQ(20, generated_moves_count);
+    // when
+    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    int generatedMovesCount = 0;
+    for (int x = 0; x < BOARDS_GENERATED; x++) {
+        if (((generatedMoves + x * BOARD_SIZE)[BLACK_KING_OFFSET] |
+             (generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET]) == 0)
+            break;
+        generatedMovesCount = x + 1;
+    }
+
+    // then
+    ASSERT_EQ(20, generatedMovesCount);
 }
 
 TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForWhite) {
@@ -109,49 +126,72 @@ TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForWhite) {
     pos64 position[BOARD_SIZE];
     initBasePosition(position);
 
-    short current_player = 0;
+    short currentPlayer = 0;
     // when
     init();
-    search(current_player, position);
+    search(currentPlayer, position);
     terminate();
 
     pos64 basePosition[BOARD_SIZE];
     initBasePosition(basePosition);
 
-    pos64 current_pos_white = position[WHITE_PAWN_OFFSET] | position[WHITE_BISHOP_OFFSET] | position[WHITE_KNIGHT_OFFSET] | position[WHITE_ROOK_OFFSET] | position[WHITE_QUEEN_OFFSET] | position[WHITE_KING_OFFSET];
-    pos64 new_pos_white = basePosition[WHITE_PAWN_OFFSET] | basePosition[WHITE_BISHOP_OFFSET] | basePosition[WHITE_KNIGHT_OFFSET] | basePosition[WHITE_ROOK_OFFSET] | basePosition[WHITE_QUEEN_OFFSET] | basePosition[WHITE_KING_OFFSET];
-    pos64 current_pos_black = position[BLACK_PAWN_OFFSET] | position[BLACK_BISHOP_OFFSET] | position[BLACK_KNIGHT_OFFSET] | position[BLACK_ROOK_OFFSET] | position[BLACK_QUEEN_OFFSET] | position[BLACK_KING_OFFSET];
-    pos64 new_pos_black = basePosition[BLACK_PAWN_OFFSET] | basePosition[BLACK_BISHOP_OFFSET] | basePosition[BLACK_KNIGHT_OFFSET] | basePosition[BLACK_ROOK_OFFSET] | basePosition[BLACK_QUEEN_OFFSET] | basePosition[BLACK_KING_OFFSET];
-    
+    pos64 currentPosWhite =
+        position[WHITE_PAWN_OFFSET] | position[WHITE_BISHOP_OFFSET] |
+        position[WHITE_KNIGHT_OFFSET] | position[WHITE_ROOK_OFFSET] |
+        position[WHITE_QUEEN_OFFSET] | position[WHITE_KING_OFFSET];
+    pos64 newPosWhite =
+        basePosition[WHITE_PAWN_OFFSET] | basePosition[WHITE_BISHOP_OFFSET] |
+        basePosition[WHITE_KNIGHT_OFFSET] | basePosition[WHITE_ROOK_OFFSET] |
+        basePosition[WHITE_QUEEN_OFFSET] | basePosition[WHITE_KING_OFFSET];
+    pos64 currentPosBlack =
+        position[BLACK_PAWN_OFFSET] | position[BLACK_BISHOP_OFFSET] |
+        position[BLACK_KNIGHT_OFFSET] | position[BLACK_ROOK_OFFSET] |
+        position[BLACK_QUEEN_OFFSET] | position[BLACK_KING_OFFSET];
+    pos64 newPosBlack =
+        basePosition[BLACK_PAWN_OFFSET] | basePosition[BLACK_BISHOP_OFFSET] |
+        basePosition[BLACK_KNIGHT_OFFSET] | basePosition[BLACK_ROOK_OFFSET] |
+        basePosition[BLACK_QUEEN_OFFSET] | basePosition[BLACK_KING_OFFSET];
+
     // then
-    ASSERT_EQ(new_pos_black, current_pos_black);
-    ASSERT_NE(new_pos_white, current_pos_white);
+    ASSERT_EQ(newPosBlack, currentPosBlack);
+    ASSERT_NE(newPosWhite, currentPosWhite);
 }
 
 TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForBlack) {
-   // given
+    // given
     pos64 position[BOARD_SIZE];
     initBasePosition(position);
 
-    short current_player = 1;
+    short currentPlayer = 1;
     // when
     init();
-    search(current_player, position);
+    search(currentPlayer, position);
     terminate();
 
     pos64 basePosition[BOARD_SIZE];
     initBasePosition(basePosition);
 
-    pos64 current_pos_white = position[WHITE_PAWN_OFFSET] | position[WHITE_BISHOP_OFFSET] | position[WHITE_KNIGHT_OFFSET] | position[WHITE_ROOK_OFFSET] | position[WHITE_QUEEN_OFFSET] | position[WHITE_KING_OFFSET];
-    pos64 new_pos_white = basePosition[WHITE_PAWN_OFFSET] | basePosition[WHITE_BISHOP_OFFSET] | basePosition[WHITE_KNIGHT_OFFSET] | basePosition[WHITE_ROOK_OFFSET] | basePosition[WHITE_QUEEN_OFFSET] | basePosition[WHITE_KING_OFFSET];
-    pos64 current_pos_black = position[BLACK_PAWN_OFFSET] | position[BLACK_BISHOP_OFFSET] | position[BLACK_KNIGHT_OFFSET] | position[BLACK_ROOK_OFFSET] | position[BLACK_QUEEN_OFFSET] | position[BLACK_KING_OFFSET];
-    pos64 new_pos_black = basePosition[BLACK_PAWN_OFFSET] | basePosition[BLACK_BISHOP_OFFSET] | basePosition[BLACK_KNIGHT_OFFSET] | basePosition[BLACK_ROOK_OFFSET] | basePosition[BLACK_QUEEN_OFFSET] | basePosition[BLACK_KING_OFFSET];
-    
-    // then
-    ASSERT_NE(new_pos_black, current_pos_black);
-    ASSERT_EQ(new_pos_white, current_pos_white);
-}
+    pos64 currentPosWhite =
+        position[WHITE_PAWN_OFFSET] | position[WHITE_BISHOP_OFFSET] |
+        position[WHITE_KNIGHT_OFFSET] | position[WHITE_ROOK_OFFSET] |
+        position[WHITE_QUEEN_OFFSET] | position[WHITE_KING_OFFSET];
+    pos64 newPosWhite =
+        basePosition[WHITE_PAWN_OFFSET] | basePosition[WHITE_BISHOP_OFFSET] |
+        basePosition[WHITE_KNIGHT_OFFSET] | basePosition[WHITE_ROOK_OFFSET] |
+        basePosition[WHITE_QUEEN_OFFSET] | basePosition[WHITE_KING_OFFSET];
+    pos64 currentPosBlack =
+        position[BLACK_PAWN_OFFSET] | position[BLACK_BISHOP_OFFSET] |
+        position[BLACK_KNIGHT_OFFSET] | position[BLACK_ROOK_OFFSET] |
+        position[BLACK_QUEEN_OFFSET] | position[BLACK_KING_OFFSET];
+    pos64 newPosBlack =
+        basePosition[BLACK_PAWN_OFFSET] | basePosition[BLACK_BISHOP_OFFSET] |
+        basePosition[BLACK_KNIGHT_OFFSET] | basePosition[BLACK_ROOK_OFFSET] |
+        basePosition[BLACK_QUEEN_OFFSET] | basePosition[BLACK_KING_OFFSET];
 
+    // then
+    ASSERT_NE(newPosBlack, currentPosBlack);
+    ASSERT_EQ(newPosWhite, currentPosWhite);
+}
 
 TEST(GenerateMovesTest, BlackKnightMovesTests) {
     // given
@@ -170,30 +210,33 @@ TEST(GenerateMovesTest, BlackKnightMovesTests) {
     position[BLACK_QUEEN_OFFSET] = 0;
     position[BLACK_KING_OFFSET] = 0;
 
-    short current_player = 1;
+    short currentPlayer = 1;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    // when
-    generate_moves(position, generatedMoves, current_player == WHITE);
-    int generated_moves_count = 0;
-    int generated_attacks_count = 0;
-    for(int x = 0; x < BOARDS_GENERATED; x++)
-    {
-        if ((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] == 0) break;
-        if((generatedMoves + x * BOARD_SIZE)[WHITE_PAWN_OFFSET] < position[WHITE_PAWN_OFFSET]){ 
-            generated_attacks_count++;
-        }
-        generated_moves_count = x + 1;
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
     }
 
-    // then 
-    ASSERT_EQ(8, generated_moves_count);
-    ASSERT_EQ(2, generated_attacks_count);
+    // when
+    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    int generatedMovesCount = 0;
+    int generatedAttacksCount = 0;
+    for (int x = 0; x < BOARDS_GENERATED; x++) {
+        if ((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] == 0) break;
+        if ((generatedMoves + x * BOARD_SIZE)[WHITE_PAWN_OFFSET] <
+            position[WHITE_PAWN_OFFSET]) {
+            generatedAttacksCount++;
+        }
+        generatedMovesCount = x + 1;
+    }
+
+    // then
+    ASSERT_EQ(8, generatedMovesCount);
+    ASSERT_EQ(2, generatedAttacksCount);
 }
 
 TEST(GenerateMovesTest, WhiteKnightMovesTests) {
-
     pos64 position[BOARD_SIZE];
     position[WHITE_PAWN_OFFSET] = 0;
     position[WHITE_BISHOP_OFFSET] = 0;
@@ -202,37 +245,40 @@ TEST(GenerateMovesTest, WhiteKnightMovesTests) {
     position[WHITE_QUEEN_OFFSET] = 0;
     position[WHITE_KING_OFFSET] = 0;
 
-    position[BLACK_PAWN_OFFSET] = BLACk_PAWN_STARTING_POS;
+    position[BLACK_PAWN_OFFSET] = BLACK_PAWN_STARTING_POS;
     position[BLACK_BISHOP_OFFSET] = BLACK_BISHOP_STARTING_POS;
     position[BLACK_KNIGHT_OFFSET] = BLACK_KNIGHT_STARTING_POS;
     position[BLACK_ROOK_OFFSET] = BLACK_ROOK_STARTING_POS;
     position[BLACK_QUEEN_OFFSET] = BLACK_QUEEN_STARTING_POS;
     position[BLACK_KING_OFFSET] = BLACK_KING_STARTING_POS;
 
-    short current_player = 0;
+    short currentPlayer = 0;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    // when
-    generate_moves(position, generatedMoves, current_player == WHITE);
-    int generated_moves_count = 0;
-    int generated_attacks_count = 0;
-    for(int x = 0; x < BOARDS_GENERATED; x++)
-    {
-        if ((generatedMoves + x * BOARD_SIZE)[BLACK_KING_OFFSET] == 0) break;
-        if((generatedMoves + x * BOARD_SIZE)[BLACK_PAWN_OFFSET] < position[BLACK_PAWN_OFFSET]){ 
-            generated_attacks_count++;
-        }
-        generated_moves_count = x + 1;
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
     }
 
-    // then 
-    ASSERT_EQ(8, generated_moves_count);
-    ASSERT_EQ(2, generated_attacks_count);
+    // when
+    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    int generatedMovesCount = 0;
+    int generatedAttacksCount = 0;
+    for (int x = 0; x < BOARDS_GENERATED; x++) {
+        if ((generatedMoves + x * BOARD_SIZE)[BLACK_KING_OFFSET] == 0) break;
+        if ((generatedMoves + x * BOARD_SIZE)[BLACK_PAWN_OFFSET] <
+            position[BLACK_PAWN_OFFSET]) {
+            generatedAttacksCount++;
+        }
+        generatedMovesCount = x + 1;
+    }
+
+    // then
+    ASSERT_EQ(8, generatedMovesCount);
+    ASSERT_EQ(2, generatedAttacksCount);
 }
 
 TEST(GenerateMovesTest, BlackRookMovesTests) {
-
     pos64 position[BOARD_SIZE];
     position[WHITE_PAWN_OFFSET] = WHITE_PAWN_STARTING_POS;
     position[WHITE_BISHOP_OFFSET] = WHITE_BISHOP_STARTING_POS;
@@ -248,30 +294,33 @@ TEST(GenerateMovesTest, BlackRookMovesTests) {
     position[BLACK_QUEEN_OFFSET] = 0;
     position[BLACK_KING_OFFSET] = 0;
 
-    short current_player = 1;
+    short currentPlayer = 1;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    // when
-    generate_moves(position, generatedMoves, current_player == WHITE);
-    int generated_moves_count = 0;
-    int generated_attacks_count = 0;
-    for(int x = 0; x < BOARDS_GENERATED; x++)
-    {
-        if ((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] == 0) break;
-        if((generatedMoves + x * BOARD_SIZE)[WHITE_PAWN_OFFSET] < position[WHITE_PAWN_OFFSET]){ 
-            generated_attacks_count++;
-        }
-        generated_moves_count = x + 1;
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
     }
 
-    // then 
-    ASSERT_EQ(13, generated_moves_count);
-    ASSERT_EQ(1, generated_attacks_count);
+    // when
+    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    int generatedMovesCount = 0;
+    int generatedAttacksCount = 0;
+    for (int x = 0; x < BOARDS_GENERATED; x++) {
+        if ((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] == 0) break;
+        if ((generatedMoves + x * BOARD_SIZE)[WHITE_PAWN_OFFSET] <
+            position[WHITE_PAWN_OFFSET]) {
+            generatedAttacksCount++;
+        }
+        generatedMovesCount = x + 1;
+    }
+
+    // then
+    ASSERT_EQ(13, generatedMovesCount);
+    ASSERT_EQ(1, generatedAttacksCount);
 }
 
 TEST(GenerateMovesTest, WhiteRookMovesTests) {
-    
     pos64 position[BOARD_SIZE];
     position[WHITE_PAWN_OFFSET] = 0;
     position[WHITE_BISHOP_OFFSET] = 0;
@@ -280,33 +329,37 @@ TEST(GenerateMovesTest, WhiteRookMovesTests) {
     position[WHITE_QUEEN_OFFSET] = 0;
     position[WHITE_KING_OFFSET] = 0;
 
-    position[BLACK_PAWN_OFFSET] = BLACk_PAWN_STARTING_POS;
+    position[BLACK_PAWN_OFFSET] = BLACK_PAWN_STARTING_POS;
     position[BLACK_BISHOP_OFFSET] = BLACK_BISHOP_STARTING_POS;
     position[BLACK_KNIGHT_OFFSET] = BLACK_KNIGHT_STARTING_POS;
     position[BLACK_ROOK_OFFSET] = BLACK_ROOK_STARTING_POS;
     position[BLACK_QUEEN_OFFSET] = BLACK_QUEEN_STARTING_POS;
     position[BLACK_KING_OFFSET] = BLACK_KING_STARTING_POS;
 
-    short current_player = 0;
+    short currentPlayer = 0;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    // when
-    generate_moves(position, generatedMoves, current_player == WHITE);
-    int generated_moves_count = 0;
-    int generated_attacks_count = 0;
-    for(int x = 0; x < BOARDS_GENERATED; x++)
-    {
-        if ((generatedMoves + x * BOARD_SIZE)[BLACK_KING_OFFSET] == 0) break;
-        if((generatedMoves + x * BOARD_SIZE)[BLACK_PAWN_OFFSET] < position[BLACK_PAWN_OFFSET]){ 
-            generated_attacks_count++;
-        }
-        generated_moves_count = x + 1;
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
     }
 
-    // then 
-    ASSERT_EQ(13, generated_moves_count);
-    ASSERT_EQ(1, generated_attacks_count);
+    // when
+    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    int generatedMovesCount = 0;
+    int generatedAttacksCount = 0;
+    for (int x = 0; x < BOARDS_GENERATED; x++) {
+        if ((generatedMoves + x * BOARD_SIZE)[BLACK_KING_OFFSET] == 0) break;
+        if ((generatedMoves + x * BOARD_SIZE)[BLACK_PAWN_OFFSET] <
+            position[BLACK_PAWN_OFFSET]) {
+            generatedAttacksCount++;
+        }
+        generatedMovesCount = x + 1;
+    }
+
+    // then
+    ASSERT_EQ(13, generatedMovesCount);
+    ASSERT_EQ(1, generatedAttacksCount);
 }
 
 TEST(GenerateMovesTest, BlackBishopMovesTests) {
@@ -325,26 +378,30 @@ TEST(GenerateMovesTest, BlackBishopMovesTests) {
     position[BLACK_QUEEN_OFFSET] = 0;
     position[BLACK_KING_OFFSET] = 0;
 
-    short current_player = 1;
+    short currentPlayer = 1;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    // when
-    generate_moves(position, generatedMoves, current_player == WHITE);
-    int generated_moves_count = 0;
-    int generated_attacks_count = 0;
-    for(int x = 0; x < BOARDS_GENERATED; x++)
-    {
-        if ((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] == 0) break;
-        if((generatedMoves + x * BOARD_SIZE)[WHITE_PAWN_OFFSET] < position[WHITE_PAWN_OFFSET]){ 
-            generated_attacks_count++;
-        }
-        generated_moves_count = x + 1;
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
     }
 
-    // then 
-    ASSERT_EQ(10, generated_moves_count);
-    ASSERT_EQ(2, generated_attacks_count);
+    // when
+    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    int generatedMovesCount = 0;
+    int generatedAttacksCount = 0;
+    for (int x = 0; x < BOARDS_GENERATED; x++) {
+        if ((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] == 0) break;
+        if ((generatedMoves + x * BOARD_SIZE)[WHITE_PAWN_OFFSET] <
+            position[WHITE_PAWN_OFFSET]) {
+            generatedAttacksCount++;
+        }
+        generatedMovesCount = x + 1;
+    }
+
+    // then
+    ASSERT_EQ(10, generatedMovesCount);
+    ASSERT_EQ(2, generatedAttacksCount);
 }
 
 TEST(GenerateMovesTest, WhiteBishopMovesTests) {
@@ -357,33 +414,37 @@ TEST(GenerateMovesTest, WhiteBishopMovesTests) {
     position[WHITE_QUEEN_OFFSET] = 0;
     position[WHITE_KING_OFFSET] = 0;
 
-    position[BLACK_PAWN_OFFSET] = BLACk_PAWN_STARTING_POS;
+    position[BLACK_PAWN_OFFSET] = BLACK_PAWN_STARTING_POS;
     position[BLACK_BISHOP_OFFSET] = BLACK_BISHOP_STARTING_POS;
     position[BLACK_KNIGHT_OFFSET] = BLACK_KNIGHT_STARTING_POS;
     position[BLACK_ROOK_OFFSET] = BLACK_ROOK_STARTING_POS;
     position[BLACK_QUEEN_OFFSET] = BLACK_QUEEN_STARTING_POS;
     position[BLACK_KING_OFFSET] = BLACK_KING_STARTING_POS;
 
-    short current_player = 0;
+    short currentPlayer = 0;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    // when
-    generate_moves(position, generatedMoves, current_player == WHITE);
-    int generated_moves_count = 0;
-    int generated_attacks_count = 0;
-    for(int x = 0; x < BOARDS_GENERATED; x++)
-    {
-        if ((generatedMoves + x * BOARD_SIZE)[BLACK_KING_OFFSET] == 0) break;
-        if((generatedMoves + x * BOARD_SIZE)[BLACK_PAWN_OFFSET] < position[BLACK_PAWN_OFFSET]){ 
-            generated_attacks_count++;
-        }
-        generated_moves_count = x + 1;
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
     }
 
-    // then 
-    ASSERT_EQ(11, generated_moves_count);
-    ASSERT_EQ(2, generated_attacks_count);
+    // when
+    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    int generatedMovesCount = 0;
+    int generatedAttacksCount = 0;
+    for (int x = 0; x < BOARDS_GENERATED; x++) {
+        if ((generatedMoves + x * BOARD_SIZE)[BLACK_KING_OFFSET] == 0) break;
+        if ((generatedMoves + x * BOARD_SIZE)[BLACK_PAWN_OFFSET] <
+            position[BLACK_PAWN_OFFSET]) {
+            generatedAttacksCount++;
+        }
+        generatedMovesCount = x + 1;
+    }
+
+    // then
+    ASSERT_EQ(11, generatedMovesCount);
+    ASSERT_EQ(2, generatedAttacksCount);
 }
 
 TEST(GenerateMovesTest, BlackQueenMovesTests) {
@@ -402,26 +463,30 @@ TEST(GenerateMovesTest, BlackQueenMovesTests) {
     position[BLACK_QUEEN_OFFSET] = 536870912;
     position[BLACK_KING_OFFSET] = 0;
 
-    short current_player = 1;
+    short currentPlayer = 1;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    // when
-    generate_moves(position, generatedMoves, current_player == WHITE);
-    int generated_moves_count = 0;
-    int generated_attacks_count = 0;
-    for(int x = 0; x < BOARDS_GENERATED; x++)
-    {
-        if ((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] == 0) break;
-        if((generatedMoves + x * BOARD_SIZE)[WHITE_PAWN_OFFSET] < position[WHITE_PAWN_OFFSET]){ 
-            generated_attacks_count++;
-        }
-        generated_moves_count = x + 1;
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
     }
 
-    // then 
-    ASSERT_EQ(23, generated_moves_count);
-    ASSERT_EQ(3, generated_attacks_count);
+    // when
+    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    int generatedMovesCount = 0;
+    int generatedAttacksCount = 0;
+    for (int x = 0; x < BOARDS_GENERATED; x++) {
+        if ((generatedMoves + x * BOARD_SIZE)[WHITE_KING_OFFSET] == 0) break;
+        if ((generatedMoves + x * BOARD_SIZE)[WHITE_PAWN_OFFSET] <
+            position[WHITE_PAWN_OFFSET]) {
+            generatedAttacksCount++;
+        }
+        generatedMovesCount = x + 1;
+    }
+
+    // then
+    ASSERT_EQ(23, generatedMovesCount);
+    ASSERT_EQ(3, generatedAttacksCount);
 }
 
 TEST(GenerateMovesTest, WhiteQueenMovesTests) {
@@ -434,39 +499,40 @@ TEST(GenerateMovesTest, WhiteQueenMovesTests) {
     position[WHITE_QUEEN_OFFSET] = 68719476736;
     position[WHITE_KING_OFFSET] = 0;
 
-    position[BLACK_PAWN_OFFSET] = BLACk_PAWN_STARTING_POS;
+    position[BLACK_PAWN_OFFSET] = BLACK_PAWN_STARTING_POS;
     position[BLACK_BISHOP_OFFSET] = BLACK_BISHOP_STARTING_POS;
     position[BLACK_KNIGHT_OFFSET] = BLACK_KNIGHT_STARTING_POS;
     position[BLACK_ROOK_OFFSET] = BLACK_ROOK_STARTING_POS;
     position[BLACK_QUEEN_OFFSET] = BLACK_QUEEN_STARTING_POS;
     position[BLACK_KING_OFFSET] = BLACK_KING_STARTING_POS;
 
-    short current_player = 0;
+    short currentPlayer = 0;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    // when
-    generate_moves(position, generatedMoves, current_player == WHITE);
-    int generated_moves_count = 0;
-    int generated_attacks_count = 0;
-    for(int x = 0; x < BOARDS_GENERATED; x++)
-    {
-        if ((generatedMoves + x * BOARD_SIZE)[BLACK_KING_OFFSET] == 0) break;
-        if((generatedMoves + x * BOARD_SIZE)[BLACK_PAWN_OFFSET] < position[BLACK_PAWN_OFFSET]){ 
-            generated_attacks_count++;
-        }
-        generated_moves_count = x + 1;
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+        generatedMoves[i] = 0;
     }
 
-    // then 
-    ASSERT_EQ(24, generated_moves_count);
-    ASSERT_EQ(3, generated_attacks_count);
+    // when
+    generateMoves(position, generatedMoves, currentPlayer == WHITE);
+    int generatedMovesCount = 0;
+    int generatedAttacksCount = 0;
+    for (int x = 0; x < BOARDS_GENERATED; x++) {
+        if ((generatedMoves + x * BOARD_SIZE)[BLACK_KING_OFFSET] == 0) break;
+        if ((generatedMoves + x * BOARD_SIZE)[BLACK_PAWN_OFFSET] <
+            position[BLACK_PAWN_OFFSET]) {
+            generatedAttacksCount++;
+        }
+        generatedMovesCount = x + 1;
+    }
+
+    // then
+    ASSERT_EQ(24, generatedMovesCount);
+    ASSERT_EQ(3, generatedAttacksCount);
 }
 
-
-
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
-
