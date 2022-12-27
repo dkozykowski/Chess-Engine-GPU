@@ -7,6 +7,8 @@
 
 #include "macros.cuh"
 
+namespace POSITION {
+
 void printPosition(const pos64& whitePawns, const pos64& whiteBishops,
                    const pos64& whiteKnights, const pos64& whiteRooks,
                    const pos64& whiteQueens, const pos64& whiteKings,
@@ -25,5 +27,6 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
                pos64& whiteQueens, pos64& whiteKings, pos64& blackPawns,
                pos64& blackBishops, pos64& blackKnights, pos64& blackRooks,
                pos64& blackQueens, pos64& blackKings);
+}  // namespace POSITION
 
-#endif
+#endif  // #ifndef POSITION_H_INCLUDED

@@ -1,6 +1,8 @@
 #include "evaluate.cuh"
 #include "macros.cuh"
 
+namespace EVALUATION {
+
 // piece_square tables
 __device__ int mgPawnTable[64] = {
      82,  82,  82,  82,  82,  82,  82, 82, 
@@ -137,10 +139,10 @@ __device__ int egKingTable[64] = {
 __device__ int evaluatePosition(
     const pos64& whitePawns, const pos64& whiteBishops,
     const pos64& whiteKnights, const pos64& whiteRooks,
-    const pos64& whiteQueens, const pos64& whiteKings,
-    const pos64& blackPawns, const pos64& blackBishops,
-    const pos64& blackKnights, const pos64& blackRooks,
-    const pos64& blackQueens, const pos64& blackKings) {
+    const pos64& whiteQueens, const pos64& whiteKings, const pos64& blackPawns,
+    const pos64& blackBishops, const pos64& blackKnights,
+    const pos64& blackRooks, const pos64& blackQueens,
+    const pos64& blackKings) {
     int gamePhase = 0;
     int midgameScore = 0;
     int endgameScore = 0;
@@ -211,3 +213,4 @@ __device__ int evaluatePosition(
     if (gamePhase > 24) gamePhase = 24;
     return (midgameScore * gamePhase + endgameScore * (24 - gamePhase)) / 24.0;
 }
+}  // namespace EVALUATION

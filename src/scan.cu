@@ -1,20 +1,12 @@
 #include <algorithm>
 
+#include "macros.cuh"
+
+namespace SCAN {
+
 #define THREADS_IN_BLOCK 1024
 #define ELEMENTS_PER_BLOCK 2 * THREADS_IN_BLOCK
 #define SHARED_MEMORY_SIZE sizeof(int) * ELEMENTS_PER_BLOCK
-
-#define gpuErrchk(ans) \
-    { gpuAssert((ans), __FILE__, __LINE__); }
-
-inline void gpuAssert(cudaError_t code, const char *file, int line,
-                      bool abort = true) {
-    if (code != cudaSuccess) {
-        fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file,
-                line);
-        if (abort) exit(code);
-    }
-}
 
 unsigned int closestPowerOf2(unsigned int value) {
     int power = 1;
@@ -125,3 +117,4 @@ void scan(unsigned int *input, unsigned int n, unsigned int *sums,
         gpuErrchk(cudaPeekAtLastError());
     }
 }
+}  // namespace SCAN
