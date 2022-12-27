@@ -1,5 +1,5 @@
 engine: main.o uci.o position.o evaluate.o search.o moves.o scan.o macros.o
-	nvcc -o engine main.o uci.o position.o evaluate.o search.o moves.o scan.o -std=c++11
+	nvcc -o engine main.o uci.o position.o evaluate.o search.o moves.o scan.o macros.o -std=c++11
 
 main.o: main.cu
 	nvcc -o main.o -c main.cu -dc -std=c++11
