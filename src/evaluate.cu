@@ -3,7 +3,7 @@
 
 namespace EVALUATION {
 
-// piece_square tables
+// mg - mid-game, eg - end-game
 __device__ int mgPawnTable[64] = {
      82,  82,  82,  82,  82,  82,  82, 82, 
     180, 216, 143, 177, 150, 208, 116, 71, 
@@ -136,6 +136,34 @@ __device__ int egKingTable[64] = {
     2947, 2966, 2979, 2989, 2972, 2986, 2976, 2957
 };
 
+/**
+ * Evaluates the given position.
+ *
+ * @param whitePawns Stores the position of white pawns on the board to
+ * evaluate.
+ * @param whiteBishops Stores the position of white bishops on the board to
+ * evaluate.
+ * @param whiteKnights Stores the position of white knights on the board to
+ * evaluate.
+ * @param whiteRooks Stores the position of white rooks on the board to
+ * evaluate.
+ * @param whiteQueens Stores the position of white queens on the board to
+ * evaluate.
+ * @param whiteKings Stores the position of white kings on the board to
+ * evaluate.
+ * @param blackPawns Stores the position of black pawns on the board to
+ * evaluate.
+ * @param blackBishops Stores the position of black bishops on the board to
+ * evaluate.
+ * @param blackKnights Stores the position of black knights on the board to
+ * evaluate.
+ * @param blackRooks Stores the position of black rooks on the board to
+ * evaluate.
+ * @param blackQueens Stores the position of black queens on the board to
+ * evaluate.
+ * @param blackKings Stores the position of black kings on the board to
+ * evaluate.
+ */
 __device__ int evaluatePosition(
     const pos64& whitePawns, const pos64& whiteBishops,
     const pos64& whiteKnights, const pos64& whiteRooks,

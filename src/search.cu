@@ -360,8 +360,8 @@ void gatherResults(pos64 *boards, unsigned int *boardsOffsets,
  *
  * @param currentPlayer Player whose currently turn to move is ( @ref WHITE for
  * white, @ref BLACK for black)
- * @param position[in, out] Pointer to structure holding position for which
- * optimal move should be found. After finding the most optimal move, the
+ * @param position[in, out] Pointer to structure holding positions of pieces for 
+ * which optimal move should be found. After finding the most optimal move, the
  * position is overriden with the so found move.
  */
 void findBestMove(const short &currentPlayer, pos64 *position) {

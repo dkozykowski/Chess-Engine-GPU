@@ -2,6 +2,34 @@
 
 namespace POSITION {
 
+/**
+ * Pretty-prints the given board on the console.
+ *
+ * @param whitePawns Stores the position of white pawns on the board to
+ * evaluate.
+ * @param whiteBishops Stores the position of white bishops on the board to
+ * evaluate.
+ * @param whiteKnights Stores the position of white knights on the board to
+ * evaluate.
+ * @param whiteRooks Stores the position of white rooks on the board to
+ * evaluate.
+ * @param whiteQueens Stores the position of white queens on the board to
+ * evaluate.
+ * @param whiteKings Stores the position of white kings on the board to
+ * evaluate.
+ * @param blackPawns Stores the position of black pawns on the board to
+ * evaluate.
+ * @param blackBishops Stores the position of black bishops on the board to
+ * evaluate.
+ * @param blackKnights Stores the position of black knights on the board to
+ * evaluate.
+ * @param blackRooks Stores the position of black rooks on the board to
+ * evaluate.
+ * @param blackQueens Stores the position of black queens on the board to
+ * evaluate.
+ * @param blackKings Stores the position of black kings on the board to
+ * evaluate.
+ */
 void printPosition(const pos64& whitePawns, const pos64& whiteBishops,
                    const pos64& whiteKnights, const pos64& whiteRooks,
                    const pos64& whiteQueens, const pos64& whiteKings,
@@ -59,6 +87,34 @@ void swap(pos64& a, pos64& b) {
     b = c;
 }
 
+/**
+ * Flips the colors of pieces to the opposite.
+ *
+ * @param whitePawns Stores the position of white pawns on the board to
+ * evaluate.
+ * @param whiteBishops Stores the position of white bishops on the board to
+ * evaluate.
+ * @param whiteKnights Stores the position of white knights on the board to
+ * evaluate.
+ * @param whiteRooks Stores the position of white rooks on the board to
+ * evaluate.
+ * @param whiteQueens Stores the position of white queens on the board to
+ * evaluate.
+ * @param whiteKings Stores the position of white kings on the board to
+ * evaluate.
+ * @param blackPawns Stores the position of black pawns on the board to
+ * evaluate.
+ * @param blackBishops Stores the position of black bishops on the board to
+ * evaluate.
+ * @param blackKnights Stores the position of black knights on the board to
+ * evaluate.
+ * @param blackRooks Stores the position of black rooks on the board to
+ * evaluate.
+ * @param blackQueens Stores the position of black queens on the board to
+ * evaluate.
+ * @param blackKings Stores the position of black kings on the board to
+ * evaluate.
+ */
 void flipPosition(pos64& whitePawns, pos64& whiteBishops, pos64& whiteKnights,
                   pos64& whiteRooks, pos64& whiteQueens, pos64& whiteKings,
                   pos64& blackPawns, pos64& blackBishops, pos64& blackKnights,
@@ -71,6 +127,38 @@ void flipPosition(pos64& whitePawns, pos64& whiteBishops, pos64& whiteKnights,
     swap(whiteKings, blackKings);
 }
 
+/**
+ * Changes the position of a specific piece on the board.
+ *
+ * @param fromCol Index of column where the piece to move is.
+ * @param fromRow Index of row where the piece to move is.
+ * @param toCol Index of column where the piece will be moved to.
+ * @param toRow Index of row where the piece will be moved to.
+ * @param whitePawns Stores the position of white pawns on the board to
+ * evaluate.
+ * @param whiteBishops Stores the position of white bishops on the board to
+ * evaluate.
+ * @param whiteKnights Stores the position of white knights on the board to
+ * evaluate.
+ * @param whiteRooks Stores the position of white rooks on the board to
+ * evaluate.
+ * @param whiteQueens Stores the position of white queens on the board to
+ * evaluate.
+ * @param whiteKings Stores the position of white kings on the board to
+ * evaluate.
+ * @param blackPawns Stores the position of black pawns on the board to
+ * evaluate.
+ * @param blackBishops Stores the position of black bishops on the board to
+ * evaluate.
+ * @param blackKnights Stores the position of black knights on the board to
+ * evaluate.
+ * @param blackRooks Stores the position of black rooks on the board to
+ * evaluate.
+ * @param blackQueens Stores the position of black queens on the board to
+ * evaluate.
+ * @param blackKings Stores the position of black kings on the board to
+ * evaluate.
+ */
 void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
                const int& toRow, short& currentPlayer, pos64& whitePawns,
                pos64& whiteBishops, pos64& whiteKnights, pos64& whiteRooks,
