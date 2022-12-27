@@ -1,6 +1,8 @@
 #include "evaluate.cuh"
 #include "macros.cuh"
 
+namespace EVALUATE {
+
 // piece_square tables
 __device__ int mgPawnTable[64] = {
      82,  82,  82,  82,  82,  82,  82, 82, 
@@ -211,3 +213,4 @@ __device__ int evaluatePosition(
     if (gamePhase > 24) gamePhase = 24;
     return (midgameScore * gamePhase + endgameScore * (24 - gamePhase)) / 24.0;
 }
+} // namespace EVALUATE

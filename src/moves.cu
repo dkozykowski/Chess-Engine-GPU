@@ -1,5 +1,7 @@
 #include "moves.cuh"
 
+namespace MOVES {
+
 #define PAWN_OFFSET 0
 #define KNIGHT_OFFSET 1
 #define BISHOP_OFFSET 2
@@ -1207,3 +1209,4 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
         movingQueens = resetLeastSignificantBit(movingQueens);
     }
 }
+} // namespace MOVES

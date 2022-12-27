@@ -1,5 +1,7 @@
 #include "position.cuh"
 
+namespace POSITION {
+
 void printPosition(const pos64& whitePawns, const pos64& whiteBishops,
                    const pos64& whiteKnights, const pos64& whiteRooks,
                    const pos64& whiteQueens, const pos64& whiteKings,
@@ -136,3 +138,4 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
         }
     }
 }
+} // namespace POSITION
