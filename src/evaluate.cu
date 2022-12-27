@@ -135,12 +135,12 @@ __device__ int egKingTable[64] = {
 };
 
 __device__ int evaluatePosition(
-    const pos64& white_pawns, const pos64& white_bishops,
-    const pos64& white_knights, const pos64& white_rooks,
-    const pos64& white_queens, const pos64& white_kings,
-    const pos64& black_pawns, const pos64& black_bishops,
-    const pos64& black_knights, const pos64& black_rooks,
-    const pos64& black_queens, const pos64& black_kings) {
+    const pos64& whitePawns, const pos64& whiteBishops,
+    const pos64& whiteKnights, const pos64& whiteRooks,
+    const pos64& whiteQueens, const pos64& whiteKings,
+    const pos64& blackPawns, const pos64& blackBishops,
+    const pos64& blackKnights, const pos64& blackRooks,
+    const pos64& blackQueens, const pos64& blackKings) {
     int gamePhase = 0;
     int midgameScore = 0;
     int endgameScore = 0;
@@ -149,59 +149,59 @@ __device__ int evaluatePosition(
     pos64 pos = 1;
     for (int i = 0; i < 64; i++) {
         int iNegated = i ^ 56;
-        if ((white_pawns & pos) != 0) {
+        if ((whitePawns & pos) != 0) {
             midgameScore += mgPawnTable[iNegated];
             endgameScore += egPawnTable[iNegated];
         }
-        if ((black_pawns & pos) != 0) {
+        if ((blackPawns & pos) != 0) {
             midgameScore -= mgPawnTable[i];
             endgameScore -= egPawnTable[i];
         }
-        if ((white_bishops & pos) != 0) {
+        if ((whiteBishops & pos) != 0) {
             midgameScore += mgBishopTable[iNegated];
             endgameScore += egBishopTable[iNegated];
             gamePhase += 1;
         }
-        if ((black_bishops & pos) != 0) {
+        if ((blackBishops & pos) != 0) {
             midgameScore -= mgBishopTable[i];
             endgameScore -= egBishopTable[i];
             gamePhase += 1;
         }
-        if ((white_knights & pos) != 0) {
+        if ((whiteKnights & pos) != 0) {
             midgameScore += mgKnightTable[iNegated];
             endgameScore += egKnightTable[iNegated];
             gamePhase += 1;
         }
-        if ((black_knights & pos) != 0) {
+        if ((blackKnights & pos) != 0) {
             midgameScore -= mgKnightTable[i];
             endgameScore -= egKnightTable[i];
             gamePhase += 1;
         }
-        if ((white_rooks & pos) != 0) {
+        if ((whiteRooks & pos) != 0) {
             midgameScore += mgRookTable[iNegated];
             endgameScore += egRookTable[iNegated];
             gamePhase += 2;
         }
-        if ((black_rooks & pos) != 0) {
+        if ((blackRooks & pos) != 0) {
             midgameScore -= mgRookTable[i];
             endgameScore -= egRookTable[i];
             gamePhase += 2;
         }
-        if ((white_queens & pos) != 0) {
+        if ((whiteQueens & pos) != 0) {
             midgameScore += mgQueenTable[iNegated];
             endgameScore += egQueenTable[iNegated];
             gamePhase += 4;
         }
-        if ((black_queens & pos) != 0) {
+        if ((blackQueens & pos) != 0) {
             midgameScore -= mgQueenTable[i];
             endgameScore -= egQueenTable[i];
             gamePhase += 4;
         }
-        if ((white_kings & pos) != 0) {
+        if ((whiteKings & pos) != 0) {
             midgameScore += mgKingTable[iNegated];
             endgameScore += egKingTable[iNegated];
         }
-        if ((black_kings & pos) != 0) {
+        if ((blackKings & pos) != 0) {
             midgameScore -= mgKingTable[i];
             endgameScore -= egKingTable[i];
         }
