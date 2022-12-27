@@ -264,7 +264,7 @@ void search(const short &currentPlayer, pos64 *position) {
     int firstStageDepth;
     bool isWhite = currentPlayer == WHITE;
 
-    if (false) {
+    if (devicesCount == 1) {
         int offset = runBoardGeneration(boards, boardsOffsets, levelSizes,
                                         &firstStageDepth, &isWhite,
                                         totalBoardsCount, false);

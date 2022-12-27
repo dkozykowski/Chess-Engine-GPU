@@ -12,10 +12,10 @@ __global__ void eval(int* result, pos64 whitePawns, pos64 whiteBishops,
                      pos64 whiteKings, pos64 blackPawns, pos64 blackBishops,
                      pos64 blackKnights, pos64 blackRooks, pos64 blackQueens,
                      pos64 blackKings) {
-    *result = evaluatePosition(whitePawns, whiteBishops, whiteKnights,
-                                whiteRooks, whiteQueens, whiteKings,
-                                blackPawns, blackBishops, blackKnights,
-                                blackRooks, blackQueens, blackKings);
+    *result =
+        evaluatePosition(whitePawns, whiteBishops, whiteKnights, whiteRooks,
+                         whiteQueens, whiteKings, blackPawns, blackBishops,
+                         blackKnights, blackRooks, blackQueens, blackKings);
 }
 
 void initBasePosition(pos64* board) {
@@ -82,10 +82,9 @@ TEST(EvaluationTest, EndgamePositionEvaluation) {
     int *dResult, *hResult;
     hResult = new int;
     cudaMalloc(&dResult, sizeof(int));
-    eval<<<1, 1>>>(dResult, whitePawns, whiteBishops, whiteKnights,
-                   whiteRooks, whiteQueens, whiteKings, blackPawns,
-                   blackBishops, blackKnights, blackRooks, blackQueens,
-                   blackKings);
+    eval<<<1, 1>>>(dResult, whitePawns, whiteBishops, whiteKnights, whiteRooks,
+                   whiteQueens, whiteKings, blackPawns, blackBishops,
+                   blackKnights, blackRooks, blackQueens, blackKings);
     cudaMemcpy(hResult, dResult, sizeof(int), cudaMemcpyDeviceToHost);
     result = *hResult;
     delete hResult;
@@ -104,7 +103,7 @@ TEST(GenerateMovesTest, StartPositionMovesSearch) {
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
         generatedMoves[i] = 0;
     }
 
@@ -215,7 +214,7 @@ TEST(GenerateMovesTest, BlackKnightMovesTests) {
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
         generatedMoves[i] = 0;
     }
 
@@ -257,7 +256,7 @@ TEST(GenerateMovesTest, WhiteKnightMovesTests) {
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
         generatedMoves[i] = 0;
     }
 
@@ -299,7 +298,7 @@ TEST(GenerateMovesTest, BlackRookMovesTests) {
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
         generatedMoves[i] = 0;
     }
 
@@ -341,7 +340,7 @@ TEST(GenerateMovesTest, WhiteRookMovesTests) {
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
         generatedMoves[i] = 0;
     }
 
@@ -382,8 +381,8 @@ TEST(GenerateMovesTest, BlackBishopMovesTests) {
     short currentPlayer = 1;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
-    
-    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
         generatedMoves[i] = 0;
     }
 
@@ -425,8 +424,8 @@ TEST(GenerateMovesTest, WhiteBishopMovesTests) {
     short currentPlayer = 0;
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
-    
-    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
         generatedMoves[i] = 0;
     }
 
@@ -468,7 +467,7 @@ TEST(GenerateMovesTest, BlackQueenMovesTests) {
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
         generatedMoves[i] = 0;
     }
 
@@ -511,7 +510,7 @@ TEST(GenerateMovesTest, WhiteQueenMovesTests) {
 
     pos64 generatedMoves[BOARDS_GENERATED * BOARD_SIZE];
 
-    for(int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
+    for (int i = 0; i < BOARDS_GENERATED * BOARD_SIZE; i++) {
         generatedMoves[i] = 0;
     }
 
