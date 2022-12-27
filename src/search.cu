@@ -77,7 +77,7 @@ __global__ void generateMovesForBoards(pos64 *boards,
     pos64 *kidsDestination = boards + (boardsCount * BOARD_SIZE) +
                              (boardsOffsets[index] * BOARD_SIZE);
 
-    generateMoves(parentDestination, kidsDestination, isWhite);
+    MOVES::generateMoves(parentDestination, kidsDestination, isWhite);
 }
 
 __global__ void gatherResultsForBoards(
@@ -116,7 +116,7 @@ __global__ void evaluateBoards(pos64 *boards, unsigned int boardCount,
         boardAddress[BLACK_KING_OFFSET] == 0) {  // is it properly handled ??
         results[index] = INF;
     } else {
-        results[index] = evaluatePosition(
+        results[index] = EVALUATION::evaluatePosition(
             boardAddress[WHITE_PAWN_OFFSET], boardAddress[WHITE_BISHOP_OFFSET],
             boardAddress[WHITE_KNIGHT_OFFSET], boardAddress[WHITE_ROOK_OFFSET],
             boardAddress[WHITE_QUEEN_OFFSET], boardAddress[WHITE_KING_OFFSET],
@@ -136,7 +136,7 @@ __global__ void preCalculateBoardsCount(pos64 *boards,
     }
 
     boardsOffsets[index] =
-        precountMoves(boards + (index * BOARD_SIZE), isWhite);
+        MOVES::precountMoves(boards + (index * BOARD_SIZE), isWhite);
 }
 
 int prepareMemory(pos64 **boards, unsigned int **offsets,
@@ -187,7 +187,7 @@ int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets,
         // secound stage - find boardsOffsets for each board to put their kids
         // there
         DBG(printf("calculate offsets offset: %d\n", offset));
-        scan(boardsOffsets + offset, runningBoards,
+        SCAN::scan(boardsOffsets + offset, runningBoards,
              (unsigned int *)(boards + (offset + runningBoards) * BOARD_SIZE),
              &levelSizes[i + 1]);  // since boards are not yet created I use the
                                    // space there as a temp table
