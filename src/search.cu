@@ -8,6 +8,8 @@
 #include "thread"
 #include "vector"
 
+namespace SEARCH {
+
 int *last;
 
 __device__ void gatherResults(int *resultsTo, int *resultsFrom, bool maximize,
@@ -237,7 +239,7 @@ void gatherResults(pos64 *boards, unsigned int *boardsOffsets,
     }
 }
 
-void search(const short &currentPlayer, pos64 *position) {
+void findBestMove(const short &currentPlayer, pos64 *position) {
     std::vector<std::thread> threads;
     int devicesCount;
     cudaGetDeviceCount(&devicesCount);
@@ -409,3 +411,4 @@ void search(const short &currentPlayer, pos64 *position) {
     cudaFree(boards);
     cudaFree(boardsOffsets);
 }
+} // namespace SEARCH

@@ -3,10 +3,14 @@
 
 #include "macros.cuh"
 
+namespace SEARCH {
+
 void init();
 
 void terminate();
 
-void search(const short& current_player, pos64* position);
+void findBestMove(const short& current_player, pos64* position);
 
-#endif
+} // namespace SEARCH
+
+#endif // #ifndef SEARCH_H_INCLUDED 

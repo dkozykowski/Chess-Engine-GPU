@@ -43,7 +43,7 @@ void loop() {
     short currentPlayer;
     int moveNum;
     newgame(currentPlayer, moveNum);
-    init();
+    SEARCH::init();
 
     std::string token, cmd;
 
@@ -83,7 +83,7 @@ void loop() {
             std::cout << "Unknown command: " << cmd << std::endl;
     } while (true);
 
-    terminate();
+    SEARCH::terminate();
 }
 
 void newgame(short &currentPlayer, int &moveNum) {
@@ -181,7 +181,7 @@ void go(short &currentPlayer, int &moveNum) {
     position[BLACK_QUEEN_OFFSET] = blackQueens;
     position[BLACK_KING_OFFSET] = blackKings;
 
-    search(currentPlayer, position);
+    SEARCH::findBestMove(currentPlayer, position);
 
     pos64 new_whitePawns = position[WHITE_PAWN_OFFSET];
     pos64 new_whiteBishops = position[WHITE_BISHOP_OFFSET];

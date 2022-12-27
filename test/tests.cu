@@ -129,7 +129,7 @@ TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForWhite) {
     short currentPlayer = 0;
     // when
     init();
-    search(currentPlayer, position);
+    findBestMove(currentPlayer, position);
     terminate();
 
     pos64 basePosition[BOARD_SIZE];
@@ -165,7 +165,7 @@ TEST(SearchForBestMovesTest, StartPositionBestMoveSearchForBlack) {
     short currentPlayer = 1;
     // when
     init();
-    search(currentPlayer, position);
+    findBestMove(currentPlayer, position);
     terminate();
 
     pos64 basePosition[BOARD_SIZE];
