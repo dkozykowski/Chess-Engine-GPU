@@ -12,10 +12,23 @@ namespace SEARCH {
 
 int *last;
 
+/**
+ * Calculates best moves for node based on precalculated results for sons.
+ *
+ * @param[out] resultsTo Pointer which found best result evaluation is written
+ * to.
+ * @param resultsFrom Pointer to array with precalculated evaluation results for
+ * sons.
+ * @param maximize Wheather the node shoud maximize or minimize sons
+ * evaluations.
+ * @param[out] last Pointer to global last value holding index of best son for
+ * last node.
+ * @param boardCount Number of sons.
+ */
 __device__ void gatherResults(int *resultsTo, int *resultsFrom, bool maximize,
                               int *last, int boardCount) {
     int result;
-    if (maximize) {  // maximizing
+    if (maximize) {
         result = -INF;
         for (int i = 0; i < boardCount; i++) {
             if (resultsFrom[i] != INF && resultsFrom[i] != -INF &&
@@ -24,7 +37,7 @@ __device__ void gatherResults(int *resultsTo, int *resultsFrom, bool maximize,
                 *last = i;
             }
         }
-    } else {  // minimizing
+    } else {
         result = INF;
         for (int i = 0; i < boardCount; i++) {
             if (resultsFrom[i] != INF && resultsFrom[i] != -INF &&
@@ -37,16 +50,28 @@ __device__ void gatherResults(int *resultsTo, int *resultsFrom, bool maximize,
     *resultsTo = result;
 }
 
+/**
+ * Allocates and initializes tables for search engine.
+ */
 void init() {
     cudaSetDevice(0);
     CHECK_ALLOC(cudaMalloc(&last, sizeof(int)));
 }
 
+/**
+ * Frees search engine tables.
+ */
 void terminate() {
     cudaSetDevice(0);
     cudaFree(last);
 }
 
+/**
+ * Calculates optimal blocks and threads structure for given boards number.
+ *
+ * @param boards Number of boards.
+ * @return dim3 structure holding blocks and threads number
+ */
 dim3 getBlocksCount2d(int boards) {
     return dim3(MAX_BLOCKS_PER_DIMENSION,
                 boards % MAX_BLOCKS_PER_DIMENSION == 0
@@ -54,6 +79,15 @@ dim3 getBlocksCount2d(int boards) {
                     : boards / MAX_BLOCKS_PER_DIMENSION + 1);
 }
 
+/**
+ * Calculates best moves for node based on precalculated results for sons.
+ *
+ * @param[out] threads Pointer to int storing optimal number of threads for
+ * boardCount.
+ * @param[out] blocks Pointer to int storing optimal number of blocks for
+ * boardCount.
+ * @param boardCount Number of boards.
+ */
 void setThreadAndBlocksCount(int *threads, dim3 *blocks, int boardCount) {
     if (boardCount <= MAX_THREADS) {
         *threads = boardCount;
@@ -67,6 +101,18 @@ void setThreadAndBlocksCount(int *threads, dim3 *blocks, int boardCount) {
     }
 }
 
+/**
+ * Generates all valid moves for given position.
+ *
+ * @param boards Pointer to array where board positions are stored. Points to
+ * the first board of the boards, that is used to generate another level of the
+ * three and childeren are stored behind parents in the array.
+ * @param boardsOffset Pointer to array storing offsets where boards for each
+ * node in @ref boards array starts.
+ * @param isWhite Wheather the considered node is on odd level. (eg. true for
+ * level 1, false for level 2, and so on).
+ * @param boardsCount Number of sons that will be generated for considered node.
+ */
 __global__ void generateMovesForBoards(pos64 *boards,
                                        unsigned int *boardsOffsets,
                                        bool isWhite, int boardsCount) {
@@ -80,10 +126,21 @@ __global__ void generateMovesForBoards(pos64 *boards,
     MOVES::generateMoves(parentDestination, kidsDestination, isWhite);
 }
 
+/**
+ * Calculates best moves for nodes based on precalculated results for their
+ * sons.
+ *
+ * @param[out] results Pointer to array with results for each node.
+ * @param boardsOffset Pointer to the array with boards for each parent node.
+ * @param currentLevelBoardCount Number of boards on the considered level of
+ * MIN-MAX tree (parent nodes).
+ * @param lowerLevelBoardCount Number of boards on the level below considered
+ * one (childreen nodes).
+ */
 __global__ void gatherResultsForBoards(
     int *results, unsigned int *boardsOffsets,
     unsigned int currentLevelBoardCount,
-    unsigned int lowerLevelBoardCount,  // count of lower level
+    unsigned int lowerLevelBoardCount,
     bool maximizing, int *last) {
     pos64 index = blockIdx.x * blockDim.x + threadIdx.x;
     if (index >= currentLevelBoardCount) {
@@ -104,6 +161,13 @@ __global__ void gatherResultsForBoards(
                   kidsBoardCount);
 }
 
+/**
+ * Calculates evaluation for each given boards.
+ *
+ * @param boards Pointer to array of boards to evaluate.
+ * @param boardCount Number of boards to evaluate.
+ * @param[out] results Pointer to array to put calculated results.
+ */
 __global__ void evaluateBoards(pos64 *boards, unsigned int boardCount,
                                int *results) {
     int blockId = blockIdx.y * gridDim.x + blockIdx.x;
@@ -113,7 +177,7 @@ __global__ void evaluateBoards(pos64 *boards, unsigned int boardCount,
     }
     pos64 *boardAddress = boards + (index * BOARD_SIZE);
     if (boardAddress[WHITE_KING_OFFSET] == 0 &&
-        boardAddress[BLACK_KING_OFFSET] == 0) {  // is it properly handled ??
+        boardAddress[BLACK_KING_OFFSET] == 0) {
         results[index] = INF;
     } else {
         results[index] = EVALUATION::evaluatePosition(
@@ -126,6 +190,16 @@ __global__ void evaluateBoards(pos64 *boards, unsigned int boardCount,
     }
 }
 
+/**
+ * Calculates number of valid moves for each board.
+ *
+ * @param boards Pointer to array of boards.
+ * @param boardsOffset Pointer to array storing offsets where boards for each
+ * node in @ref boards array starts.
+ * @param isWhite Wheather the considered node is on odd level. (eg. true for
+ * level 1, false for level 2, and so on).
+ * @param boardCount Pointer to array to put calculated results.
+ */
 __global__ void preCalculateBoardsCount(pos64 *boards,
                                         unsigned int *boardsOffsets,
                                         bool isWhite, int boardCount) {
@@ -139,6 +213,17 @@ __global__ void preCalculateBoardsCount(pos64 *boards,
         MOVES::precountMoves(boards + (index * BOARD_SIZE), isWhite);
 }
 
+/**
+ * Calculate and allocate required memory for arrays.
+ *
+ * @param[out] boards Pointer to place in memory where array of boards will be
+ * allocated.
+ * @param[out] boardsOffset Pointer to place in memory where array storing
+ * offsets where boards for each node in @ref boards array starts will be
+ * allocated.
+ * @param[out] levelSizes Pointer to place in memory where array with number of
+ * nodes on each level of MIN-MAX tree will be allocated.
+ */
 int prepareMemory(pos64 **boards, unsigned int **offsets,
                   unsigned int **levelSizes) {
     gpuErrchk(cudaMallocManaged(levelSizes, sizeof(int) * MAX_POSSIBLE_DEPTH));
@@ -161,6 +246,20 @@ int prepareMemory(pos64 **boards, unsigned int **offsets,
     return maxBoardCount;
 }
 
+/**
+ * Generates MIN-MAX tree.
+ *
+ * @param boards Pointer to array of boards.
+ * @param boardsOffset Pointer to array storing offsets where boards for each
+ * node in @ref boards array starts.
+ * @param levelSizes Pointer to array storing number of nodes of each level of
+ * the MIN-MAX tree.
+ * @param[out] depthFound Pointer to number storing the maximum depth that was
+ * reached in MIN-MAX tree.
+ * @param maxBoardsCount Maximum number of boards that the generated MIN-MAX
+ * tree should have.
+ * @param isFirstStage Wheather it is first or second stage of the algorithm.
+ */
 int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets,
                        unsigned int *levelSizes, int *depthFound, bool *isWhite,
                        int maxBoardsCount, bool isFirstStage) {
@@ -185,13 +284,12 @@ int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets,
         gpuErrchk(cudaPeekAtLastError());
 
         // secound stage - find boardsOffsets for each board to put their kids
-        // there
         DBG(printf("calculate offsets offset: %d\n", offset));
         SCAN::scan(
             boardsOffsets + offset, runningBoards,
             (unsigned int *)(boards + (offset + runningBoards) * BOARD_SIZE),
-            &levelSizes[i + 1]);  // since boards are not yet created I use the
-                                  // space there as a temp table
+            &levelSizes[i + 1]);  // since boards are not yet created the space there
+                                  // is used as a temp table
 
         DBG(printf("boardCount on depth %d, %u\n", i, levelSizes[i + 1]));
 
@@ -217,6 +315,23 @@ int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets,
     return offset;
 }
 
+/**
+ * Calculate MIN-MAX tree result using standard algorithm.
+ *
+ * @param boards Pointer to array of boards.
+ * @param boardsOffset Pointer to array storing offsets where boards for each
+ * node in @ref boards array starts.
+ * @param levelSizes Pointer to array storing number of nodes of each level of
+ * the MIN-MAX tree.
+ * @param depthFound Number storing the maximum depth that was reached in
+ * MIN-MAX tree.
+ * @param[out] localLast Pointer to number storing index of the best result for
+ * root node, used to find best move.
+ * @param offsetToLastLevel Number of nodes between root node and first node of
+ * the last level of MIN-MAX tree.
+ * @param maximizing Wheather considered node should maximize or minimize
+ * results from sons.
+ */
 void gatherResults(pos64 *boards, unsigned int *boardsOffsets,
                    unsigned int *levelSizes, int depthFound, int *localLast,
                    int offsetToLastLevel, bool maximizing) {
@@ -233,13 +348,22 @@ void gatherResults(pos64 *boards, unsigned int *boardsOffsets,
             (int *)(boardsOffsets + offset), boardsOffsets + offset,
             runningBoards, levelSizes[i + 1], maximizing,
             localLast);  // since each thread uses the offset only once and then
-                         // writes to one place i can just swap the values here
+                         // writes to one place the values here can just be swapped
         gpuErrchk(cudaDeviceSynchronize());
         gpuErrchk(cudaPeekAtLastError());
         maximizing = !maximizing;
     }
 }
 
+/**
+ * Finds best move for given position.
+ *
+ * @param currentPlayer Player whose currently turn to move is ( @ref WHITE for
+ * white, @ref BLACK for black)
+ * @param position[in, out] Pointer to structure holding position for which
+ * optimal move should be found. After finding the most optimal move, the
+ * position is overriden with the so found move.
+ */
 void findBestMove(const short &currentPlayer, pos64 *position) {
     std::vector<std::thread> threads;
     int devicesCount;
@@ -263,8 +387,8 @@ void findBestMove(const short &currentPlayer, pos64 *position) {
                          MAX_THREADS>>>(
             boards + offset * BOARD_SIZE, levelSizes[firstStageDepth],
             (int *)(boardsOffsets + offset));  // since last level doesnt use
-                                               // offsets board i use it for
-                                               // keeping evaluation
+                                               // offsets board it might be used
+                                               // for keeping the evaluation
         gpuErrchk(cudaDeviceSynchronize());
         gpuErrchk(cudaPeekAtLastError());
 
@@ -356,8 +480,8 @@ void findBestMove(const short &currentPlayer, pos64 *position) {
                 secStageLevelSizes[depthFound],
                 (int *)(boardsOffsets +
                         tempOffset));  // since last level doesnt use
-                                       // offsets board i use it for
-                                       // keeping evaluation
+                                       // offsets board it is used
+                                       // to keep the evaluation
             gpuErrchk(cudaDeviceSynchronize());
             gpuErrchk(cudaPeekAtLastError());
 
