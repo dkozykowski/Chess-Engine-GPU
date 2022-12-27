@@ -9,4 +9,6 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
 
 __device__ int precountMoves(pos64 *startingBoards, bool isWhite);
 
+__device__ int pre_count_moves(pos64 *starting_boards, bool isWhite);
+
 #endif
