@@ -1,5 +1,5 @@
 #include <algorithm>
-#include <macros.cuh>
+#include "macros.cuh"
 
 namespace SCAN {
 
