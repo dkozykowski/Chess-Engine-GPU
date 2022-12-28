@@ -5,37 +5,9 @@ namespace POSITION {
 /**
  * Pretty-prints the given board on the console.
  *
- * @param whitePawns Stores the position of white pawns on the board to
- * evaluate.
- * @param whiteBishops Stores the position of white bishops on the board to
- * evaluate.
- * @param whiteKnights Stores the position of white knights on the board to
- * evaluate.
- * @param whiteRooks Stores the position of white rooks on the board to
- * evaluate.
- * @param whiteQueens Stores the position of white queens on the board to
- * evaluate.
- * @param whiteKings Stores the position of white kings on the board to
- * evaluate.
- * @param blackPawns Stores the position of black pawns on the board to
- * evaluate.
- * @param blackBishops Stores the position of black bishops on the board to
- * evaluate.
- * @param blackKnights Stores the position of black knights on the board to
- * evaluate.
- * @param blackRooks Stores the position of black rooks on the board to
- * evaluate.
- * @param blackQueens Stores the position of black queens on the board to
- * evaluate.
- * @param blackKings Stores the position of black kings on the board to
- * evaluate.
+ * @param position Pointer to array storing the positions of chess pieces.
  */
-void printPosition(const pos64& whitePawns, const pos64& whiteBishops,
-                   const pos64& whiteKnights, const pos64& whiteRooks,
-                   const pos64& whiteQueens, const pos64& whiteKings,
-                   const pos64& blackPawns, const pos64& blackBishops,
-                   const pos64& blackKnights, const pos64& blackRooks,
-                   const pos64& blackQueens, const pos64& blackKings) {
+void printPosition(pos64 *position) {
     printf(" +---+---+---+---+---+---+---+---+\n");
 
     for (int row = 7; row >= 0; row--) {
@@ -43,30 +15,30 @@ void printPosition(const pos64& whitePawns, const pos64& whiteBishops,
             pos64 pos = ((pos64)1) << (column + (row << 3));
             char printableSign = ' ';
 
-            if ((whitePawns & pos) != 0)
+            if ((position[WHITE_PAWN_OFFSET] & pos) != 0)
                 printableSign = 'p';
-            else if ((whiteBishops & pos) != 0)
+            else if ((position[WHITE_BISHOP_OFFSET] & pos) != 0)
                 printableSign = 'b';
-            else if ((whiteKnights & pos) != 0)
+            else if ((position[WHITE_KNIGHT_OFFSET] & pos) != 0)
                 printableSign = 'n';
-            else if ((whiteRooks & pos) != 0)
+            else if ((position[WHITE_ROOK_OFFSET] & pos) != 0)
                 printableSign = 'r';
-            else if ((whiteQueens & pos) != 0)
+            else if ((position[WHITE_QUEEN_OFFSET] & pos) != 0)
                 printableSign = 'q';
-            else if ((whiteKings & pos) != 0)
+            else if ((position[WHITE_KING_OFFSET] & pos) != 0)
                 printableSign = 'k';
 
-            else if ((blackPawns & pos) != 0)
+            else if ((position[BLACK_PAWN_OFFSET] & pos) != 0)
                 printableSign = 'P';
-            else if ((blackBishops & pos) != 0)
+            else if ((position[BLACK_BISHOP_OFFSET] & pos) != 0)
                 printableSign = 'B';
-            else if ((blackKnights & pos) != 0)
+            else if ((position[BLACK_KNIGHT_OFFSET] & pos) != 0)
                 printableSign = 'N';
-            else if ((blackRooks & pos) != 0)
+            else if ((position[BLACK_ROOK_OFFSET] & pos) != 0)
                 printableSign = 'R';
-            else if ((blackQueens & pos) != 0)
+            else if ((position[BLACK_QUEEN_OFFSET] & pos) != 0)
                 printableSign = 'Q';
-            else if ((blackKings & pos) != 0)
+            else if ((position[BLACK_KING_OFFSET] & pos) != 0)
                 printableSign = 'K';
 
             if (column == 0)
@@ -81,50 +53,24 @@ void printPosition(const pos64& whitePawns, const pos64& whiteBishops,
     printf("   a   b   c   d   e   f   g   h\n");
 }
 
-void swap(pos64& a, pos64& b) {
-    pos64 c = a;
-    a = b;
-    b = c;
+void swap(pos64* a, pos64* b) {
+    pos64 c = *a;
+    *a = *b;
+    *b = c;
 }
 
 /**
  * Flips the colors of pieces to the opposite.
  *
- * @param whitePawns Stores the position of white pawns on the board to
- * evaluate.
- * @param whiteBishops Stores the position of white bishops on the board to
- * evaluate.
- * @param whiteKnights Stores the position of white knights on the board to
- * evaluate.
- * @param whiteRooks Stores the position of white rooks on the board to
- * evaluate.
- * @param whiteQueens Stores the position of white queens on the board to
- * evaluate.
- * @param whiteKings Stores the position of white kings on the board to
- * evaluate.
- * @param blackPawns Stores the position of black pawns on the board to
- * evaluate.
- * @param blackBishops Stores the position of black bishops on the board to
- * evaluate.
- * @param blackKnights Stores the position of black knights on the board to
- * evaluate.
- * @param blackRooks Stores the position of black rooks on the board to
- * evaluate.
- * @param blackQueens Stores the position of black queens on the board to
- * evaluate.
- * @param blackKings Stores the position of black kings on the board to
- * evaluate.
+ * @param[out] position Pointer to array of pointers pointing to place in memory with positions of chess pieces.
  */
-void flipPosition(pos64& whitePawns, pos64& whiteBishops, pos64& whiteKnights,
-                  pos64& whiteRooks, pos64& whiteQueens, pos64& whiteKings,
-                  pos64& blackPawns, pos64& blackBishops, pos64& blackKnights,
-                  pos64& blackRooks, pos64& blackQueens, pos64& blackKings) {
-    swap(whitePawns, blackPawns);
-    swap(whiteBishops, blackBishops);
-    swap(whiteKnights, blackKnights);
-    swap(whiteRooks, blackRooks);
-    swap(whiteQueens, blackQueens);
-    swap(whiteKings, blackKings);
+void flipPosition(pos64 **position) {
+    swap(position[WHITE_PAWN_OFFSET], position[BLACK_PAWN_OFFSET]);
+    swap(position[WHITE_BISHOP_OFFSET], position[BLACK_BISHOP_OFFSET]);
+    swap(position[WHITE_KNIGHT_OFFSET], position[BLACK_KNIGHT_OFFSET]);
+    swap(position[WHITE_ROOK_OFFSET], position[BLACK_ROOK_OFFSET]);
+    swap(position[WHITE_QUEEN_OFFSET], position[BLACK_QUEEN_OFFSET]);
+    swap(position[WHITE_KING_OFFSET], position[BLACK_KING_OFFSET]);
 }
 
 /**
@@ -134,41 +80,29 @@ void flipPosition(pos64& whitePawns, pos64& whiteBishops, pos64& whiteKnights,
  * @param fromRow Index of row where the piece to move is.
  * @param toCol Index of column where the piece will be moved to.
  * @param toRow Index of row where the piece will be moved to.
- * @param whitePawns Stores the position of white pawns on the board to
- * evaluate.
- * @param whiteBishops Stores the position of white bishops on the board to
- * evaluate.
- * @param whiteKnights Stores the position of white knights on the board to
- * evaluate.
- * @param whiteRooks Stores the position of white rooks on the board to
- * evaluate.
- * @param whiteQueens Stores the position of white queens on the board to
- * evaluate.
- * @param whiteKings Stores the position of white kings on the board to
- * evaluate.
- * @param blackPawns Stores the position of black pawns on the board to
- * evaluate.
- * @param blackBishops Stores the position of black bishops on the board to
- * evaluate.
- * @param blackKnights Stores the position of black knights on the board to
- * evaluate.
- * @param blackRooks Stores the position of black rooks on the board to
- * evaluate.
- * @param blackQueens Stores the position of black queens on the board to
- * evaluate.
- * @param blackKings Stores the position of black kings on the board to
- * evaluate.
+ * @param[out] position Pointer to array of pointers pointing to place in memory with positions of chess pieces.
  */
 void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
                const int& toRow, short& currentPlayer, pos64& whitePawns,
-               pos64& whiteBishops, pos64& whiteKnights, pos64& whiteRooks,
-               pos64& whiteQueens, pos64& whiteKings, pos64& blackPawns,
-               pos64& blackBishops, pos64& blackKnights, pos64& blackRooks,
-               pos64& blackQueens, pos64& blackKings) {
+               pos64 **position) {
     pos64 from = ((pos64(1)) << (fromCol + (fromRow << 3)));
     pos64 to = ((pos64(1)) << (toCol + (toRow << 3)));
 
     pos64 toMask = (ALL_SET ^ to);
+
+    pos64& whitePawns = *position[WHITE_PAWN_OFFSET];
+    pos64& whiteBishops = *position[WHITE_BISHOP_OFFSET];
+    pos64& whiteKnights = *position[WHITE_KNIGHT_OFFSET];
+    pos64& whiteRooks = *position[WHITE_ROOK_OFFSET];
+    pos64& whiteQueens = *position[WHITE_QUEEN_OFFSET];
+    pos64& whiteKings = *position[WHITE_KING_OFFSET];
+
+    pos64& blackPawns = *position[BLACK_PAWN_OFFSET];
+    pos64& blackBishops = *position[BLACK_BISHOP_OFFSET];
+    pos64& blackKnights = *position[BLACK_KNIGHT_OFFSET];
+    pos64& blackRooks = *position[BLACK_ROOK_OFFSET];
+    pos64& blackQueens = *position[BLACK_QUEEN_OFFSET];
+    pos64& blackKings = *position[BLACK_KING_OFFSET];
 
     whitePawns &= toMask;
     whiteBishops &= toMask;

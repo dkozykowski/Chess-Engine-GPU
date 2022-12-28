@@ -139,41 +139,26 @@ __device__ int egKingTable[64] = {
 /**
  * Evaluates the given position.
  *
- * @param whitePawns Stores the position of white pawns on the board to
- * evaluate.
- * @param whiteBishops Stores the position of white bishops on the board to
- * evaluate.
- * @param whiteKnights Stores the position of white knights on the board to
- * evaluate.
- * @param whiteRooks Stores the position of white rooks on the board to
- * evaluate.
- * @param whiteQueens Stores the position of white queens on the board to
- * evaluate.
- * @param whiteKings Stores the position of white kings on the board to
- * evaluate.
- * @param blackPawns Stores the position of black pawns on the board to
- * evaluate.
- * @param blackBishops Stores the position of black bishops on the board to
- * evaluate.
- * @param blackKnights Stores the position of black knights on the board to
- * evaluate.
- * @param blackRooks Stores the position of black rooks on the board to
- * evaluate.
- * @param blackQueens Stores the position of black queens on the board to
- * evaluate.
- * @param blackKings Stores the position of black kings on the board to
- * evaluate.
+ * @param position Pointer to array storing the positions of chess pieces.
  */
-__device__ int evaluatePosition(
-    const pos64& whitePawns, const pos64& whiteBishops,
-    const pos64& whiteKnights, const pos64& whiteRooks,
-    const pos64& whiteQueens, const pos64& whiteKings, const pos64& blackPawns,
-    const pos64& blackBishops, const pos64& blackKnights,
-    const pos64& blackRooks, const pos64& blackQueens,
-    const pos64& blackKings) {
+__device__ int evaluatePosition(pos64 *position) {
     int gamePhase = 0;
     int midgameScore = 0;
     int endgameScore = 0;
+
+    pos64 whitePawns = position[WHITE_PAWN_OFFSET];
+    pos64 whiteBishops = position[WHITE_BISHOP_OFFSET];
+    pos64 whiteKnights = position[WHITE_KNIGHT_OFFSET];
+    pos64 whiteRooks = position[WHITE_ROOK_OFFSET];
+    pos64 whiteQueens = position[WHITE_QUEEN_OFFSET];
+    pos64 whiteKings = position[WHITE_KING_OFFSET];
+
+    pos64 blackPawns = position[BLACK_PAWN_OFFSET];
+    pos64 blackBishops = position[BLACK_BISHOP_OFFSET];
+    pos64 blackKnights = position[BLACK_KNIGHT_OFFSET];
+    pos64 blackRooks = position[BLACK_ROOK_OFFSET];
+    pos64 blackQueens = position[BLACK_QUEEN_OFFSET];
+    pos64 blackKings = position[BLACK_KING_OFFSET];
 
     /* evaluate each piece */
     pos64 pos = 1;
