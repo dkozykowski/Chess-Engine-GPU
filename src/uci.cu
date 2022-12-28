@@ -25,7 +25,6 @@ pos64 blackRooks;
 pos64 blackQueens;
 pos64 blackKings;
 
-
 /**
  * Restarts the game state. Restores default position and current player.
  *
@@ -55,8 +54,8 @@ void newgame(short &currentPlayer, int &moveNum) {
  * Reads move code from console and move proper piece to given place.
  *
  * @param is Input stream from console from which the move code will be read.
- * @param[out] currentPlayer Player whose currently turn to move is ( @ref WHITE for
- * white, @ref BLACK for black).
+ * @param[out] currentPlayer Player whose currently turn to move is ( @ref WHITE
+ * for white, @ref BLACK for black).
  * @param[out] moveNum Number of moves made in the current game.
  */
 void move(std::istringstream &is, short &currentPlayer, int &moveNum) {
@@ -95,7 +94,8 @@ void move(std::istringstream &is, short &currentPlayer, int &moveNum) {
     position[BLACK_QUEEN_OFFSET] = &blackQueens;
     position[BLACK_KING_OFFSET] = &blackKings;
 
-    POSITION::moveChess(fromCol, fromRow, toCol, toRow, currentPlayer, position);
+    POSITION::moveChess(fromCol, fromRow, toCol, toRow, currentPlayer,
+                        position);
     moveNum++;
     currentPlayer ^= 1;
 }
@@ -128,13 +128,13 @@ void printGame(short currentPlayer, int moveNum) {
     POSITION::printPosition(position);
 }
 
-__global__ void eval(int *result, pos64 * position) {                 
+__global__ void eval(int *result, pos64 *position) {
     *result = EVALUATION::evaluatePosition(position);
 }
 
 void printEval() {
     int *dResult, *hResult;
-    pos64 * dPosition;
+    pos64 *dPosition;
     hResult = new int;
 
     pos64 position[12];
@@ -187,7 +187,8 @@ std::string getMoveString(pos64 currentPos, pos64 newPos) {
 }
 
 /**
- * Runs engine function searching for the best possible move and prints it to the console.
+ * Runs engine function searching for the best possible move and prints it to
+ * the console.
  *
  * @param currentPlayer Player whose currently turn to move is ( @ref WHITE for
  * white, @ref BLACK for black).

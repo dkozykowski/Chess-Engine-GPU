@@ -7,7 +7,7 @@ namespace POSITION {
  *
  * @param position Pointer to array storing the positions of chess pieces.
  */
-void printPosition(pos64 *position) {
+void printPosition(pos64* position) {
     printf(" +---+---+---+---+---+---+---+---+\n");
 
     for (int row = 7; row >= 0; row--) {
@@ -66,10 +66,11 @@ void swap(pos64* a, pos64* b) {
  * @param fromRow Index of row where the piece to move is.
  * @param toCol Index of column where the piece will be moved to.
  * @param toRow Index of row where the piece will be moved to.
- * @param[out] position Pointer to array of pointers pointing to place in memory with positions of chess pieces.
+ * @param[out] position Pointer to array of pointers pointing to place in memory
+ * with positions of chess pieces.
  */
 void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
-               const int& toRow, short& currentPlayer, pos64 **position) {
+               const int& toRow, short& currentPlayer, pos64** position) {
     pos64 from = ((pos64(1)) << (fromCol + (fromRow << 3)));
     pos64 to = ((pos64(1)) << (toCol + (toRow << 3)));
 
