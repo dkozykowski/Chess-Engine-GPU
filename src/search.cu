@@ -180,13 +180,7 @@ __global__ void evaluateBoards(pos64 *boards, unsigned int boardCount,
         boardAddress[BLACK_KING_OFFSET] == 0) {
         results[index] = INF;
     } else {
-        results[index] = EVALUATION::evaluatePosition(
-            boardAddress[WHITE_PAWN_OFFSET], boardAddress[WHITE_BISHOP_OFFSET],
-            boardAddress[WHITE_KNIGHT_OFFSET], boardAddress[WHITE_ROOK_OFFSET],
-            boardAddress[WHITE_QUEEN_OFFSET], boardAddress[WHITE_KING_OFFSET],
-            boardAddress[BLACK_PAWN_OFFSET], boardAddress[BLACK_BISHOP_OFFSET],
-            boardAddress[BLACK_KNIGHT_OFFSET], boardAddress[BLACK_ROOK_OFFSET],
-            boardAddress[BLACK_QUEEN_OFFSET], boardAddress[BLACK_KING_OFFSET]);
+        results[index] = EVALUATION::evaluatePosition(boardAddress);
     }
 }
 
