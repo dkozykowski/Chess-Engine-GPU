@@ -25,6 +25,13 @@ pos64 blackRooks;
 pos64 blackQueens;
 pos64 blackKings;
 
+
+/**
+ * Restarts the game state. Restores default position and current player.
+ *
+ * @param currentPlayer Number indicating current player, will be set to WHITE.
+ * @param moveNum Number of moves made in the game, will be set to 0.
+ */
 void newgame(short &currentPlayer, int &moveNum) {
     whitePawns = WHITE_PAWN_STARTING_POS;
     whiteBishops = WHITE_BISHOP_STARTING_POS;
@@ -44,6 +51,14 @@ void newgame(short &currentPlayer, int &moveNum) {
     moveNum = 0;
 }
 
+/**
+ * Reads move code from console and move proper piece to given place.
+ *
+ * @param is Input stream from console from which the move code will be read.
+ * @param[out] currentPlayer Player whose currently turn to move is ( @ref WHITE for
+ * white, @ref BLACK for black).
+ * @param[out] moveNum Number of moves made in the current game.
+ */
 void move(std::istringstream &is, short &currentPlayer, int &moveNum) {
     std::string moveToken;
     is >> std::skipws >> moveToken;
@@ -85,6 +100,13 @@ void move(std::istringstream &is, short &currentPlayer, int &moveNum) {
     currentPlayer ^= 1;
 }
 
+/**
+ * Prints the current state of the game to the console.
+ *
+ * @param currentPlayer Player whose currently turn to move is ( @ref WHITE for
+ * white, @ref BLACK for black).
+ * @param moveNum Number of moves made in the current game.
+ */
 void printGame(short currentPlayer, int moveNum) {
     printf("Move number %d\n", moveNum);
     printf("Current player - %s\n", currentPlayer == WHITE ? "White" : "Black");
@@ -164,6 +186,13 @@ std::string getMoveString(pos64 currentPos, pos64 newPos) {
     return result;
 }
 
+/**
+ * Runs engine function searching for the best possible move and prints it to the console.
+ *
+ * @param currentPlayer Player whose currently turn to move is ( @ref WHITE for
+ * white, @ref BLACK for black).
+ * @param moveNum Number of moves made in the current game.
+ */
 void go(short &currentPlayer, int &moveNum) {
     pos64 *position = new pos64[12];
     position[WHITE_PAWN_OFFSET] = whitePawns;
@@ -211,6 +240,12 @@ void go(short &currentPlayer, int &moveNum) {
     }
 }
 
+/**
+ * Prints all valid moves for current position to the console.
+ *
+ * @param currentPlayer Player whose currently turn to move is ( @ref WHITE for
+ * white, @ref BLACK for black).
+ */
 void printMoves(short currentPlayer) {
     pos64 position[12];
     position[WHITE_PAWN_OFFSET] = whitePawns;
@@ -243,6 +278,9 @@ void printMoves(short currentPlayer) {
     free(generatedBoards);
 }
 
+/**
+ * Main engine loop. Waits for commands and runs adequate functions.
+ */
 void loop() {
     short currentPlayer;
     int moveNum;
