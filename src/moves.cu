@@ -1218,3 +1218,5 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
 
         movingQueens = resetLeastSignificantBit(movingQueens);
     }
+}
+} namespace MOVES
