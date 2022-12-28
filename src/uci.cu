@@ -181,23 +181,7 @@ void go(short &currentPlayer, int &moveNum) {
 
     SEARCH::findBestMove(currentPlayer, position);
 
-    pos64 new_whitePawns = position[WHITE_PAWN_OFFSET];
-    pos64 new_whiteBishops = position[WHITE_BISHOP_OFFSET];
-    pos64 new_whiteKnights = position[WHITE_KNIGHT_OFFSET];
-    pos64 new_whiteRooks = position[WHITE_ROOK_OFFSET];
-    pos64 new_whiteQueens = position[WHITE_QUEEN_OFFSET];
-    pos64 new_whiteKings = position[WHITE_KING_OFFSET];
-    pos64 new_blackPawns = position[BLACK_PAWN_OFFSET];
-    pos64 new_blackBishops = position[BLACK_BISHOP_OFFSET];
-    pos64 new_blackKnights = position[BLACK_KNIGHT_OFFSET];
-    pos64 new_blackRooks = position[BLACK_ROOK_OFFSET];
-    pos64 new_blackQueens = position[BLACK_QUEEN_OFFSET];
-    pos64 new_blackKings = position[BLACK_KING_OFFSET];
-
-    DBG2(POSITION::printPosition(
-        new_whitePawns, new_whiteBishops, new_whiteKnights, new_whiteRooks,
-        new_whiteQueens, new_whiteKings, new_blackPawns, new_blackBishops,
-        new_blackKnights, new_blackRooks, new_blackQueens, new_blackKings));
+    DBG2(POSITION::printPosition(position));
 
     if (currentPlayer == WHITE) {
         pos64 currentPos = whitePawns | whiteBishops | whiteKnights |
