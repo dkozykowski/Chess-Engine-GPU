@@ -3,7 +3,7 @@
 
 namespace EVALUATION {
 
-// piece_square tables
+// mg - mid-game, eg - end-game
 __device__ int mgPawnTable[64] = {
      82,  82,  82,  82,  82,  82,  82, 82, 
     180, 216, 143, 177, 150, 208, 116, 71, 
@@ -136,16 +136,29 @@ __device__ int egKingTable[64] = {
     2947, 2966, 2979, 2989, 2972, 2986, 2976, 2957
 };
 
-__device__ int evaluatePosition(
-    const pos64& whitePawns, const pos64& whiteBishops,
-    const pos64& whiteKnights, const pos64& whiteRooks,
-    const pos64& whiteQueens, const pos64& whiteKings, const pos64& blackPawns,
-    const pos64& blackBishops, const pos64& blackKnights,
-    const pos64& blackRooks, const pos64& blackQueens,
-    const pos64& blackKings) {
+/**
+ * Evaluates the given position.
+ *
+ * @param position Pointer to array storing the positions of chess pieces.
+ */
+__device__ int evaluatePosition(pos64 *position) {
     int gamePhase = 0;
     int midgameScore = 0;
     int endgameScore = 0;
+
+    pos64 whitePawns = position[WHITE_PAWN_OFFSET];
+    pos64 whiteBishops = position[WHITE_BISHOP_OFFSET];
+    pos64 whiteKnights = position[WHITE_KNIGHT_OFFSET];
+    pos64 whiteRooks = position[WHITE_ROOK_OFFSET];
+    pos64 whiteQueens = position[WHITE_QUEEN_OFFSET];
+    pos64 whiteKings = position[WHITE_KING_OFFSET];
+
+    pos64 blackPawns = position[BLACK_PAWN_OFFSET];
+    pos64 blackBishops = position[BLACK_BISHOP_OFFSET];
+    pos64 blackKnights = position[BLACK_KNIGHT_OFFSET];
+    pos64 blackRooks = position[BLACK_ROOK_OFFSET];
+    pos64 blackQueens = position[BLACK_QUEEN_OFFSET];
+    pos64 blackKings = position[BLACK_KING_OFFSET];
 
     /* evaluate each piece */
     pos64 pos = 1;

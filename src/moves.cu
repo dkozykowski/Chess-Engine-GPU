@@ -415,6 +415,16 @@ __device__ int precountMoves(pos64 *startingBoards, bool isWhite) {
     return generatedMoves;
 }
 
+/**
+ * Generates moves for given positions.
+ *
+ * @param startingBoards Pointer to array holding boards with positions of
+ * pieces.
+ * @param generatedBoardsSpace Pointer to array where generated moves should be
+ * written.
+ * @param isWhite Wheather the considered node is on odd level. (eg. true for
+ * level 1, false for level 2, and so on).
+ */
 __host__ __device__ void generateMoves(pos64 *startingBoards,
                                        pos64 *generatedBoardsSpace,
                                        bool isWhite) {
