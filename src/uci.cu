@@ -67,7 +67,18 @@ void move(std::istringstream &is, short &currentPlayer, int &moveNum) {
 
     pos64 *position[12];
     position[WHITE_PAWN_OFFSET] = &whitePawns;
+    position[WHITE_BISHOP_OFFSET] = &whiteBishops;
+    position[WHITE_ROOK_OFFSET] = &whiteRooks;
+    position[WHITE_KNIGHT_OFFSET] = &whiteKnights;
+    position[WHITE_QUEEN_OFFSET] = &whiteQueens;
+    position[WHITE_KING_OFFSET] = &whiteKings;
 
+    position[BLACK_PAWN_OFFSET] = &blackPawns;
+    position[BLACK_BISHOP_OFFSET] = &blackBishops;
+    position[BLACK_ROOK_OFFSET] = &blackRooks;
+    position[BLACK_KNIGHT_OFFSET] = &blackKnights;
+    position[BLACK_QUEEN_OFFSET] = &blackQueens;
+    position[BLACK_KING_OFFSET] = &blackKings;
 
     POSITION::moveChess(fromCol, fromRow, toCol, toRow, currentPlayer, position);
     moveNum++;
@@ -77,32 +88,56 @@ void move(std::istringstream &is, short &currentPlayer, int &moveNum) {
 void printGame(short currentPlayer, int moveNum) {
     printf("Move number %d\n", moveNum);
     printf("Current player - %s\n", currentPlayer == WHITE ? "White" : "Black");
-    POSITION::printPosition(whitePawns, whiteBishops, whiteKnights, whiteRooks,
-                            whiteQueens, whiteKings, blackPawns, blackBishops,
-                            blackKnights, blackRooks, blackQueens, blackKings);
+
+    pos64 position[12];
+    position[WHITE_PAWN_OFFSET] = whitePawns;
+    position[WHITE_BISHOP_OFFSET] = whiteBishops;
+    position[WHITE_ROOK_OFFSET] = whiteRooks;
+    position[WHITE_KNIGHT_OFFSET] = whiteKnights;
+    position[WHITE_QUEEN_OFFSET] = whiteQueens;
+    position[WHITE_KING_OFFSET] = whiteKings;
+
+    position[BLACK_PAWN_OFFSET] = blackPawns;
+    position[BLACK_BISHOP_OFFSET] = blackBishops;
+    position[BLACK_ROOK_OFFSET] = blackRooks;
+    position[BLACK_KNIGHT_OFFSET] = blackKnights;
+    position[BLACK_QUEEN_OFFSET] = blackQueens;
+    position[BLACK_KING_OFFSET] = blackKings;
+    POSITION::printPosition(position);
 }
 
-__global__ void eval(int *result, pos64 whitePawns, pos64 whiteBishops,
-                     pos64 whiteKnights, pos64 whiteRooks, pos64 whiteQueens,
-                     pos64 whiteKings, pos64 blackPawns, pos64 blackBishops,
-                     pos64 blackKnights, pos64 blackRooks, pos64 blackQueens,
-                     pos64 blackKings) {
-    *result = EVALUATION::evaluatePosition(
-        whitePawns, whiteBishops, whiteKnights, whiteRooks, whiteQueens,
-        whiteKings, blackPawns, blackBishops, blackKnights, blackRooks,
-        blackQueens, blackKings);
+__global__ void eval(int *result, pos64 * position) {                 
+    *result = EVALUATION::evaluatePosition(position);
 }
 
 void printEval() {
     int *dResult, *hResult;
+    pos64 * dPosition;
     hResult = new int;
+
+    pos64 position[12];
+    position[WHITE_PAWN_OFFSET] = whitePawns;
+    position[WHITE_BISHOP_OFFSET] = whiteBishops;
+    position[WHITE_ROOK_OFFSET] = whiteRooks;
+    position[WHITE_KNIGHT_OFFSET] = whiteKnights;
+    position[WHITE_QUEEN_OFFSET] = whiteQueens;
+    position[WHITE_KING_OFFSET] = whiteKings;
+
+    position[BLACK_PAWN_OFFSET] = blackPawns;
+    position[BLACK_BISHOP_OFFSET] = blackBishops;
+    position[BLACK_ROOK_OFFSET] = blackRooks;
+    position[BLACK_KNIGHT_OFFSET] = blackKnights;
+    position[BLACK_QUEEN_OFFSET] = blackQueens;
+    position[BLACK_KING_OFFSET] = blackKings;
+
+    cudaMalloc(&dPosition, sizeof(pos64) * 12);
     cudaMalloc(&dResult, sizeof(int));
-    eval<<<1, 1>>>(dResult, whitePawns, whiteBishops, whiteKnights, whiteRooks,
-                   whiteQueens, whiteKings, blackPawns, blackBishops,
-                   blackKnights, blackRooks, blackQueens, blackKings);
+    cudaMemcpy(dPosition, position, sizeof(pos64) * 12, cudaMemcpyHostToDevice);
+    eval<<<1, 1>>>(dResult, dPosition);
     cudaMemcpy(hResult, dResult, sizeof(int), cudaMemcpyDeviceToHost);
     printf("Current evaluation from white side: %d\n", *hResult);
     delete hResult;
+    cudaFree(dPosition);
     cudaFree(dResult);
 }
 
@@ -179,7 +214,22 @@ void go(short &currentPlayer, int &moveNum) {
     }
 }
 
-void printMoves(pos64 *position, short currentPlayer) {
+void printMoves(short currentPlayer) {
+    pos64 position[12];
+    position[WHITE_PAWN_OFFSET] = whitePawns;
+    position[WHITE_BISHOP_OFFSET] = whiteBishops;
+    position[WHITE_ROOK_OFFSET] = whiteRooks;
+    position[WHITE_KNIGHT_OFFSET] = whiteKnights;
+    position[WHITE_QUEEN_OFFSET] = whiteQueens;
+    position[WHITE_KING_OFFSET] = whiteKings;
+
+    position[BLACK_PAWN_OFFSET] = blackPawns;
+    position[BLACK_BISHOP_OFFSET] = blackBishops;
+    position[BLACK_ROOK_OFFSET] = blackRooks;
+    position[BLACK_KNIGHT_OFFSET] = blackKnights;
+    position[BLACK_QUEEN_OFFSET] = blackQueens;
+    position[BLACK_KING_OFFSET] = blackKings;
+
     pos64 *generatedBoards = new pos64[255 * BOARD_SIZE];
 
     MOVES::generateMoves(position, generatedBoards, currentPlayer == WHITE);
@@ -193,8 +243,6 @@ void printMoves(pos64 *position, short currentPlayer) {
         std::getline(std::cin, any);
         if (any == "q") break;
     }
-
-    free(position);
     free(generatedBoards);
 }
 
@@ -222,11 +270,6 @@ void loop() {
             newgame(currentPlayer, moveNum);
         else if (token == "d")
             printGame(currentPlayer, moveNum);
-        else if (token == "flip")
-            POSITION::flipPosition(whitePawns, whiteBishops, whiteKnights,
-                                   whiteRooks, whiteQueens, whiteKings,
-                                   blackPawns, blackBishops, blackKnights,
-                                   blackRooks, blackQueens, blackKings);
         else if (token == "move")
             move(is, currentPlayer, moveNum);
         else if (token == "go")
@@ -235,10 +278,7 @@ void loop() {
         else if (token == "eval")
             printEval();
         else if (token == "moves")
-            printMoves(whitePawns, whiteBishops, whiteKnights, whiteRooks,
-                       whiteQueens, whiteKings, blackPawns, blackBishops,
-                       blackKnights, blackRooks, blackQueens, blackKings,
-                       currentPlayer);
+            printMoves(currentPlayer);
         else
             std::cout << "Unknown command: " << cmd << std::endl;
     } while (true);

@@ -11,11 +11,8 @@ namespace POSITION {
 
 void printPosition(pos64 *position);
 
-void flipPosition(pos64 **position);
-
 void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
-               const int& toRow, short& currentPlayer, pos64& whitePawns,
-               pos64 **position);
+               const int& toRow, short& currentPlayer, pos64 **position);
 }  // namespace POSITION
 
 #endif  // #ifndef POSITION_H_INCLUDED

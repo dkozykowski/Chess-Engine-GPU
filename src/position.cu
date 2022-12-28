@@ -60,20 +60,6 @@ void swap(pos64* a, pos64* b) {
 }
 
 /**
- * Flips the colors of pieces to the opposite.
- *
- * @param[out] position Pointer to array of pointers pointing to place in memory with positions of chess pieces.
- */
-void flipPosition(pos64 **position) {
-    swap(position[WHITE_PAWN_OFFSET], position[BLACK_PAWN_OFFSET]);
-    swap(position[WHITE_BISHOP_OFFSET], position[BLACK_BISHOP_OFFSET]);
-    swap(position[WHITE_KNIGHT_OFFSET], position[BLACK_KNIGHT_OFFSET]);
-    swap(position[WHITE_ROOK_OFFSET], position[BLACK_ROOK_OFFSET]);
-    swap(position[WHITE_QUEEN_OFFSET], position[BLACK_QUEEN_OFFSET]);
-    swap(position[WHITE_KING_OFFSET], position[BLACK_KING_OFFSET]);
-}
-
-/**
  * Changes the position of a specific piece on the board.
  *
  * @param fromCol Index of column where the piece to move is.
@@ -83,8 +69,7 @@ void flipPosition(pos64 **position) {
  * @param[out] position Pointer to array of pointers pointing to place in memory with positions of chess pieces.
  */
 void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
-               const int& toRow, short& currentPlayer, pos64& whitePawns,
-               pos64 **position) {
+               const int& toRow, short& currentPlayer, pos64 **position) {
     pos64 from = ((pos64(1)) << (fromCol + (fromRow << 3)));
     pos64 to = ((pos64(1)) << (toCol + (toRow << 3)));
 
