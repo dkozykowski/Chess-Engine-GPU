@@ -395,6 +395,11 @@ void findBestMove(const short &currentPlayer, pos64 *position) {
         gpuErrchk(cudaMemcpy(
             position, boards + BOARD_SIZE + (bestMoveNr * BOARD_SIZE),
             sizeof(pos64) * BOARD_SIZE, cudaMemcpyDeviceToHost));
+
+        cudaFree(levelSizes);
+        cudaFree(boards);
+        cudaFree(boardsOffsets);
+        
         return;
     }
 
