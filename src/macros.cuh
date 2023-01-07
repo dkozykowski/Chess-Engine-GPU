@@ -57,6 +57,9 @@ void gpuAssert(cudaError_t code, const char *file, int line);
 #define BLACK_QUEEN_STARTING_POS (pos64)576460752303423488
 #define BLACK_KING_STARTING_POS (pos64)1152921504606846976
 
+#define BLACK_LAST_LANE (pos64)255
+#define WHITE_LAST_LANE (pos64)18374686479671624000
+
 #define ALL_SET (pos64)18446744073709551615
 
 #define NOT_A_FILE (pos64)0xfefefefefefefefe

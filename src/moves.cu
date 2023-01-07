@@ -95,7 +95,7 @@ __device__ int precountMoves(pos64 *startingBoards, bool isWhite) {
          startingBoards[BLACK_ROOK_OFFSET] |
          startingBoards[BLACK_QUEEN_OFFSET] |
          startingBoards[BLACK_KING_OFFSET]);
-    pos64 enemyPieces, moves, occupied, singleMove;
+    pos64 enemyPieces, moves, occupied, singleMove, promotions;
 
     if (isWhite) {
         startingOwnPieces = startingBoards + WHITE_PAWN_OFFSET;
@@ -128,15 +128,24 @@ __device__ int precountMoves(pos64 *startingBoards, bool isWhite) {
         occupied = (moves & allPieces);
         moves = (moves ^ occupied);
 
-        generatedMoves += __popcll(moves);
+        promotions = (moves & WHITE_LAST_LANE);
+
+        generatedMoves += (__popcll(promotions) * 2);
+        generatedMoves += __popcll(moves ^ promotions);
 
         // generate pawn attacks east
         moves = (noEaOne(startingOwnPieces[PAWN_OFFSET]) & enemyPieces);
-        generatedMoves += __popcll(moves);
+        promotions = (moves & WHITE_LAST_LANE);
+
+        generatedMoves += (__popcll(promotions) * 2);
+        generatedMoves += __popcll(moves ^ promotions);
 
         // generate pawn attacks west
         moves = (noWeOne(startingOwnPieces[PAWN_OFFSET]) & enemyPieces);
-        generatedMoves += __popcll(moves);
+        promotions = (moves & WHITE_LAST_LANE);
+
+        generatedMoves += (__popcll(promotions) * 2);
+        generatedMoves += __popcll(moves ^ promotions);
     } else {
         // when on base position try move 2 forward
         moves = soOne(
@@ -149,15 +158,25 @@ __device__ int precountMoves(pos64 *startingBoards, bool isWhite) {
         moves = soOne(startingOwnPieces[PAWN_OFFSET]);
         occupied = (moves & allPieces);
         moves = (moves ^ occupied);
-        generatedMoves += __popcll(moves);
+        
+        promotions = (moves & BLACK_LAST_LANE);
+
+        generatedMoves += (__popcll(promotions) * 2);
+        generatedMoves += __popcll(moves ^ promotions);
 
         // generate pawn attacks east
         moves = (soEaOne(startingOwnPieces[PAWN_OFFSET]) & enemyPieces);
-        generatedMoves += __popcll(moves);
+                promotions = (moves & BLACK_LAST_LANE);
+
+        generatedMoves += (__popcll(promotions) * 2);
+        generatedMoves += __popcll(moves ^ promotions);
 
         // generate pawn attacks west
         moves = (soWeOne(startingOwnPieces[PAWN_OFFSET]) & enemyPieces);
-        generatedMoves += __popcll(moves);
+        promotions = (moves & BLACK_LAST_LANE);
+
+        generatedMoves += (__popcll(promotions) * 2);
+        generatedMoves += __popcll(moves ^ promotions);
     }
 
     // knight moves
@@ -443,7 +462,7 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
          startingBoards[BLACK_ROOK_OFFSET] |
          startingBoards[BLACK_QUEEN_OFFSET] |
          startingBoards[BLACK_KING_OFFSET]);
-    pos64 enemyPieces, moves, occupied, singleMove;
+    pos64 enemyPieces, moves, occupied, singleMove, promotions;
 
     int currentBoardOffset = 0;
     int ownPiecesOffset, enemyPiecesOffset;
@@ -477,6 +496,7 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
             noOne((startingOwnPieces[PAWN_OFFSET] & WHITE_PAWN_STARTING_POS)));
         occupied = ((moves & allPieces) | (moves & noOne(allPieces)));
         moves = (moves ^ occupied);
+
         while (moves != 0) {
             copyPosition(startingBoards,
                          generatedBoardsSpace + currentBoardOffset);
@@ -496,6 +516,9 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
         moves = noOne(startingOwnPieces[PAWN_OFFSET]);
         occupied = (moves & allPieces);
         moves = (moves ^ occupied);
+        promotions = (moves & WHITE_LAST_LANE);
+        moves = (moves ^ promotions);
+
 
         while (moves != 0) {
             copyPosition(startingBoards,
@@ -512,8 +535,44 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
             currentBoardOffset += BOARD_SIZE;
         }
 
+        while(promotions != 0) {
+            copyPosition(startingBoards,
+                         generatedBoardsSpace + currentBoardOffset);
+
+            singleMove = getLeastSignificantBit(promotions);
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[PAWN_OFFSET] =
+                ((startingOwnPieces[PAWN_OFFSET] ^ soOne(singleMove)));
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[QUEEN_OFFSET] =
+                ((startingOwnPieces[QUEEN_OFFSET] | singleMove));
+
+            currentBoardOffset += BOARD_SIZE;
+
+            copyPosition(startingBoards,
+                         generatedBoardsSpace + currentBoardOffset);
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[PAWN_OFFSET] =
+                ((startingOwnPieces[PAWN_OFFSET] ^ soOne(singleMove)));
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[KNIGHT_OFFSET] =
+                ((startingOwnPieces[KNIGHT_OFFSET] | singleMove));
+
+            promotions = resetLeastSignificantBit(promotions);
+            generatedMoves+=2;
+            currentBoardOffset += BOARD_SIZE;
+        }
+
+
         // generate pawn attacks east
         moves = (noEaOne(startingOwnPieces[PAWN_OFFSET]) & enemyPieces);
+        promotions = (moves & WHITE_LAST_LANE);
+        moves = (moves ^ promotions);
+
+
         while (moves != 0) {
             copyOneColorPieces(
                 startingOwnPieces,
@@ -536,8 +595,43 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
             currentBoardOffset += BOARD_SIZE;
         }
 
+        while(promotions != 0) {
+            copyPosition(startingBoards,
+                         generatedBoardsSpace + currentBoardOffset);
+
+            singleMove = getLeastSignificantBit(promotions);
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[PAWN_OFFSET] =
+                ((startingOwnPieces[PAWN_OFFSET] ^ soWeOne(singleMove)));
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[QUEEN_OFFSET] =
+                ((startingOwnPieces[QUEEN_OFFSET] | singleMove));
+
+            currentBoardOffset += BOARD_SIZE;
+
+            copyPosition(startingBoards,
+                         generatedBoardsSpace + currentBoardOffset);
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[PAWN_OFFSET] =
+                ((startingOwnPieces[PAWN_OFFSET] ^ soWeOne(singleMove)));
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[KNIGHT_OFFSET] =
+                ((startingOwnPieces[KNIGHT_OFFSET] | singleMove));
+
+            promotions = resetLeastSignificantBit(promotions);
+            generatedMoves+=2;
+            currentBoardOffset += BOARD_SIZE;
+        }
+
+
         // generate pawn attacks west
         moves = (noWeOne(startingOwnPieces[PAWN_OFFSET]) & enemyPieces);
+        promotions = (moves & WHITE_LAST_LANE);
+        moves = (moves ^ promotions);
+
         while (moves != 0) {
             copyOneColorPieces(
                 startingOwnPieces,
@@ -559,6 +653,38 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
             generatedMoves++;
             currentBoardOffset += BOARD_SIZE;
         }
+
+                while(promotions != 0) {
+            copyPosition(startingBoards,
+                         generatedBoardsSpace + currentBoardOffset);
+
+            singleMove = getLeastSignificantBit(promotions);
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[PAWN_OFFSET] =
+                ((startingOwnPieces[PAWN_OFFSET] ^ soEaOne(singleMove)));
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[QUEEN_OFFSET] =
+                ((startingOwnPieces[QUEEN_OFFSET] | singleMove));
+
+            currentBoardOffset += BOARD_SIZE;
+
+            copyPosition(startingBoards,
+                         generatedBoardsSpace + currentBoardOffset);
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[PAWN_OFFSET] =
+                ((startingOwnPieces[PAWN_OFFSET] ^ soEaOne(singleMove)));
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[KNIGHT_OFFSET] =
+                ((startingOwnPieces[KNIGHT_OFFSET] | singleMove));
+
+            promotions = resetLeastSignificantBit(promotions);
+            generatedMoves+=2;
+            currentBoardOffset += BOARD_SIZE;
+        }
+
     } else {
         // when on base position try move 2 forward
         moves = soOne(
@@ -584,6 +710,8 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
         moves = soOne(startingOwnPieces[PAWN_OFFSET]);
         occupied = (moves & allPieces);
         moves = (moves ^ occupied);
+        promotions = (moves & BLACK_LAST_LANE);
+        moves = (moves ^ promotions);
 
         while (moves != 0) {
             copyPosition(startingBoards,
@@ -600,8 +728,42 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
             currentBoardOffset += BOARD_SIZE;
         }
 
+        while(promotions != 0) {
+            copyPosition(startingBoards,
+                         generatedBoardsSpace + currentBoardOffset);
+
+            singleMove = getLeastSignificantBit(promotions);
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[PAWN_OFFSET] =
+                ((startingOwnPieces[PAWN_OFFSET] ^ noOne(singleMove)));
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[QUEEN_OFFSET] =
+                ((startingOwnPieces[QUEEN_OFFSET] | singleMove));
+
+            currentBoardOffset += BOARD_SIZE;
+
+            copyPosition(startingBoards,
+                         generatedBoardsSpace + currentBoardOffset);
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[PAWN_OFFSET] =
+                ((startingOwnPieces[PAWN_OFFSET] ^ noOne(singleMove)));
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[KNIGHT_OFFSET] =
+                ((startingOwnPieces[KNIGHT_OFFSET] | singleMove));
+
+            promotions = resetLeastSignificantBit(promotions);
+            generatedMoves+=2;
+            currentBoardOffset += BOARD_SIZE;
+        }
+
         // generate pawn attacks east
         moves = (soEaOne(startingOwnPieces[PAWN_OFFSET]) & enemyPieces);
+        promotions = (moves & BLACK_LAST_LANE);
+        moves = (moves ^ promotions);
+
         while (moves != 0) {
             copyOneColorPieces(
                 startingOwnPieces,
@@ -624,8 +786,43 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
             currentBoardOffset += BOARD_SIZE;
         }
 
+        while(promotions != 0) {
+            copyPosition(startingBoards,
+                         generatedBoardsSpace + currentBoardOffset);
+
+            singleMove = getLeastSignificantBit(promotions);
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[PAWN_OFFSET] =
+                ((startingOwnPieces[PAWN_OFFSET] ^ noWeOne(singleMove)));
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[QUEEN_OFFSET] =
+                ((startingOwnPieces[QUEEN_OFFSET] | singleMove));
+
+            currentBoardOffset += BOARD_SIZE;
+
+            copyPosition(startingBoards,
+                         generatedBoardsSpace + currentBoardOffset);
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[PAWN_OFFSET] =
+                ((startingOwnPieces[PAWN_OFFSET] ^ noWeOne(singleMove)));
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[KNIGHT_OFFSET] =
+                ((startingOwnPieces[KNIGHT_OFFSET] | singleMove));
+
+            promotions = resetLeastSignificantBit(promotions);
+            generatedMoves+=2;
+            currentBoardOffset += BOARD_SIZE;
+        }
+
         // generate pawn attacks west
         moves = (soWeOne(startingOwnPieces[PAWN_OFFSET]) & enemyPieces);
+        promotions = (moves & BLACK_LAST_LANE);
+        moves = (moves ^ promotions);
+
+
         while (moves != 0) {
             copyOneColorPieces(
                 startingOwnPieces,
@@ -647,6 +844,39 @@ __host__ __device__ void generateMoves(pos64 *startingBoards,
             generatedMoves++;
             currentBoardOffset += BOARD_SIZE;
         }
+
+        while(promotions != 0) {
+            copyPosition(startingBoards,
+                         generatedBoardsSpace + currentBoardOffset);
+
+            singleMove = getLeastSignificantBit(promotions);
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[PAWN_OFFSET] =
+                ((startingOwnPieces[PAWN_OFFSET] ^ noEaOne(singleMove)));
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[QUEEN_OFFSET] =
+                ((startingOwnPieces[QUEEN_OFFSET] | singleMove));
+
+            currentBoardOffset += BOARD_SIZE;
+
+            copyPosition(startingBoards,
+                         generatedBoardsSpace + currentBoardOffset);
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[PAWN_OFFSET] =
+                ((startingOwnPieces[PAWN_OFFSET] ^ noEaOne(singleMove)));
+            
+            (generatedBoardsSpace + currentBoardOffset +
+             ownPiecesOffset)[KNIGHT_OFFSET] =
+                ((startingOwnPieces[KNIGHT_OFFSET] | singleMove));
+
+            promotions = resetLeastSignificantBit(promotions);
+            generatedMoves+=2;
+            currentBoardOffset += BOARD_SIZE;
+        }
+
+
     }
 
     // knight moves
