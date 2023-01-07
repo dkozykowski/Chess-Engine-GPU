@@ -63,7 +63,7 @@ void move(std::istringstream &is, short &currentPlayer, int &moveNum) {
     is >> std::skipws >> moveToken;
 
     // validate
-    if (moveToken.length() != 4) {
+    if (moveToken.length() != 4 && moveToken.length() != 5) {
         printf("Invalid move\n");
         return;
     }
@@ -72,6 +72,12 @@ void move(std::istringstream &is, short &currentPlayer, int &moveNum) {
     int fromRow = moveToken[1] - '1';
     int toCol = moveToken[2] >= 'a' ? moveToken[2] - 'a' : moveToken[2] - 'A';
     int toRow = moveToken[3] - '1';
+
+    bool isPromotionMove = moveToken.length() == 5;
+    bool toQueen = false;
+    if(isPromotionMove && moveToken[4] == 'Q') {
+        toQueen = true;
+    }
 
     if (fromCol < 0 || fromRow < 0 || toCol < 0 || toRow < 0 || 8 <= fromCol ||
         8 <= fromRow || 8 <= toCol || 8 <= toRow) {
@@ -95,7 +101,7 @@ void move(std::istringstream &is, short &currentPlayer, int &moveNum) {
     position[BLACK_KING_OFFSET] = &blackKings;
 
     POSITION::moveChess(fromCol, fromRow, toCol, toRow, currentPlayer,
-                        position);
+                        position, isPromotionMove, toQueen);
     moveNum++;
     currentPlayer ^= 1;
 }

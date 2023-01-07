@@ -70,7 +70,8 @@ void swap(pos64* a, pos64* b) {
  * with positions of chess pieces.
  */
 void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
-               const int& toRow, short& currentPlayer, pos64** position) {
+               const int& toRow, short& currentPlayer, pos64** position, 
+               bool promote, bool toQueen) {
     pos64 from = ((pos64(1)) << (fromCol + (fromRow << 3)));
     pos64 to = ((pos64(1)) << (toCol + (toRow << 3)));
 
@@ -107,7 +108,9 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
     if (currentPlayer == WHITE) {
         if ((whitePawns & from) != 0) {
             whitePawns ^= from;
-            whitePawns |= to;
+            if(!promote){
+             whitePawns |= to;   
+            }
         } else if ((whiteBishops & from) != 0) {
             whiteBishops ^= from;
             whiteBishops |= to;
@@ -124,10 +127,18 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
             whiteKings ^= from;
             whiteKings |= to;
         }
+
+        if(promote && toQueen) {
+            whiteQueens |= to;    
+        } else if(promote) {
+            whiteKnights |= to;
+        }
     } else if (currentPlayer == BLACK) {
         if ((blackPawns & from) != 0) {
             blackPawns ^= from;
+            if(!promote){
             blackPawns |= to;
+            }
         } else if ((blackBishops & from) != 0) {
             blackBishops ^= from;
             blackBishops |= to;
@@ -143,6 +154,12 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
         } else if ((blackKings & from) != 0) {
             blackKings ^= from;
             blackKings |= to;
+        }
+
+        if(promote && toQueen) {
+            blackQueens |= to;    
+        } else if(promote) {
+            blackKnights |= to;
         }
     }
 }
