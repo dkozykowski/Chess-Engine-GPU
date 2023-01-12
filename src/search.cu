@@ -472,9 +472,9 @@ void findBestMove(const short &currentPlayer, pos64 *position) {
                        secStageLevelSizes[depthFound]));
             evaluateBoards<<<getBlocksCount2d(secStageLevelSizes[depthFound]),
                              MAX_THREADS>>>(
-                boards + tempOffset * BOARD_SIZE,
+                secStageBoards + tempOffset * BOARD_SIZE,
                 secStageLevelSizes[depthFound],
-                (int *)(boardsOffsets +
+                (int *)(secStageOffsets +
                         tempOffset));  // since last level doesnt use
                                        // offsets board it is used
                                        // to keep the evaluation
