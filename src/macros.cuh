@@ -6,7 +6,7 @@
 
 typedef unsigned long long int pos64;
 
-#define DEBUG 0
+#define DEBUG 1
 #define DEBUG2 1
 #define DBG(cmd) \
     if (DEBUG) cmd
@@ -30,9 +30,9 @@ void gpuAssert(cudaError_t code, const char *file, int line);
 #define MAX_BLOCKS_PER_DIMENSION 65535
 
 #define MAX_BOARD_COMPUTED_IN_SECOUND_STAGE 400
-#define MAX_POSSIBLE_DEPTH 10
+#define MAX_POSSIBLE_DEPTH 5
 
-#define MAX_DEPTH 10
+#define MAX_DEPTH 5
 
 #define INF 1e6
 
