@@ -223,7 +223,7 @@ __global__ void preCalculateBoardsCount(pos64 *boards,
  */
 int prepareMemory(pos64 **boards, unsigned int **offsets,
                   unsigned int **levelSizes) {
-    gpuErrchk(cudaMallocManaged(levelSizes, sizeof(int) * MAX_POSSIBLE_DEPTH));
+    gpuErrchk(cudaMallocManaged(levelSizes, sizeof(int) * (MAX_POSSIBLE_DEPTH + 1)));
 
     size_t sizeOfOneBoard = sizeof(pos64) * BOARD_SIZE + sizeof(unsigned int);
     size_t total, free;
