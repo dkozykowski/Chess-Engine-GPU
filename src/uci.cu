@@ -50,6 +50,60 @@ void newgame(short &currentPlayer, int &moveNum) {
     moveNum = 0;
 }
 
+void position(std::istringstream &is, short &currentPlayer, int &moveNum) {
+    std::string fen;
+    is >> std::skipws >> fen;
+
+    int fenLenght = fen.size();
+    int position = 64;
+    for (int i = 0; i < fenLenght; i++) {
+        if ('1' <= fen[i] && fen[i] <= '9') {
+            position -= fen[i] - '0';
+            continue;
+        }
+        pos64 currentBit = (pos64(1) << position);
+        switch(fen[i]) {
+            case 'p':
+                whitePawns |= currentBit;
+                break;
+            case 'r':
+                whiteRooks |= currentBit;
+                break;
+            case 'n':
+                whiteKnights |= currentBit;
+                break;
+            case 'b':
+                whiteBishops |= currentBit;
+                break;
+            case 'q':
+                whiteQueens |= currentBit;
+                break;
+            case 'k':
+                whiteKings |= currentBit;
+                break;
+
+            case 'P':
+                blackPawns |= currentBit;
+                break;
+            case 'R':
+                blackRooks |= currentBit;
+                break;
+            case 'N':
+                blackKnights |= currentBit;
+                break;
+            case 'B':
+                blackBishops |= currentBit;
+                break;
+            case 'Q':
+                blackQueens |= currentBit;
+                break;
+            case 'K':
+                blackKings |= currentBit;
+                break;
+        }
+    }
+}
+
 /**
  * Reads move code from console and move proper piece to given place.
  *
@@ -310,9 +364,10 @@ void loop() {
             move(is, currentPlayer, moveNum);
         else if (token == "go")
             go(currentPlayer, moveNum);
-        // else if (token == "bench")      bench(pos, is, states);
         else if (token == "eval")
             printEval();
+        else if (token == "position") 
+            position(is, currentPlayer, moveNum);
         else if (token == "moves")
             printMoves(currentPlayer);
         else
