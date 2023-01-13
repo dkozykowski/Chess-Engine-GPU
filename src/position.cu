@@ -39,60 +39,60 @@ void setPosition(pos64** position, std::string fen) {
     blackKings = 0;
 
     int fenLenght = fen.size();
-    int row = 0;
-    int column = 0;
+    int row = 7;
+    int column = 7;
     for (int i = 0; i < fenLenght; i++) {
         if ('1' <= fen[i] && fen[i] <= '9') {
             column -= fen[i] - '0';
             continue;
         }
         if (fen[i] == '/') {
-            column = 0;
-            row ++;
+            column = 7;
+            row --;
             continue;
         }
         
         pos64 currentBit = ((pos64)1) << (column + (row << 3));
         switch(fen[i]) {
             case 'p':
-                whitePawns |= currentBit;
+                blackPawns |= currentBit;
                 break;
             case 'r':
-                whiteRooks |= currentBit;
+                blackRooks |= currentBit;
                 break;
             case 'n':
-                whiteKnights |= currentBit;
+                blackKnights |= currentBit;
                 break;
             case 'b':
-                whiteBishops |= currentBit;
+                blackBishops |= currentBit;
                 break;
             case 'q':
-                whiteQueens |= currentBit;
+                blackQueens |= currentBit;
                 break;
             case 'k':
-                whiteKings |= currentBit;
+                blackKings |= currentBit;
                 break;
 
             case 'P':
-                blackPawns |= currentBit;
+                whitePawns |= currentBit;
                 break;
             case 'R':
-                blackRooks |= currentBit;
+                whiteRooks |= currentBit;
                 break;
             case 'N':
-                blackKnights |= currentBit;
+                whiteKnights |= currentBit;
                 break;
             case 'B':
-                blackBishops |= currentBit;
+                whiteBishops |= currentBit;
                 break;
             case 'Q':
-                blackQueens |= currentBit;
+                whiteQueens |= currentBit;
                 break;
             case 'K':
-                blackKings |= currentBit;
+                whiteKings |= currentBit;
                 break;
         }
-        column++;
+        column--;
     }
 }
 
