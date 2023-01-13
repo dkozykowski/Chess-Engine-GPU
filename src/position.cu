@@ -199,6 +199,7 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
     blackRooks &= toMask;
     blackQueens &= toMask;
     blackKings &= toMask;
+    printf("cur player %lld from %lld to %lld\n", currentPlayer, from, to);
 
     // white castling
     if (currentPlayer == WHITE && from == (pos64(1) << 3) && (whiteKings & from) && (whiteRooks & to)
