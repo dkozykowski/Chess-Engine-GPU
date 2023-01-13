@@ -46,7 +46,7 @@ void newgame(short &currentPlayer, int &moveNum) {
     position[BLACK_KNIGHT_OFFSET] = &blackKnights;
     position[BLACK_QUEEN_OFFSET] = &blackQueens;
     position[BLACK_KING_OFFSET] = &blackKings;
-    
+
     POSITION::setPosition(position, STARTING_FEN);
 
     currentPlayer = WHITE;
@@ -60,10 +60,10 @@ void position(std::istringstream &is, short &currentPlayer, int &moveNum) {
     is >> std::skipws >> fen;
     is >> std::skipws >> playerSign;
     if (playerSign == 'b') {
-        currentPlayer == BLACK;
+        currentPlayer = BLACK;
     }
     else {
-        currentPlayer == WHITE;
+        currentPlayer = WHITE;
     }
 
     pos64 *position[12];
