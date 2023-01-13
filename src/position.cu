@@ -199,6 +199,7 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
     blackRooks &= toMask;
     blackQueens &= toMask;
     blackKings &= toMask;
+    printf("cur player %d from %d to %d\n", currentPlayer, from, to);
 
     // white castling
     if (currentPlayer == WHITE && from == 4 && (to == 0 || to == 7) && (whiteKings & from) && (whiteRooks & to)) {
@@ -208,12 +209,13 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
             whiteRooks ^= (pos64(1) << 0);
             whiteRooks |= (pos64(1) << 3);
         }
-        if (to == 7) {
+        else {
             whiteKings ^= (pos64(1) << 4);
             whiteKings |= (pos64(1) << 6);
             whiteRooks ^= (pos64(1) << 7);
             whiteRooks |= (pos64(1) << 5);
         }
+        return;
     }
     if (currentPlayer == BLACK && from == 60 && (to == 56 || to == 63) && (blackKings & from) && (blackRooks & to)) {
         if (to == 56) {
@@ -222,12 +224,13 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
             blackRooks ^= (pos64(1) << 56);
             blackRooks |= (pos64(1) << 59);
         }
-        if (to == 63) {
+        else {
             blackKings ^= (pos64(1) << 60);
             blackKings |= (pos64(1) << 62);
             blackRooks ^= (pos64(1) << 63);
             blackRooks |= (pos64(1) << 61);
         }
+        return;
     }
     // black castling
 
