@@ -2,6 +2,94 @@
 
 namespace POSITION {
 
+void setPosition(pos64** position, std::string& fen) {
+
+    pos64& whitePawns = *position[WHITE_PAWN_OFFSET];
+    pos64& whiteBishops = *position[WHITE_BISHOP_OFFSET];
+    pos64& whiteKnights = *position[WHITE_KNIGHT_OFFSET];
+    pos64& whiteRooks = *position[WHITE_ROOK_OFFSET];
+    pos64& whiteQueens = *position[WHITE_QUEEN_OFFSET];
+    pos64& whiteKings = *position[WHITE_KING_OFFSET];
+
+    pos64& blackPawns = *position[BLACK_PAWN_OFFSET];
+    pos64& blackBishops = *position[BLACK_BISHOP_OFFSET];
+    pos64& blackKnights = *position[BLACK_KNIGHT_OFFSET];
+    pos64& blackRooks = *position[BLACK_ROOK_OFFSET];
+    pos64& blackQueens = *position[BLACK_QUEEN_OFFSET];
+    pos64& blackKings = *position[BLACK_KING_OFFSET];
+
+    whitePawns = 0;
+    whiteBishops = 0;
+    whiteKnights = 0;
+    whiteRooks = 0;
+    whiteQueens = 0;
+    whiteKings = 0;
+
+    blackPawns = 0;
+    blackBishops = 0;
+    blackKnights = 0;
+    blackRooks = 0;
+    blackQueens = 0;
+    blackKings = 0;
+
+    int fenLenght = fen.size();
+    int row = 0;
+    int column = 0;
+    for (int i = 0; i < fenLenght; i++) {
+        if ('1' <= fen[i] && fen[i] <= '9') {
+            column -= fen[i] - '0';
+            continue;
+        }
+        if (fen[i] == '/') {
+            column = 0;
+            row ++;
+            continue;
+        }
+        
+        pos64 currentBit = ((pos64)1) << (column + (row << 3));
+        switch(fen[i]) {
+            case 'p':
+                whitePawns |= currentBit;
+                break;
+            case 'r':
+                whiteRooks |= currentBit;
+                break;
+            case 'n':
+                whiteKnights |= currentBit;
+                break;
+            case 'b':
+                whiteBishops |= currentBit;
+                break;
+            case 'q':
+                whiteQueens |= currentBit;
+                break;
+            case 'k':
+                whiteKings |= currentBit;
+                break;
+
+            case 'P':
+                blackPawns |= currentBit;
+                break;
+            case 'R':
+                blackRooks |= currentBit;
+                break;
+            case 'N':
+                blackKnights |= currentBit;
+                break;
+            case 'B':
+                blackBishops |= currentBit;
+                break;
+            case 'Q':
+                blackQueens |= currentBit;
+                break;
+            case 'K':
+                blackKings |= currentBit;
+                break;
+        }
+        column++;
+    }
+}
+
 /**
  * Pretty-prints the given board on the console.
  *
