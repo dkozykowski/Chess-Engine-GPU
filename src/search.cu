@@ -175,9 +175,6 @@ __global__ void evaluateBoards(pos64 *boards, unsigned int boardCount,
     if (index >= boardCount) {
         return;
     }
-    if(index < 0){
-        printf("index overflow\n");
-    }
     pos64 *boardAddress = boards + (index * BOARD_SIZE);
     if (boardAddress[WHITE_KING_OFFSET] == 0 &&
         boardAddress[BLACK_KING_OFFSET] == 0) {
