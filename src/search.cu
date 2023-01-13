@@ -220,7 +220,7 @@ __global__ void preCalculateBoardsCount(pos64 *boards,
  */
 int prepareMemory(pos64 **boards, unsigned int **offsets,
                   unsigned int **levelSizes) {
-    gpuErrchk(cudaMallocManaged(levelSizes, sizeof(int) * MAX_POSSIBLE_DEPTH));
+    gpuErrchk(cudaMallocManaged(levelSizes, sizeof(int) * (MAX_POSSIBLE_DEPTH + 1)));
 
     size_t sizeOfOneBoard = sizeof(pos64) * BOARD_SIZE + sizeof(unsigned int);
     size_t total, free;
@@ -265,8 +265,8 @@ int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets,
     for (int i = 0; i < MAX_POSSIBLE_DEPTH; i++) {
         runningBoards = levelSizes[i];
 
-        DBG(printf("generating depth: %d, evaluated boards: %d\n", i + 1,
-                   runningBoards));
+        DBG(printf("generating depth: %d, running boards: %d, offset %d\n", i + 1,
+                   runningBoards, offset));
 
         // first stage - check how many boards will be generated for each board
         setThreadAndBlocksCount(&threadCount, &blockCount, runningBoards);
@@ -278,14 +278,13 @@ int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets,
         gpuErrchk(cudaPeekAtLastError());
 
         // secound stage - find boardsOffsets for each board to put their kids
-        DBG(printf("calculate offsets offset: %d\n", offset));
         SCAN::scan(
             boardsOffsets + offset, runningBoards,
             (unsigned int *)(boards + (offset + runningBoards) * BOARD_SIZE),
             &levelSizes[i + 1]);  // since boards are not yet created the space there
                                   // is used as a temp table
 
-        DBG(printf("boardCount on depth %d, %u\n", i, levelSizes[i + 1]));
+        DBG(printf("boardCount on depth %d, %u\n", i + 1, levelSizes[i + 1]));
 
         if ((isFirstStage &&
              levelSizes[i + 1] > MAX_BOARD_COMPUTED_IN_SECOUND_STAGE) ||
@@ -475,9 +474,9 @@ void findBestMove(const short &currentPlayer, pos64 *position) {
                        secStageLevelSizes[depthFound]));
             evaluateBoards<<<getBlocksCount2d(secStageLevelSizes[depthFound]),
                              MAX_THREADS>>>(
-                boards + tempOffset * BOARD_SIZE,
+                secStageBoards + tempOffset * BOARD_SIZE,
                 secStageLevelSizes[depthFound],
-                (int *)(boardsOffsets +
+                (int *)(secStageOffsets +
                         tempOffset));  // since last level doesnt use
                                        // offsets board it is used
                                        // to keep the evaluation
