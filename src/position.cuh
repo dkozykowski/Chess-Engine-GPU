@@ -9,7 +9,7 @@
 
 namespace POSITION {
 
-void setPosition(pos64** position, std::string& fen);
+void setPosition(pos64** position, std::string fen);
 
 void printPosition(pos64* position);
 
