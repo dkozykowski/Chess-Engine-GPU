@@ -201,39 +201,40 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
     blackKings &= toMask;
 
     // white castling
-    if (currentPlayer == WHITE && from == (pos64(1) << 4) && (whiteKings & from) && (whiteRooks & to)
-        && (to == (pos64(1) << 0) || to == (pos64(1) << 7))) {
+    if (currentPlayer == WHITE && from == (pos64(1) << 3) && (whiteKings & from) && (whiteRooks & to)
+        && (to == (pos64(1) << 0) || to == (pos64(1) << 6))) {
         if (to == (pos64(1) << 0)) {
-            whiteKings ^= (pos64(1) << 4);
-            whiteKings |= (pos64(1) << 2);
+            whiteKings ^= (pos64(1) << 3);
+            whiteKings |= (pos64(1) << 1);
             whiteRooks ^= (pos64(1) << 0);
-            whiteRooks |= (pos64(1) << 3);
+            whiteRooks |= (pos64(1) << 2);
         }
         else {
-            whiteKings ^= (pos64(1) << 4);
-            whiteKings |= (pos64(1) << 6);
-            whiteRooks ^= (pos64(1) << 7);
-            whiteRooks |= (pos64(1) << 5);
+            whiteKings ^= (pos64(1) << 3);
+            whiteKings |= (pos64(1) << 5);
+            whiteRooks ^= (pos64(1) << 6);
+            whiteRooks |= (pos64(1) << 4);
         }
         return;
     }
-    if (currentPlayer == BLACK && from == 60 && (blackKings & from) && (blackRooks & to)
-        && (to == (pos64(1) << 56) || to == (pos64(1) << 63))) {
-        if (to == (pos64(1) << 56)) {
-            blackKings ^= (pos64(1) << 60);
-            blackKings |= (pos64(1) << 58);
-            blackRooks ^= (pos64(1) << 56);
-            blackRooks |= (pos64(1) << 59);
-        }
-        else {
-            blackKings ^= (pos64(1) << 60);
-            blackKings |= (pos64(1) << 62);
-            blackRooks ^= (pos64(1) << 63);
-            blackRooks |= (pos64(1) << 61);
-        }
-        return;
-    }
+    
     // black castling
+    if (currentPlayer == BLACK && from == (pos64(1) << 59) && (blackKings & from) && (blackRooks & to)
+        && (to == (pos64(1) << 55) || to == (pos64(1) << 62))) {
+        if (to == (pos64(1) << 55)) {
+            blackKings ^= (pos64(1) << 59);
+            blackKings |= (pos64(1) << 57);
+            blackRooks ^= (pos64(1) << 55);
+            blackRooks |= (pos64(1) << 58);
+        }
+        else {
+            blackKings ^= (pos64(1) << 59);
+            blackKings |= (pos64(1) << 61);
+            blackRooks ^= (pos64(1) << 62);
+            blackRooks |= (pos64(1) << 60);
+        }
+        return;
+    }
 
     if (currentPlayer == WHITE) {
         if ((whitePawns & from) != 0) {
