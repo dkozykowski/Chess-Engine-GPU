@@ -54,6 +54,20 @@ void position(std::istringstream &is, short &currentPlayer, int &moveNum) {
     std::string fen;
     is >> std::skipws >> fen;
 
+    whitePawns = 0;
+    whiteBishops = 0;
+    whiteKnights = 0;
+    whiteRooks = 0;
+    whiteQueens = 0;
+    whiteKings = 0;
+
+    blackPawns = 0;
+    blackBishops = 0;
+    blackKnights = 0;
+    blackRooks = 0;
+    blackQueens = 0;
+    blackKings = 0;
+
     int fenLenght = fen.size();
     int position = 64;
     for (int i = 0; i < fenLenght; i++) {
