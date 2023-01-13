@@ -54,68 +54,22 @@ void position(std::istringstream &is, short &currentPlayer, int &moveNum) {
     std::string fen;
     is >> std::skipws >> fen;
 
-    whitePawns = 0;
-    whiteBishops = 0;
-    whiteKnights = 0;
-    whiteRooks = 0;
-    whiteQueens = 0;
-    whiteKings = 0;
+    pos64 *position[12];
+    position[WHITE_PAWN_OFFSET] = &whitePawns;
+    position[WHITE_BISHOP_OFFSET] = &whiteBishops;
+    position[WHITE_ROOK_OFFSET] = &whiteRooks;
+    position[WHITE_KNIGHT_OFFSET] = &whiteKnights;
+    position[WHITE_QUEEN_OFFSET] = &whiteQueens;
+    position[WHITE_KING_OFFSET] = &whiteKings;
 
-    blackPawns = 0;
-    blackBishops = 0;
-    blackKnights = 0;
-    blackRooks = 0;
-    blackQueens = 0;
-    blackKings = 0;
+    position[BLACK_PAWN_OFFSET] = &blackPawns;
+    position[BLACK_BISHOP_OFFSET] = &blackBishops;
+    position[BLACK_ROOK_OFFSET] = &blackRooks;
+    position[BLACK_KNIGHT_OFFSET] = &blackKnights;
+    position[BLACK_QUEEN_OFFSET] = &blackQueens;
+    position[BLACK_KING_OFFSET] = &blackKings;
 
-    int fenLenght = fen.size();
-    int position = 64;
-    for (int i = 0; i < fenLenght; i++) {
-        if ('1' <= fen[i] && fen[i] <= '9') {
-            position -= fen[i] - '0';
-            continue;
-        }
-        pos64 currentBit = (pos64(1) << position);
-        switch(fen[i]) {
-            case 'p':
-                whitePawns |= currentBit;
-                break;
-            case 'r':
-                whiteRooks |= currentBit;
-                break;
-            case 'n':
-                whiteKnights |= currentBit;
-                break;
-            case 'b':
-                whiteBishops |= currentBit;
-                break;
-            case 'q':
-                whiteQueens |= currentBit;
-                break;
-            case 'k':
-                whiteKings |= currentBit;
-                break;
-
-            case 'P':
-                blackPawns |= currentBit;
-                break;
-            case 'R':
-                blackRooks |= currentBit;
-                break;
-            case 'N':
-                blackKnights |= currentBit;
-                break;
-            case 'B':
-                blackBishops |= currentBit;
-                break;
-            case 'Q':
-                blackQueens |= currentBit;
-                break;
-            case 'K':
-                blackKings |= currentBit;
-                break;
-        }
-    }
+    POSITION::setPosition(position, fen);
 }
 
 /**
