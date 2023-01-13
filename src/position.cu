@@ -166,6 +166,7 @@ void swap(pos64* a, pos64* b) {
 void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
                const int& toRow, short& currentPlayer, pos64** position, 
                bool promote, bool toQueen) {
+
     pos64 from = ((pos64(1)) << (fromCol + (fromRow << 3)));
     pos64 to = ((pos64(1)) << (toCol + (toRow << 3)));
 
@@ -199,11 +200,42 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
     blackQueens &= toMask;
     blackKings &= toMask;
 
+    // white castling
+    if (currentPlayer == WHITE && from == 4 && (to == 0 || to == 7) && (whiteKings & from) && (whiteRooks & to)) {
+        if (to == 0) {
+            whiteKings ^= (pos64(1) << 4);
+            whiteKings |= (pos64(1) << 2);
+            whiteRooks ^= (pos64(1) << 0);
+            whiteRooks |= (pos64(1) << 3);
+        }
+        if (to == 7) {
+            whiteKings ^= (pos64(1) << 4);
+            whiteKings |= (pos64(1) << 6);
+            whiteRooks ^= (pos64(1) << 7);
+            whiteRooks |= (pos64(1) << 5);
+        }
+    }
+    if (currentPlayer == BLACK && from == 60 && (to == 56 || to == 63) && (blackKings & from) && (blackRooks & to)) {
+        if (to == 56) {
+            blackKings ^= (pos64(1) << 60);
+            blackKings |= (pos64(1) << 58);
+            blackRooks ^= (pos64(1) << 56);
+            blackRooks |= (pos64(1) << 59);
+        }
+        if (to == 63) {
+            blackKings ^= (pos64(1) << 60);
+            blackKings |= (pos64(1) << 62);
+            blackRooks ^= (pos64(1) << 63);
+            blackRooks |= (pos64(1) << 61);
+        }
+    }
+    // black castling
+
     if (currentPlayer == WHITE) {
         if ((whitePawns & from) != 0) {
             whitePawns ^= from;
-            if(!promote){
-             whitePawns |= to;   
+            if (!promote) {
+                whitePawns |= to;   
             }
         } else if ((whiteBishops & from) != 0) {
             whiteBishops ^= from;
@@ -230,8 +262,8 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
     } else if (currentPlayer == BLACK) {
         if ((blackPawns & from) != 0) {
             blackPawns ^= from;
-            if(!promote){
-            blackPawns |= to;
+            if (!promote) {
+                blackPawns |= to;
             }
         } else if ((blackBishops & from) != 0) {
             blackBishops ^= from;
