@@ -43,7 +43,7 @@ void setPosition(pos64** position, std::string fen) {
     int column = 0;
     for (int i = 0; i < fenLenght; i++) {
         if ('1' <= fen[i] && fen[i] <= '9') {
-            column -= fen[i] - '0';
+            column += fen[i] - '0';
             continue;
         }
         if (fen[i] == '/') {
