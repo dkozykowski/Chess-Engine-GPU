@@ -137,11 +137,11 @@ __global__ void generateMovesForBoards(pos64 *boards,
  * @param lowerLevelBoardCount Number of boards on the level below considered
  * one (childreen nodes).
  */
-__global__ void gatherResultsForBoards(
-    int *results, unsigned int *boardsOffsets,
-    unsigned int currentLevelBoardCount,
-    unsigned int lowerLevelBoardCount,
-    bool maximizing, int *last) {
+__global__ void gatherResultsForBoards(int *results,
+                                       unsigned int *boardsOffsets,
+                                       unsigned int currentLevelBoardCount,
+                                       unsigned int lowerLevelBoardCount,
+                                       bool maximizing, int *last) {
     pos64 index = blockIdx.x * blockDim.x + threadIdx.x;
     if (index >= currentLevelBoardCount) {
         return;
@@ -282,8 +282,8 @@ int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets,
         SCAN::scan(
             boardsOffsets + offset, runningBoards,
             (unsigned int *)(boards + (offset + runningBoards) * BOARD_SIZE),
-            &levelSizes[i + 1]);  // since boards are not yet created the space there
-                                  // is used as a temp table
+            &levelSizes[i + 1]);  // since boards are not yet created the space
+                                  // there is used as a temp table
 
         DBG(printf("boardCount on depth %d, %u\n", i, levelSizes[i + 1]));
 
@@ -342,7 +342,8 @@ void gatherResults(pos64 *boards, unsigned int *boardsOffsets,
             (int *)(boardsOffsets + offset), boardsOffsets + offset,
             runningBoards, levelSizes[i + 1], maximizing,
             localLast);  // since each thread uses the offset only once and then
-                         // writes to one place the values here can just be swapped
+                         // writes to one place the values here can just be
+                         // swapped
         gpuErrchk(cudaDeviceSynchronize());
         gpuErrchk(cudaPeekAtLastError());
         maximizing = !maximizing;
@@ -354,7 +355,7 @@ void gatherResults(pos64 *boards, unsigned int *boardsOffsets,
  *
  * @param currentPlayer Player whose currently turn to move is ( @ref WHITE for
  * white, @ref BLACK for black)
- * @param position[in, out] Pointer to structure holding positions of pieces for 
+ * @param position[in, out] Pointer to structure holding positions of pieces for
  * which optimal move should be found. After finding the most optimal move, the
  * position is overriden with the so found move.
  */
@@ -534,4 +535,3 @@ void findBestMove(const short &currentPlayer, pos64 *position) {
     cudaFree(boards);
     cudaFree(boardsOffsets);
 }
-}  // namespace SEARCH

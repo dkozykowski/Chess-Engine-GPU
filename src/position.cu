@@ -2,7 +2,7 @@
 
 namespace POSITION {
 
-void setPosition(pos64** position, std::string& fen) {
+void setPosition(pos64** position, std::string fen) {
 
     pos64& whitePawns = *position[WHITE_PAWN_OFFSET];
     pos64& whiteBishops = *position[WHITE_BISHOP_OFFSET];

@@ -32,19 +32,22 @@ pos64 blackKings;
  * @param moveNum Number of moves made in the game, will be set to 0.
  */
 void newgame(short &currentPlayer, int &moveNum) {
-    whitePawns = WHITE_PAWN_STARTING_POS;
-    whiteBishops = WHITE_BISHOP_STARTING_POS;
-    whiteKnights = WHITE_KNIGHT_STARTING_POS;
-    whiteRooks = WHITE_ROOK_STARTING_POS;
-    whiteQueens = WHITE_QUEEN_STARTING_POS;
-    whiteKings = WHITE_KING_STARTING_POS;
+    pos64 *position[12];
+    position[WHITE_PAWN_OFFSET] = &whitePawns;
+    position[WHITE_BISHOP_OFFSET] = &whiteBishops;
+    position[WHITE_ROOK_OFFSET] = &whiteRooks;
+    position[WHITE_KNIGHT_OFFSET] = &whiteKnights;
+    position[WHITE_QUEEN_OFFSET] = &whiteQueens;
+    position[WHITE_KING_OFFSET] = &whiteKings;
 
-    blackPawns = BLACK_PAWN_STARTING_POS;
-    blackBishops = BLACK_BISHOP_STARTING_POS;
-    blackKnights = BLACK_KNIGHT_STARTING_POS;
-    blackRooks = BLACK_ROOK_STARTING_POS;
-    blackQueens = BLACK_QUEEN_STARTING_POS;
-    blackKings = BLACK_KING_STARTING_POS;
+    position[BLACK_PAWN_OFFSET] = &blackPawns;
+    position[BLACK_BISHOP_OFFSET] = &blackBishops;
+    position[BLACK_ROOK_OFFSET] = &blackRooks;
+    position[BLACK_KNIGHT_OFFSET] = &blackKnights;
+    position[BLACK_QUEEN_OFFSET] = &blackQueens;
+    position[BLACK_KING_OFFSET] = &blackKings;
+    
+    POSITION::setPosition(position, STARTING_FEN);
 
     currentPlayer = WHITE;
     moveNum = 0;
@@ -52,7 +55,16 @@ void newgame(short &currentPlayer, int &moveNum) {
 
 void position(std::istringstream &is, short &currentPlayer, int &moveNum) {
     std::string fen;
+    char playerSign;
+    
     is >> std::skipws >> fen;
+    is >> std::skipws >> playerSign;
+    if (playerSign == 'b') {
+        currentPlayer == BLACK;
+    }
+    else {
+        currentPlayer == WHITE;
+    }
 
     pos64 *position[12];
     position[WHITE_PAWN_OFFSET] = &whitePawns;
