@@ -53,6 +53,14 @@ void newgame(short &currentPlayer, int &moveNum) {
     moveNum = 0;
 }
 
+/**
+ * Sets current position, current player and move number based on fen read from 
+ * console input.
+ *
+ * @param is Input stream from console from which the fen code will be read.
+ * @param currentPlayer Number indicating current player.
+ * @param moveNum Number of moves made in the game.
+ */
 void position(std::istringstream &is, short &currentPlayer, int &moveNum) {
     std::string fen;
     char playerSign;

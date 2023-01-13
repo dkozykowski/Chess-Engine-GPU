@@ -2,6 +2,12 @@
 
 namespace POSITION {
 
+/**
+ * Sets position according to given fen.
+ *
+ * @param[out] position Pointer to array of pointers pointing to place in memory
+ * with positions of chess pieces.
+ */
 void setPosition(pos64** position, std::string fen) {
 
     pos64& whitePawns = *position[WHITE_PAWN_OFFSET];
