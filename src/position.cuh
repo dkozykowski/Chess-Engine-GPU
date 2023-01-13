@@ -9,6 +9,8 @@
 
 namespace POSITION {
 
+void setPosition(pos64** position, std::string fen);
+
 void printPosition(pos64* position);
 
 void moveChess(const int& fromCol, const int& fromRow, const int& toCol,

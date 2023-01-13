@@ -43,6 +43,8 @@ void gpuAssert(cudaError_t code, const char *file, int line);
 #define RIGHT 1
 #define LEFT 2
 
+#define STARTING_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+
 #define WHITE_PAWN_STARTING_POS (pos64)65280
 #define WHITE_KNIGHT_STARTING_POS (pos64)66
 #define WHITE_BISHOP_STARTING_POS (pos64)36
