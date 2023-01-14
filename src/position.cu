@@ -219,6 +219,20 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
             blackRooks ^= (pos64(1) << 63);
             blackRooks |= (pos64(1) << 61);
         }
+    }
+
+    if((whitePawns & from) != 0 && fromCol != toCol && (blackPawns & to) == 0) { // en passant dla białych
+        whitePawns ^= from;
+        whitePawns |= to;
+        blackPawns ^= (to >> 8);
+        return;
+    }
+
+    
+    if((blackPawns & from) != 0 && fromCol != toCol && (whitePawns & to) == 0) { // en passant dla białych
+        blackPawns ^= from;
+        blackPawns |= to;
+        whitePawns ^= (to >> 8);
         return;
     }
 
