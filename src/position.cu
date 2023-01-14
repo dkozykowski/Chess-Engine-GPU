@@ -188,7 +188,7 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
 
     // white castling
     if (currentPlayer == WHITE && from == (pos64(1) << 3) && (whiteKings & from) && (whiteRooks & to)
-        && (to == (pos64(1) << 0) || to == (pos64(1) << 6))) {
+        && (to == (pos64(1) << 0) || to == (pos64(1) << 7))) {
         if (to == (pos64(1) << 0)) {
             whiteKings ^= (pos64(1) << 3);
             whiteKings |= (pos64(1) << 1);
@@ -197,27 +197,27 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
         }
         else {
             whiteKings ^= (pos64(1) << 3);
-            whiteKings |= (pos64(1) << 5);
-            whiteRooks ^= (pos64(1) << 6);
-            whiteRooks |= (pos64(1) << 4);
+            whiteKings |= (pos64(1) << 6);
+            whiteRooks ^= (pos64(1) << 7);
+            whiteRooks |= (pos64(1) << 5);
         }
         return;
     }
     
     // black castling
     if (currentPlayer == BLACK && from == (pos64(1) << 59) && (blackKings & from) && (blackRooks & to)
-        && (to == (pos64(1) << 55) || to == (pos64(1) << 62))) {
-        if (to == (pos64(1) << 55)) {
+        && (to == (pos64(1) << 56) || to == (pos64(1) << 63))) {
+        if (to == (pos64(1) << 56)) {
             blackKings ^= (pos64(1) << 59);
             blackKings |= (pos64(1) << 57);
-            blackRooks ^= (pos64(1) << 55);
+            blackRooks ^= (pos64(1) << 56);
             blackRooks |= (pos64(1) << 58);
         }
         else {
             blackKings ^= (pos64(1) << 59);
-            blackKings |= (pos64(1) << 61);
-            blackRooks ^= (pos64(1) << 62);
-            blackRooks |= (pos64(1) << 60);
+            blackKings |= (pos64(1) << 62);
+            blackRooks ^= (pos64(1) << 63);
+            blackRooks |= (pos64(1) << 61);
         }
         return;
     }
