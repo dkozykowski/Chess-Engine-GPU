@@ -166,6 +166,7 @@ void swap(pos64* a, pos64* b) {
 void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
                const int& toRow, short& currentPlayer, pos64** position, 
                bool promote, bool toQueen) {
+
     pos64 from = ((pos64(1)) << (fromCol + (fromRow << 3)));
     pos64 to = ((pos64(1)) << (toCol + (toRow << 3)));
 
@@ -185,6 +186,42 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
     pos64& blackQueens = *position[BLACK_QUEEN_OFFSET];
     pos64& blackKings = *position[BLACK_KING_OFFSET];
 
+    // white castling
+    if (currentPlayer == WHITE && from == (pos64(1) << 3) && (whiteKings & from) && (whiteRooks & to)
+        && (to == (pos64(1) << 0) || to == (pos64(1) << 7))) {
+        if (to == (pos64(1) << 0)) {
+            whiteKings ^= (pos64(1) << 3);
+            whiteKings |= (pos64(1) << 1);
+            whiteRooks ^= (pos64(1) << 0);
+            whiteRooks |= (pos64(1) << 2);
+        }
+        else {
+            whiteKings ^= (pos64(1) << 3);
+            whiteKings |= (pos64(1) << 6);
+            whiteRooks ^= (pos64(1) << 7);
+            whiteRooks |= (pos64(1) << 5);
+        }
+        return;
+    }
+    
+    // black castling
+    if (currentPlayer == BLACK && from == (pos64(1) << 59) && (blackKings & from) && (blackRooks & to)
+        && (to == (pos64(1) << 56) || to == (pos64(1) << 63))) {
+        if (to == (pos64(1) << 56)) {
+            blackKings ^= (pos64(1) << 59);
+            blackKings |= (pos64(1) << 57);
+            blackRooks ^= (pos64(1) << 56);
+            blackRooks |= (pos64(1) << 58);
+        }
+        else {
+            blackKings ^= (pos64(1) << 59);
+            blackKings |= (pos64(1) << 62);
+            blackRooks ^= (pos64(1) << 63);
+            blackRooks |= (pos64(1) << 61);
+        }
+        return;
+    }
+
     whitePawns &= toMask;
     whiteBishops &= toMask;
     whiteKnights &= toMask;
@@ -202,8 +239,8 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
     if (currentPlayer == WHITE) {
         if ((whitePawns & from) != 0) {
             whitePawns ^= from;
-            if(!promote){
-             whitePawns |= to;   
+            if (!promote) {
+                whitePawns |= to;   
             }
         } else if ((whiteBishops & from) != 0) {
             whiteBishops ^= from;
@@ -230,8 +267,8 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
     } else if (currentPlayer == BLACK) {
         if ((blackPawns & from) != 0) {
             blackPawns ^= from;
-            if(!promote){
-            blackPawns |= to;
+            if (!promote) {
+                blackPawns |= to;
             }
         } else if ((blackBishops & from) != 0) {
             blackBishops ^= from;
