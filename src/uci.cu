@@ -220,7 +220,7 @@ int _log2(pos64 x) {  // asserting x is a power of two
     return 0;
 }
 
-std::string getMoveString(pos64 currentPos, pos64 newPos) {
+std::string getMoveString(pos64 currentPos, pos64 newPos, bool promotion = false, bool toQueen = false) {
     pos64 diff = currentPos ^ newPos;
     pos64 from = currentPos & diff;
     pos64 to = newPos & diff;
@@ -231,6 +231,14 @@ std::string getMoveString(pos64 currentPos, pos64 newPos) {
     result[1] = from_pos / 8 + '1';
     result[2] = to_pos % 8 + 'a';
     result[3] = to_pos / 8 + '1';
+    if(promotion){
+        if(toQueen){
+            result = result + 'Q';
+        }
+        else {
+            result = result + 'K';
+        }
+    }
     return result;
 }
 
@@ -273,19 +281,35 @@ void go(short &currentPlayer, int &moveNum) {
     pos64 new_blackKings = position[BLACK_KING_OFFSET];
 
     DBG2(POSITION::printPosition(position));
-
+    bool promotion = false, toQueen = false;
     if (currentPlayer == WHITE) {
+        if((whitePawns ^ new_whitePawns) != 0 && (whiteQueens ^ new_whiteQueens) != 0) {
+            promotion = true;
+            toQueen = true;
+        }
+        if((whitePawns ^ new_whitePawns) != 0 && (whiteKnights ^ new_whiteKnights) != 0) {
+            promotion = true;
+            toQueen = false;
+        }
         pos64 currentPos = whitePawns | whiteBishops | whiteKnights |
                            whiteRooks | whiteQueens | whiteKings;
         pos64 newPos = new_whitePawns | new_whiteBishops | new_whiteKnights |
                        new_whiteRooks | new_whiteQueens | new_whiteKings;
-        std::cout << getMoveString(currentPos, newPos) << "\n";
+        std::cout << getMoveString(currentPos, newPos, promotion, toQueen) << "\n";
     } else if (currentPlayer == BLACK) {
+        if((blackPawns & new_blackPawns) != 0 && (blackQueens & new_blackQueens) != 0) {
+            promotion = true;
+            toQueen = true;
+        }
+        if((blackPawns & new_blackPawns) != 0 && (blackKnights & new_blackKnights) != 0) {
+            promotion = true;
+            toQueen = false;
+        }
         pos64 currentPos = blackPawns | blackBishops | blackKnights |
                            blackRooks | blackQueens | blackKings;
         pos64 newPos = new_blackPawns | new_blackBishops | new_blackKnights |
                        new_blackRooks | new_blackQueens | new_blackKings;
-        std::cout << getMoveString(currentPos, newPos) << "\n";
+        std::cout << getMoveString(currentPos, newPos, promotion, toQueen) << "\n";
     }
 }
 
