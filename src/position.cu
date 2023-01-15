@@ -186,6 +186,9 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
     pos64& blackQueens = *position[BLACK_QUEEN_OFFSET];
     pos64& blackKings = *position[BLACK_KING_OFFSET];
 
+    pos64 allWhite = (whitePawns | whiteBishops | whiteKnights | whiteRooks | whiteQueens | whiteKings);
+    pos64 allBlack = (blackPawns | blackBishops | blackKnights | blackRooks | blackQueens | blackKings);
+
     // white castling
     if (currentPlayer == WHITE && from == (pos64(1) << 3) && (whiteKings & from) && (whiteRooks & to)
         && (to == (pos64(1) << 0) || to == (pos64(1) << 7))) {
@@ -221,7 +224,7 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
         }
     }
 
-    if((whitePawns & from) != 0 && fromCol != toCol && (blackPawns & to) == 0) { // en passant dla białych
+    if((whitePawns & from) != 0 && fromCol != toCol && (allBlack & to) == 0) { // en passant dla białych
         whitePawns ^= from;
         whitePawns |= to;
         blackPawns ^= (to >> 8);
@@ -229,7 +232,7 @@ void moveChess(const int& fromCol, const int& fromRow, const int& toCol,
     }
 
     
-    if((blackPawns & from) != 0 && fromCol != toCol && (whitePawns & to) == 0) { // en passant dla białych
+    if((blackPawns & from) != 0 && fromCol != toCol && (allWhite & to) == 0) { // en passant dla białych
         blackPawns ^= from;
         blackPawns |= to;
         whitePawns ^= (to >> 8);

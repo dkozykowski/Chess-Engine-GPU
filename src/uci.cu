@@ -103,7 +103,7 @@ void position(std::istringstream &is, short &currentPlayer, int &moveNum) {
 void move(std::istringstream &is, short &currentPlayer, int &moveNum) {
     std::string moveToken;
     is >> std::skipws >> moveToken;
-
+    
     // validate
     if (moveToken.length() != 4 && moveToken.length() != 5) {
         printf("Invalid move\n");
@@ -114,13 +114,12 @@ void move(std::istringstream &is, short &currentPlayer, int &moveNum) {
     int fromRow = moveToken[1] - '1';
     int toCol = moveToken[2] >= 'a' ? moveToken[2] - 'a' : moveToken[2] - 'A';
     int toRow = moveToken[3] - '1';
-
+    
     bool isPromotionMove = moveToken.length() == 5;
     bool toQueen = false;
     if(isPromotionMove && moveToken[4] == 'Q') {
         toQueen = true;
     }
-
     if (fromCol < 0 || fromRow < 0 || toCol < 0 || toRow < 0 || 8 <= fromCol ||
         8 <= fromRow || 8 <= toCol || 8 <= toRow) {
         printf("Invalid move\n");
