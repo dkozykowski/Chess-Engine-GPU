@@ -40,14 +40,14 @@ void setPosition(pos64** position, std::string fen) {
 
     int fenLenght = fen.size();
     int row = 7;
-    int column = 7;
+    int column = 0;
     for (int i = 0; i < fenLenght; i++) {
         if ('1' <= fen[i] && fen[i] <= '9') {
-            column -= fen[i] - '0';
+            column += fen[i] - '0';
             continue;
         }
         if (fen[i] == '/') {
-            column = 7;
+            column = 0;
             row --;
             continue;
         }
@@ -92,7 +92,7 @@ void setPosition(pos64** position, std::string fen) {
                 whiteKings |= currentBit;
                 break;
         }
-        column--;
+        column++;
     }
 }
 
