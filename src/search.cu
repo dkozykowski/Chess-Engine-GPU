@@ -357,10 +357,14 @@ void gatherResults(pos64 *boards, unsigned int *boardsOffsets,
  * which optimal move should be found. After finding the most optimal move, the
  * position is overriden with the so found move.
  */
-void findBestMove(const short &currentPlayer, pos64 *position) {
+void findBestMove(const short &currentPlayer, pos64 *position, int maxDevices) {
     std::vector<std::thread> threads;
     int devicesCount;
     cudaGetDeviceCount(&devicesCount);
+
+    if(devicesCount > maxDevices) {
+        devicesCount = maxDevices;
+    }
 
     unsigned int *levelSizes, *boardsOffsets;
     pos64 *boards;
@@ -371,7 +375,7 @@ void findBestMove(const short &currentPlayer, pos64 *position) {
     int firstStageDepth;
     bool isWhite = currentPlayer == WHITE;
 
-    if (devicesCount == 1) {
+    if (false) {
         int offset = runBoardGeneration(boards, boardsOffsets, levelSizes,
                                         &firstStageDepth, &isWhite,
                                         totalBoardsCount, false);

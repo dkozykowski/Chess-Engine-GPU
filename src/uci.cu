@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <chrono>
 
 #include "evaluate.cuh"
 #include "macros.cuh"
@@ -249,7 +250,7 @@ std::string getMoveString(pos64 currentPos, pos64 newPos, bool promotion = false
  * white, @ref BLACK for black).
  * @param moveNum Number of moves made in the current game.
  */
-void go(short &currentPlayer, int &moveNum) {
+void go(short &currentPlayer, int &moveNum, int maxDevices) {
     pos64 *position = new pos64[12];
     position[WHITE_PAWN_OFFSET] = whitePawns;
     position[WHITE_BISHOP_OFFSET] = whiteBishops;
@@ -264,7 +265,11 @@ void go(short &currentPlayer, int &moveNum) {
     position[BLACK_QUEEN_OFFSET] = blackQueens;
     position[BLACK_KING_OFFSET] = blackKings;
 
-    SEARCH::findBestMove(currentPlayer, position);
+    auto start = std::chrono::high_resolution_clock::now();
+    SEARCH::findBestMove(currentPlayer, position, maxDevices);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout<< "elapsed: " << duration.count() << "ms" << std::endl; 
 
     pos64 new_whitePawns = position[WHITE_PAWN_OFFSET];
     pos64 new_whiteBishops = position[WHITE_BISHOP_OFFSET];
@@ -358,7 +363,7 @@ void loop() {
     int moveNum;
     newgame(currentPlayer, moveNum);
     SEARCH::init();
-
+    int maxDevices = 8;
     std::string token, cmd;
 
     do {
@@ -380,14 +385,20 @@ void loop() {
         else if (token == "move")
             move(is, currentPlayer, moveNum);
         else if (token == "go")
-            go(currentPlayer, moveNum);
+            go(currentPlayer, moveNum, maxDevices);
         else if (token == "eval")
             printEval();
         else if (token == "position") 
             position(is, currentPlayer, moveNum);
         else if (token == "moves")
             printMoves(currentPlayer);
-        else
+        else if (token == "devices"){
+            int number;
+            is >> std::skipws >> number;
+            maxDevices = number;
+            std::cout<< number << std::endl;
+        }
+        else 
             std::cout << "Unknown command: " << cmd << std::endl;
     } while (true);
 
