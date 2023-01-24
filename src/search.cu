@@ -219,8 +219,8 @@ __global__ void preCalculateBoardsCount(pos64 *boards,
  * nodes on each level of MIN-MAX tree will be allocated.
  */
 int prepareMemory(pos64 **boards, unsigned int **offsets,
-                  unsigned int **levelSizes) {
-    gpuErrchk(cudaMallocManaged(levelSizes, sizeof(int) * (MAX_POSSIBLE_DEPTH + 1)));
+                  unsigned int **levelSizes, int maxDepth) {
+    gpuErrchk(cudaMallocManaged(levelSizes, sizeof(int) * (maxDepth + 1)));
 
     size_t sizeOfOneBoard = sizeof(pos64) * BOARD_SIZE + sizeof(unsigned int);
     size_t total, free;
@@ -369,7 +369,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
     unsigned int *levelSizes, *boardsOffsets;
     pos64 *boards;
     size_t totalBoardsCount =
-        prepareMemory(&boards, &boardsOffsets, &levelSizes);
+        prepareMemory(&boards, &boardsOffsets, &levelSizes, maxDepth);
     gpuErrchk(cudaMemcpy(boards, position, sizeof(pos64) * BOARD_SIZE,
                          cudaMemcpyHostToDevice));
     int firstStageDepth;
@@ -442,7 +442,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             CHECK_ALLOC(cudaMalloc(&last, sizeof(int)));
 
             int maxBoards = prepareMemory(&secStageBoards, &secStageOffsets,
-                                          &secStageLevelSizes);
+                                          &secStageLevelSizes, maxDepth);
             pos64 *baseBoardsAddress = firstStageBoards + offset * BOARD_SIZE;
             int *baseOffsetsAddress = firstStageOffsets + offset;
 
@@ -475,6 +475,12 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             // evaluating
             DBG(printf("count of evaluation boards: %u\n",
                        secStageLevelSizes[depthFound]));
+            if(j == 0) {
+                printf("calc mem usage %u \n", secStageLevelSizes[depthFound]);
+                memoryUsage = (tempOffset + secStageLevelSizes[depthFound]) * (BOARD_SIZE * sizeof(pos64) + sizeof(int));
+                printf("calc mem usage done\n");
+            }
+            
             evaluateBoards<<<getBlocksCount2d(secStageLevelSizes[depthFound]),
                              MAX_THREADS>>>(
                 secStageBoards + tempOffset * BOARD_SIZE,
@@ -483,9 +489,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
                         tempOffset));  // since last level doesnt use
                                        // offsets board it is used
                                        // to keep the evaluation
-            if(j == 0) {
-                memoryUsage = (tempOffset + secStageLevelSizes[depthFound]) * (BOARD_SIZE * sizeof(pos64) + sizeof(int));
-            }
+
             
             gpuErrchk(cudaDeviceSynchronize());
             gpuErrchk(cudaPeekAtLastError());

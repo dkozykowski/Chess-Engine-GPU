@@ -265,13 +265,15 @@ void go(short &currentPlayer, int &moveNum, int maxDevices, int maxDepth) {
     position[BLACK_ROOK_OFFSET] = blackRooks;
     position[BLACK_QUEEN_OFFSET] = blackQueens;
     position[BLACK_KING_OFFSET] = blackKings;
+    
     std::ofstream output("test.csv", std::ios_base::app);
     auto start = std::chrono::high_resolution_clock::now();
     long ocuppied = SEARCH::findBestMove(currentPlayer, position, maxDevices, maxDepth);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout<< "elapsed: " << duration.count() << "ms" << std::endl; 
+    std::cout<< "elapsed: " << duration.count() << "ms " << ocuppied << std::endl; 
     output << duration.count() << "," << ocuppied << std::endl;
+    output.close();
     pos64 new_whitePawns = position[WHITE_PAWN_OFFSET];
     pos64 new_whiteBishops = position[WHITE_BISHOP_OFFSET];
     pos64 new_whiteKnights = position[WHITE_KNIGHT_OFFSET];
