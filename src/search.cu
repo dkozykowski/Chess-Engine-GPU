@@ -256,13 +256,13 @@ int prepareMemory(pos64 **boards, unsigned int **offsets,
  */
 int runBoardGeneration(pos64 *boards, unsigned int *boardsOffsets,
                        unsigned int *levelSizes, int *depthFound, bool *isWhite,
-                       int maxBoardsCount, bool isFirstStage) {
+                       int maxBoardsCount, bool isFirstStage, int maxDepth) {
     int runningBoards;
     int threadCount;
     dim3 blockCount;
     int offset = 0;
-    *depthFound = MAX_POSSIBLE_DEPTH;
-    for (int i = 0; i < MAX_POSSIBLE_DEPTH; i++) {
+    *depthFound = maxDepth;
+    for (int i = 0; i < maxDepth; i++) {
         runningBoards = levelSizes[i];
 
         DBG(printf("generating depth: %d, running boards: %d, offset %d\n", i + 1,
@@ -357,7 +357,7 @@ void gatherResults(pos64 *boards, unsigned int *boardsOffsets,
  * which optimal move should be found. After finding the most optimal move, the
  * position is overriden with the so found move.
  */
-void findBestMove(const short &currentPlayer, pos64 *position, int maxDevices) {
+long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, int maxDepth) {
     std::vector<std::thread> threads;
     int devicesCount;
     cudaGetDeviceCount(&devicesCount);
@@ -373,12 +373,13 @@ void findBestMove(const short &currentPlayer, pos64 *position, int maxDevices) {
     gpuErrchk(cudaMemcpy(boards, position, sizeof(pos64) * BOARD_SIZE,
                          cudaMemcpyHostToDevice));
     int firstStageDepth;
+    long memoryUsage = 0;
     bool isWhite = currentPlayer == WHITE;
 
     if (false) {
         int offset = runBoardGeneration(boards, boardsOffsets, levelSizes,
                                         &firstStageDepth, &isWhite,
-                                        totalBoardsCount, false);
+                                        totalBoardsCount, false, maxDepth);
 
         evaluateBoards<<<getBlocksCount2d(levelSizes[firstStageDepth]),
                          MAX_THREADS>>>(
@@ -386,6 +387,8 @@ void findBestMove(const short &currentPlayer, pos64 *position, int maxDevices) {
             (int *)(boardsOffsets + offset));  // since last level doesnt use
                                                // offsets board it might be used
                                                // for keeping the evaluation
+        memoryUsage = (offset + levelSizes[firstStageDepth]) * (BOARD_SIZE * sizeof(pos64) + sizeof(int));
+        
         gpuErrchk(cudaDeviceSynchronize());
         gpuErrchk(cudaPeekAtLastError());
 
@@ -403,12 +406,12 @@ void findBestMove(const short &currentPlayer, pos64 *position, int maxDevices) {
         cudaFree(boards);
         cudaFree(boardsOffsets);
         
-        return;
+        return memoryUsage;
     }
 
     int offset =
         runBoardGeneration(boards, boardsOffsets, levelSizes, &firstStageDepth,
-                           &isWhite, totalBoardsCount, true);
+                           &isWhite, totalBoardsCount, true, maxDepth);
 
     int totalBoardCountInFirstStage = offset + levelSizes[firstStageDepth];
     pos64 *firstStageBoards =
@@ -446,18 +449,14 @@ void findBestMove(const short &currentPlayer, pos64 *position, int maxDevices) {
             int countOfBoardsPerThread, baseCountOfBoardsPerThread;
             if (boardsToCalaculateInSecStage % devicesCount != 0) {
                 if (j < devicesCount - 1) {
-                    countOfBoardsPerThread =
-                        boardsToCalaculateInSecStage / devicesCount + 1;
+                    countOfBoardsPerThread = boardsToCalaculateInSecStage / devicesCount;
                     baseCountOfBoardsPerThread = countOfBoardsPerThread;
                 } else {
-                    countOfBoardsPerThread =
-                        boardsToCalaculateInSecStage % devicesCount;
-                    baseCountOfBoardsPerThread =
-                        boardsToCalaculateInSecStage / devicesCount + 1;
+                    countOfBoardsPerThread = boardsToCalaculateInSecStage % devicesCount;
+                    baseCountOfBoardsPerThread = boardsToCalaculateInSecStage / devicesCount;
                 }
             } else {
-                countOfBoardsPerThread =
-                    boardsToCalaculateInSecStage / devicesCount;
+                countOfBoardsPerThread = boardsToCalaculateInSecStage / devicesCount;
                 baseCountOfBoardsPerThread = countOfBoardsPerThread;
             }
             secStageLevelSizes[0] = countOfBoardsPerThread;
@@ -470,7 +469,7 @@ void findBestMove(const short &currentPlayer, pos64 *position, int maxDevices) {
             bool isWhiteTemp = isWhite;
             int tempOffset = runBoardGeneration(secStageBoards, secStageOffsets,
                                                 secStageLevelSizes, &depthFound,
-                                                &isWhiteTemp, maxBoards, false);
+                                                &isWhiteTemp, maxBoards, false, maxDepth);
             DBG(printf("offset %d, depthFound: %d\n", tempOffset, depthFound));
 
             // evaluating
@@ -484,6 +483,10 @@ void findBestMove(const short &currentPlayer, pos64 *position, int maxDevices) {
                         tempOffset));  // since last level doesnt use
                                        // offsets board it is used
                                        // to keep the evaluation
+            if(j == 0) {
+                memoryUsage = (tempOffset + secStageLevelSizes[depthFound]) * (BOARD_SIZE * sizeof(pos64) + sizeof(int));
+            }
+            
             gpuErrchk(cudaDeviceSynchronize());
             gpuErrchk(cudaPeekAtLastError());
 
@@ -536,5 +539,6 @@ void findBestMove(const short &currentPlayer, pos64 *position, int maxDevices) {
 
     cudaFree(boards);
     cudaFree(boardsOffsets);
+    return memoryUsage;
 }
 }  // namespace SEARCH

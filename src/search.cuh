@@ -9,7 +9,7 @@ void init();
 
 void terminate();
 
-void findBestMove(const short& current_player, pos64* position, int maxDevices = 8);
+long findBestMove(const short& current_player, pos64* position, int maxDevices = 8, int maxDepth = MAX_POSSIBLE_DEPTH);
 
 }  // namespace SEARCH
 

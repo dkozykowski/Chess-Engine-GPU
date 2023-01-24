@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <chrono>
+#include <fstream>
 
 #include "evaluate.cuh"
 #include "macros.cuh"
@@ -250,7 +251,7 @@ std::string getMoveString(pos64 currentPos, pos64 newPos, bool promotion = false
  * white, @ref BLACK for black).
  * @param moveNum Number of moves made in the current game.
  */
-void go(short &currentPlayer, int &moveNum, int maxDevices) {
+void go(short &currentPlayer, int &moveNum, int maxDevices, int maxDepth) {
     pos64 *position = new pos64[12];
     position[WHITE_PAWN_OFFSET] = whitePawns;
     position[WHITE_BISHOP_OFFSET] = whiteBishops;
@@ -264,13 +265,13 @@ void go(short &currentPlayer, int &moveNum, int maxDevices) {
     position[BLACK_ROOK_OFFSET] = blackRooks;
     position[BLACK_QUEEN_OFFSET] = blackQueens;
     position[BLACK_KING_OFFSET] = blackKings;
-
+    std::ofstream output("test.csv", std::ios_base::app);
     auto start = std::chrono::high_resolution_clock::now();
-    SEARCH::findBestMove(currentPlayer, position, maxDevices);
+    long ocuppied = SEARCH::findBestMove(currentPlayer, position, maxDevices, maxDepth);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout<< "elapsed: " << duration.count() << "ms" << std::endl; 
-
+    output << duration.count() << "," << ocuppied << std::endl;
     pos64 new_whitePawns = position[WHITE_PAWN_OFFSET];
     pos64 new_whiteBishops = position[WHITE_BISHOP_OFFSET];
     pos64 new_whiteKnights = position[WHITE_KNIGHT_OFFSET];
@@ -364,6 +365,7 @@ void loop() {
     newgame(currentPlayer, moveNum);
     SEARCH::init();
     int maxDevices = 8;
+    int maxDepth = MAX_POSSIBLE_DEPTH;
     std::string token, cmd;
 
     do {
@@ -385,7 +387,7 @@ void loop() {
         else if (token == "move")
             move(is, currentPlayer, moveNum);
         else if (token == "go")
-            go(currentPlayer, moveNum, maxDevices);
+            go(currentPlayer, moveNum, maxDevices, maxDepth);
         else if (token == "eval")
             printEval();
         else if (token == "position") 
@@ -396,6 +398,12 @@ void loop() {
             int number;
             is >> std::skipws >> number;
             maxDevices = number;
+            std::cout<< number << std::endl;
+        }
+        else if(token == "depth"){
+            int number;
+            is >> std::skipws >> number;
+            maxDepth = number;
             std::cout<< number << std::endl;
         }
         else 
