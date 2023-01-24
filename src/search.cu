@@ -476,9 +476,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             DBG(printf("count of evaluation boards: %u\n",
                        secStageLevelSizes[depthFound]));
             if(j == 0) {
-                printf("calc mem usage %u \n", secStageLevelSizes[depthFound]);
                 memoryUsage = (tempOffset + secStageLevelSizes[depthFound]) * (BOARD_SIZE * sizeof(pos64) + sizeof(int));
-                printf("calc mem usage done\n");
             }
             
             evaluateBoards<<<getBlocksCount2d(secStageLevelSizes[depthFound]),
