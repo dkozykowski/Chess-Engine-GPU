@@ -461,7 +461,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             secStageLevelSizes[0] = countOfBoardsPerThread;
             gpuErrchk(cudaMemcpy(
                 secStageBoards,
-                baseBoardsAddress + j * baseCountOfBoardsPerThread * BOARD_SIZE,
+                baseBoardsAddress,
                 sizeof(pos64) * BOARD_SIZE * countOfBoardsPerThread,
                 cudaMemcpyHostToDevice));
             int depthFound;
