@@ -272,7 +272,7 @@ void go(short &currentPlayer, int &moveNum, int maxDevices, int maxDepth) {
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout<< "elapsed: " << duration.count() << "ms " << ocuppied << std::endl; 
-    output << duration.count() << "," << ocuppied << std::endl;
+    output << maxDepth << "," << maxDevices << "," <<duration.count() << "," << ocuppied << std::endl;
     output.close();
     pos64 new_whitePawns = position[WHITE_PAWN_OFFSET];
     pos64 new_whiteBishops = position[WHITE_BISHOP_OFFSET];
