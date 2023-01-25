@@ -478,9 +478,11 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             if(j == 0) {
                 memoryUsage = (tempOffset + secStageLevelSizes[depthFound]) * (BOARD_SIZE * sizeof(pos64) + sizeof(int));
             }
-            
-            evaluateBoards<<<getBlocksCount2d(secStageLevelSizes[depthFound]),
-                             MAX_THREADS>>>(
+            int threadCount;
+            dim3 blockCount;
+            setThreadAndBlocksCount(&threadCount, &blockCount, secStageLevelSizes[depthFound]);
+        
+            evaluateBoards<<<blockCount, threadCount>>>(
                 secStageBoards + tempOffset * BOARD_SIZE,
                 secStageLevelSizes[depthFound],
                 (int *)(secStageOffsets +
