@@ -433,7 +433,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
     for (int j = 0; j < devicesCount; j++) {
         threads.push_back(std::thread([&, j, boardsToCalaculateInSecStage,
                                        isWhite, devicesCount]() {
-           /* gpuErrchk(cudaSetDevice(j));
+            gpuErrchk(cudaSetDevice(j));
 
             pos64 *secStageBoards;
             unsigned int *secStageOffsets, *secStageLevelSizes;
@@ -442,7 +442,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
 
             int maxBoards = prepareMemory(&secStageBoards, &secStageOffsets,
                                           &secStageLevelSizes, maxDepth);
-            pos64 *baseBoardsAddress = firstStageBoards + offset * BOARD_SIZE;
+            /*pos64 *baseBoardsAddress = firstStageBoards + offset * BOARD_SIZE;
             int *baseOffsetsAddress = firstStageOffsets + offset;
 
             int countOfBoardsPerThread, baseCountOfBoardsPerThread;
@@ -500,10 +500,10 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
                 baseOffsetsAddress + j * baseCountOfBoardsPerThread,
                 secStageOffsets, sizeof(int) * countOfBoardsPerThread,
                 cudaMemcpyDeviceToHost));*/
-           /* cudaFree(secStageBoards);
+            cudaFree(secStageBoards);
             cudaFree(secStageOffsets);
-            cudaFree(secStageLevelSizes);*/
-            //cudaFree(last);
+            cudaFree(secStageLevelSizes);
+            cudaFree(last);
         }));
     }
     for (int j = 0; j < devicesCount; j++) {
