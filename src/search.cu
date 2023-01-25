@@ -496,10 +496,10 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             /*gatherResults(secStageBoards, secStageOffsets, secStageLevelSizes,
                           depthFound, last, tempOffset, !isWhiteTemp);*/
 
-            gpuErrchk(cudaMemcpy(
+            /*gpuErrchk(cudaMemcpy(
                 baseOffsetsAddress + j * baseCountOfBoardsPerThread,
                 secStageOffsets, sizeof(int) * countOfBoardsPerThread,
-                cudaMemcpyDeviceToHost));
+                cudaMemcpyDeviceToHost));*/
             cudaFree(secStageBoards);
             cudaFree(secStageOffsets);
             cudaFree(secStageLevelSizes);
