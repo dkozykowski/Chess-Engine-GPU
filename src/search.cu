@@ -506,9 +506,9 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             //cudaFree(last);
         }));
     }
-    for (int j = 0; j < devicesCount; j++) {
+    /*for (int j = 0; j < devicesCount; j++) {
         threads[j].join();
-    }
+    }*/
     cudaSetDevice(0);
 
     /*DBG(printf("Stage 1 - gathering results\n"));
