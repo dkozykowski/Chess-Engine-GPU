@@ -482,7 +482,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             dim3 blockCount;
             setThreadAndBlocksCount(&threadCount, &blockCount, secStageLevelSizes[depthFound]);
         
-            evaluateBoards<<<blockCount, threadCount>>>(
+            /*evaluateBoards<<<blockCount, threadCount>>>(
                 secStageBoards + tempOffset * BOARD_SIZE,
                 secStageLevelSizes[depthFound],
                 (int *)(secStageOffsets +
@@ -492,7 +492,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
 
             
             gpuErrchk(cudaDeviceSynchronize());
-            gpuErrchk(cudaPeekAtLastError());
+            gpuErrchk(cudaPeekAtLastError());*/
 
             gatherResults(secStageBoards, secStageOffsets, secStageLevelSizes,
                           depthFound, last, tempOffset, !isWhiteTemp);
