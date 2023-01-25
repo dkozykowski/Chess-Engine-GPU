@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <iostream>
+
 
 #include "evaluate.cuh"
 #include "macros.cuh"
@@ -338,6 +340,7 @@ void gatherResults(pos64 *boards, unsigned int *boardsOffsets,
 
         DBG(printf("running boards: %u, offset: %u\n", runningBoards, offset));
         setThreadAndBlocksCount(&threadCount, &blockCount, runningBoards);
+        std::cout << blockCount.x << " " << blockCount.y << " " << blockCount.z << " " << threadCount << std::endl;
         gatherResultsForBoards<<<blockCount, threadCount>>>(
             (int *)(boardsOffsets + offset), boardsOffsets + offset,
             runningBoards, levelSizes[i + 1], maximizing,
