@@ -503,7 +503,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             cudaFree(secStageBoards);
             cudaFree(secStageOffsets);
             cudaFree(secStageLevelSizes);
-            cudaFree(last);
+            //cudaFree(last);
         }));
     }
     for (int j = 0; j < devicesCount; j++) {
