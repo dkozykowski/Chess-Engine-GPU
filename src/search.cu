@@ -360,7 +360,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
     std::vector<std::thread> threads;
     int devicesCount;
     cudaGetDeviceCount(&devicesCount);
-
+    gpuErrchk(cudaSetDevice(2));
     if(devicesCount > maxDevices) {
         devicesCount = maxDevices;
     }
@@ -437,8 +437,8 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
 
             pos64 *secStageBoards;
             unsigned int *secStageOffsets, *secStageLevelSizes;
-            int *last;
-            CHECK_ALLOC(cudaMalloc(&last, sizeof(int)));
+            int *localLast;
+            CHECK_ALLOC(cudaMalloc(&localLast, sizeof(int)));
 
             int maxBoards = prepareMemory(&secStageBoards, &secStageOffsets,
                                           &secStageLevelSizes, maxDepth);
@@ -503,7 +503,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             cudaFree(secStageBoards);
             cudaFree(secStageOffsets);
             cudaFree(secStageLevelSizes);
-            cudaFree(last);
+            cudaFree(localLast);
         }));
     }
     for (int j = 0; j < devicesCount; j++) {
