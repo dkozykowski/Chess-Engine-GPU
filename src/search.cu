@@ -336,6 +336,7 @@ void gatherResults(pos64 *boards, unsigned int *boardsOffsets,
         runningBoards = levelSizes[i];
         offset -= runningBoards;
 
+        DBG(printf("running boards: %u, offset: %u", runningBoards, offset));
         setThreadAndBlocksCount(&threadCount, &blockCount, runningBoards);
         gatherResultsForBoards<<<blockCount, threadCount>>>(
             (int *)(boardsOffsets + offset), boardsOffsets + offset,
