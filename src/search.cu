@@ -511,7 +511,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
     }
     cudaSetDevice(0);
 
-    DBG(printf("Stage 1 - gathering results\n"));
+    /*DBG(printf("Stage 1 - gathering results\n"));
     CHECK_ALLOC(cudaMalloc(
         &boards, sizeof(pos64) * BOARD_SIZE * totalBoardCountInFirstStage));
     CHECK_ALLOC(
@@ -537,11 +537,11 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
         cudaMemcpy(&bestMoveNr, last, sizeof(int), cudaMemcpyDeviceToHost));
     gpuErrchk(cudaMemcpy(position,
                          boards + BOARD_SIZE + (bestMoveNr * BOARD_SIZE),
-                         sizeof(pos64) * BOARD_SIZE, cudaMemcpyDeviceToHost));
+                         sizeof(pos64) * BOARD_SIZE, cudaMemcpyDeviceToHost));*/
     cudaFree(levelSizes);
 
-    cudaFree(boards);
-    cudaFree(boardsOffsets);
+    //cudaFree(boards);
+    //cudaFree(boardsOffsets);
     return memoryUsage;
 }
 }  // namespace SEARCH
