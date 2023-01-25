@@ -151,14 +151,8 @@ __global__ void gatherResultsForBoards(
         results + currentLevelBoardCount + boardsOffsets[index];
 
     unsigned int kidsBoardCount;
-    if (index == (currentLevelBoardCount - 1)) {
-        kidsBoardCount = lowerLevelBoardCount - boardsOffsets[index];
-    } else {
-        kidsBoardCount = boardsOffsets[index + 1] - boardsOffsets[index];
-    }
-
     gatherResults(parentDestination, kidsDestination, maximizing, last,
-                  kidsBoardCount);
+                  10);
 }
 
 /**
