@@ -152,12 +152,7 @@ __global__ void gatherResultsForBoards(
     int *kidsDestination =
         results + currentLevelBoardCount + boardsOffsets[index];
 
-    unsigned int kidsBoardCount;
-    if (index == (currentLevelBoardCount - 1)) {
-        kidsBoardCount = lowerLevelBoardCount - boardsOffsets[index];
-    } else {
-        kidsBoardCount = boardsOffsets[index + 1] - boardsOffsets[index];
-    }
+    unsigned int kidsBoardCount = 10;
 
     gatherResults(parentDestination, kidsDestination, maximizing, last,
                   kidsBoardCount);
