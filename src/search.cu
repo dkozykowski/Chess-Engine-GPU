@@ -164,12 +164,13 @@ __global__ void gatherResultsForBoards(
  */
 __global__ void evaluateBoards(pos64 *boards, unsigned int boardCount,
                                int *results) {
-    int blockId = blockIdx.y * gridDim.x + blockIdx.x;
-    int index = blockId * blockDim.x + threadIdx.x;
+    unsigned int blockId = blockIdx.y * gridDim.x + blockIdx.x;
+    unsigned int index = blockId * blockDim.x + threadIdx.x;
     if (index >= boardCount) {
         return;
     }
     pos64 *boardAddress = boards + (index * BOARD_SIZE);
+    if(index )
     if (boardAddress[WHITE_KING_OFFSET] == 0 &&
         boardAddress[BLACK_KING_OFFSET] == 0) {
         results[index] = INF;
@@ -480,8 +481,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             evaluateBoards<<<blockCount, threadCount>>>(
                 secStageBoards + tempOffset * BOARD_SIZE,
                 secStageLevelSizes[depthFound],
-                (int *)(secStageOffsets +
-                        tempOffset));  // since last level doesnt use
+                (int *)secStageOffsets + tempOffset);  // since last level doesnt use
                                        // offsets board it is used
                                        // to keep the evaluation
 
