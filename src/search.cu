@@ -432,8 +432,8 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
 
             pos64 *secStageBoards;
             unsigned int *secStageOffsets, *secStageLevelSizes;
-            int *last;
-            CHECK_ALLOC(cudaMalloc(&last, sizeof(int)));
+            int *localLast;
+            CHECK_ALLOC(cudaMalloc(&localLast, sizeof(int)));
 
             int maxBoards = prepareMemory(&secStageBoards, &secStageOffsets,
                                           &secStageLevelSizes, maxDepth);
@@ -490,7 +490,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             gpuErrchk(cudaPeekAtLastError());
 
             gatherResults(secStageBoards, secStageOffsets, secStageLevelSizes,
-                          depthFound, last, tempOffset, !isWhiteTemp);
+                          depthFound, localLast, tempOffset, !isWhiteTemp);
 
             gpuErrchk(cudaMemcpy(
                 baseOffsetsAddress + j * baseCountOfBoardsPerThread,
@@ -499,7 +499,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             cudaFree(secStageBoards);
             cudaFree(secStageOffsets);
             cudaFree(secStageLevelSizes);
-            cudaFree(last);
+            cudaFree(localLast);
         }));
     }
     for (int j = 0; j < devicesCount; j++) {
