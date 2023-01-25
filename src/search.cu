@@ -433,7 +433,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
     for (int j = 0; j < devicesCount; j++) {
         threads.push_back(std::thread([&, j, boardsToCalaculateInSecStage,
                                        isWhite, devicesCount]() {
-            gpuErrchk(cudaSetDevice(j));
+           /* gpuErrchk(cudaSetDevice(j));
 
             pos64 *secStageBoards;
             unsigned int *secStageOffsets, *secStageLevelSizes;
@@ -470,16 +470,16 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
                                                 secStageLevelSizes, &depthFound,
                                                 &isWhiteTemp, maxBoards, false, maxDepth);
             DBG(printf("offset %d, depthFound: %d\n", tempOffset, depthFound));
-
+            */
             // evaluating
-            DBG(printf("count of evaluation boards: %u\n",
-                       secStageLevelSizes[depthFound]));
+           /*DBG(printf("count of evaluation boards: %u\n",
+                       secStageLevelSizes[depthFound]));*/
             /*if(j == 0) {
                 memoryUsage = (tempOffset + secStageLevelSizes[depthFound]) * (BOARD_SIZE * sizeof(pos64) + sizeof(int));
             }*/
-            int threadCount;
+            /*int threadCount;
             dim3 blockCount;
-            setThreadAndBlocksCount(&threadCount, &blockCount, secStageLevelSizes[depthFound]);
+            setThreadAndBlocksCount(&threadCount, &blockCount, secStageLevelSizes[depthFound]);*/
         
             /*evaluateBoards<<<blockCount, threadCount>>>(
                 secStageBoards + tempOffset * BOARD_SIZE,
@@ -500,15 +500,15 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
                 baseOffsetsAddress + j * baseCountOfBoardsPerThread,
                 secStageOffsets, sizeof(int) * countOfBoardsPerThread,
                 cudaMemcpyDeviceToHost));*/
-            cudaFree(secStageBoards);
+           /* cudaFree(secStageBoards);
             cudaFree(secStageOffsets);
-            cudaFree(secStageLevelSizes);
+            cudaFree(secStageLevelSizes);*/
             //cudaFree(last);
         }));
     }
-    /*for (int j = 0; j < devicesCount; j++) {
+    for (int j = 0; j < devicesCount; j++) {
         threads[j].join();
-    }*/
+    }
     cudaSetDevice(0);
 
     /*DBG(printf("Stage 1 - gathering results\n"));
