@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iostream>
 
 #include "evaluate.cuh"
 #include "macros.cuh"
@@ -353,6 +354,7 @@ void gatherResults(pos64 *boards, unsigned int *boardsOffsets,
  * position is overriden with the so found move.
  */
 long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, int maxDepth) {
+    auto firstStageStart = std::chrono::high_resolution_clock::now();
     std::vector<std::thread> threads;
     int devicesCount;
     cudaGetDeviceCount(&devicesCount);
@@ -425,10 +427,15 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
     cudaFree(boardsOffsets);
 
     int boardsToCalaculateInSecStage = levelSizes[firstStageDepth];
+    auto firstStageEnd = std::chrono::high_resolution_clock::now();
+    auto fistStageDuration = std::chrono::duration_cast<std::chrono::milliseconds>(firstStageEnd - firstStageEnd);
+    printf("first-stage-board-generation-and-memory-allocation: %lld\n", fistStageDuration.count());
     DBG(printf("Stage two started\n"));
+    firstStageStart = std::chrono::high_resolution_clock::now();
     for (int j = 0; j < devicesCount; j++) {
         threads.push_back(std::thread([&, j, boardsToCalaculateInSecStage,
                                        isWhite, devicesCount]() {
+            auto start = std::chrono::high_resolution_clock::now();
             gpuErrchk(cudaSetDevice(j));
 
             pos64 *secStageBoards;
@@ -440,7 +447,10 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
                                           &secStageLevelSizes, maxDepth);
             pos64 *baseBoardsAddress = firstStageBoards + offset * BOARD_SIZE;
             int *baseOffsetsAddress = firstStageOffsets + offset;
-
+            auto end = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+            printf("[%d] memory-allocation: %lld\n", j,duration.count());
+            start = std::chrono::high_resolution_clock::now();
             int countOfBoardsPerThread, baseCountOfBoardsPerThread;
             if (boardsToCalaculateInSecStage % devicesCount != 0) {
                 if (j < devicesCount - 1) {
@@ -462,9 +472,18 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
                 cudaMemcpyHostToDevice));
             int depthFound;
             bool isWhiteTemp = isWhite;
+            end = std::chrono::high_resolution_clock::now();
+            duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+            printf("[%d] copying-from-cpu-to-gpu: %lld\n",j, duration.count());
+            
+            start = std::chrono::high_resolution_clock::now();
             int tempOffset = runBoardGeneration(secStageBoards, secStageOffsets,
                                                 secStageLevelSizes, &depthFound,
                                                 &isWhiteTemp, maxBoards, false, maxDepth);
+                                                end = std::chrono::high_resolution_clock::now();
+            duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+            printf("[%d] board-generation: %lld\n",j, duration.count());
+            start = std::chrono::high_resolution_clock::now();
             DBG(printf("offset %d, depthFound: %d\n", tempOffset, depthFound));
 
             // evaluating
@@ -477,7 +496,6 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             int threadCount;
             dim3 blockCount;
             setThreadAndBlocksCount(&threadCount, &blockCount, secStageLevelSizes[depthFound]);
-        
             evaluateBoards<<<blockCount, threadCount>>>(
                 secStageBoards + tempOffset * BOARD_SIZE,
                 secStageLevelSizes[depthFound],
@@ -488,18 +506,36 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             
             gpuErrchk(cudaDeviceSynchronize());
             gpuErrchk(cudaPeekAtLastError());
+            end = std::chrono::high_resolution_clock::now();
+            duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+            printf("[%d] board-evaluation: %lld\n",j, duration.count());
 
+            start = std::chrono::high_resolution_clock::now();
             gatherResults(secStageBoards, secStageOffsets, secStageLevelSizes,
                           depthFound, localLast, tempOffset, !isWhiteTemp);
+            
+            end = std::chrono::high_resolution_clock::now();
+            duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+            printf("[%d] gathering-results: %lld\n",j, duration.count());
 
+
+            start = std::chrono::high_resolution_clock::now();
             gpuErrchk(cudaMemcpy(
                 baseOffsetsAddress + j * baseCountOfBoardsPerThread,
                 secStageOffsets, sizeof(int) * countOfBoardsPerThread,
                 cudaMemcpyDeviceToHost));
+            end = std::chrono::high_resolution_clock::now();
+            duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+            printf("[%d] copying-from-gpu-to-cpu: %lld\n",j, duration.count());
+
+            start = std::chrono::high_resolution_clock::now();
             cudaFree(secStageBoards);
             cudaFree(secStageOffsets);
             cudaFree(secStageLevelSizes);
             cudaFree(localLast);
+            end = std::chrono::high_resolution_clock::now();
+            duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+            printf("[%d] freeing-memory: %lld\n",j, duration.count());
         }));
     }
     for (int j = 0; j < devicesCount; j++) {
@@ -538,6 +574,9 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
 
     cudaFree(boards);
     cudaFree(boardsOffsets);
+    firstStageEnd = std::chrono::high_resolution_clock::now();
+    fistStageDuration = std::chrono::duration_cast<std::chrono::milliseconds>(firstStageEnd - firstStageEnd);
+    printf("first-stage-await-for-threads-gathering-results-freeing-memory: %lld\n", fistStageDuration.count());
     return memoryUsage;
 }
 }  // namespace SEARCH
