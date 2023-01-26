@@ -435,6 +435,9 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
     for (int j = 0; j < devicesCount; j++) {
         threads.push_back(std::thread([&, j, boardsToCalaculateInSecStage,
                                        isWhite, devicesCount]() {
+            
+            long int memoryManipulationTime = 0;
+            long int algorithmTime = 0;
             auto start = std::chrono::high_resolution_clock::now();
             gpuErrchk(cudaSetDevice(j));
 
@@ -449,7 +452,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             int *baseOffsetsAddress = firstStageOffsets + offset;
             auto end = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-            printf("[%d] memory-allocation: %ld\n", j,duration.count());
+            memoryManipulationTime += duration.count();
             start = std::chrono::high_resolution_clock::now();
             int countOfBoardsPerThread, baseCountOfBoardsPerThread;
             if (boardsToCalaculateInSecStage % devicesCount != 0) {
@@ -474,7 +477,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             bool isWhiteTemp = isWhite;
             end = std::chrono::high_resolution_clock::now();
             duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-            printf("[%d] copying-from-cpu-to-gpu: %ld\n",j, duration.count());
+            algorithmTime += duration.count();
             
             start = std::chrono::high_resolution_clock::now();
             int tempOffset = runBoardGeneration(secStageBoards, secStageOffsets,
@@ -482,7 +485,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
                                                 &isWhiteTemp, maxBoards, false, maxDepth);
                                                 end = std::chrono::high_resolution_clock::now();
             duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-            printf("[%d] board-generation: %ld\n",j, duration.count());
+            algorithmTime += duration.count();
             start = std::chrono::high_resolution_clock::now();
             DBG(printf("offset %d, depthFound: %d\n", tempOffset, depthFound));
 
@@ -508,7 +511,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             gpuErrchk(cudaPeekAtLastError());
             end = std::chrono::high_resolution_clock::now();
             duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-            printf("[%d] board-evaluation: %ld\n",j, duration.count());
+            algorithmTime += duration.count();
 
             start = std::chrono::high_resolution_clock::now();
             gatherResults(secStageBoards, secStageOffsets, secStageLevelSizes,
@@ -516,7 +519,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             
             end = std::chrono::high_resolution_clock::now();
             duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-            printf("[%d] gathering-results: %ld\n",j, duration.count());
+            algorithmTime += duration.count();
 
 
             start = std::chrono::high_resolution_clock::now();
@@ -526,7 +529,7 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
                 cudaMemcpyDeviceToHost));
             end = std::chrono::high_resolution_clock::now();
             duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-            printf("[%d] copying-from-gpu-to-cpu: %lld\n",j, duration.count());
+            algorithmTime += duration.count();
 
             start = std::chrono::high_resolution_clock::now();
             cudaFree(secStageBoards);
@@ -535,7 +538,9 @@ long findBestMove(const short &currentPlayer, pos64 *position, int maxDevices, i
             cudaFree(localLast);
             end = std::chrono::high_resolution_clock::now();
             duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-            printf("[%d] freeing-memory: %ld\n",j, duration.count());
+            memoryManipulationTime += duration.count();
+            printf("[%d] memory-allocation: %ld\n", j,memoryManipulationTime);
+            printf("[%d] algorithm-time: %ld\n",j, algorithmTime);
         }));
     }
     for (int j = 0; j < devicesCount; j++) {
