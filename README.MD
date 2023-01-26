@@ -3,12 +3,11 @@
 
 ## Introduction
 
-This project introduces a Chess Engine written in CUDA for Warsaw University of Technology GPU course.
+This project introduces a Chess Engine written in CUDA as our bachelor's degree final project at Warsaw University of Technology.
 
-The project was inspired by [Stockfish](https://github.com/official-stockfish/Stockfish) - one of the best performing CPU chess engines and uses some of its code.
+The goal of the project was to implement the Min-Max algorithm using a graphics processor as part of the implementation of a chess engine. This algorithm has been implemented in a semi-parallel version designed by us. Additionally, the system was prepared in such a way as to use the availability of multiple graphics cards and to divide the calculations between them. The application is run using clusters provided by the Faculty of Mathematics and Information Science at the Warsaw University of Technology. 
 
 ## Authors
 
-- Jan Karchut 
 - Dawid Kożykowski
-
+- Jan Karchut 
